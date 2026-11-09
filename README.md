@@ -58,3 +58,5 @@ Os guias técnicos abrem em português e incluem links para as referências deta
 Na sala, antes de distribuir as cartas, escolha a dificuldade e use **Adicionar bot** ou **Completar com bots**. O anfitrião também pode remover bots antes do início. Eles seguem as mesmas regras e enxergam apenas suas próprias cartas e a mesa. As dificuldades usam estratégias e simulações locais no servidor, sem serviços de IA pagos; o nível difícil não é um jogador profissional.
 
 Bots usam fichas virtuais e podem participar dos três formatos. Não fazem rebuy ou add-on automaticamente. Quando todos os humanos ficam desconectados, a partida pausa; bots não mantêm salas jogando sozinhas. O recurso exige a atualização do Worker além do frontend.
+
+Consulte [Interface e experiência de jogo](docs/interface.md) para criação com prévia, organização da sala e referências visuais.

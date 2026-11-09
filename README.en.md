@@ -57,3 +57,5 @@ The links above open the English technical references. The original product brie
 Before dealing, the host can add up to eight bots, choose Easy, Medium or Hard, fill the table with bots, and remove them. Friends and bots can share a room in all three formats. Bots follow the same rules and only see their own cards and the public board. Strategies and bounded simulations run on the server without paid AI services; Hard is not a professional poker player.
 
 Bots use virtual chips and do not automatically rebuy or take add-ons. Games pause when all humans disconnect. This feature requires updating both the Worker and the frontend.
+
+See [Interface and game experience](docs/interface.en.md) for the live room preview, room controls and design references.

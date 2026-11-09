@@ -17,6 +17,8 @@ import {
   type Lobby,
   type Messages,
 } from './api.ts';
+import { balance } from '../../../packages/tournament-engine/src/index.ts';
+import { RoomDirector, RoomStats } from './room-tools.tsx';
 import { storedPreferences, type Preferences } from './preferences.ts';
 import {
   ErrorContext,
@@ -28,14 +30,18 @@ import {
   PokerTable,
   ActionBar,
 } from './components.tsx';
-const botLabels = { EASY: 'game:botEASY', MEDIUM: 'game:botMEDIUM', HARD: 'game:botHARD' } as const;
 function roomPath() {
   return location.pathname.match(/^\/room\/([a-f0-9-]+)$/)?.[1];
 }
 function App() {
   const { t, i18n } = useTranslation();
   const [prefs, setPrefs] = useState(storedPreferences);
-  const [botDifficulty, setBotDifficulty] = useState('MEDIUM');
+  const [railTab, setRailTab] = useState('players');
+  const [selectedPlayer, setSelectedPlayer] = useState('');
+  const [topUp, setTopUp] = useState<number | null>(null);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const closeTopUp = useCallback(() => setTopUp(null), []);
+  const closeLeave = useCallback(() => setLeaveOpen(false), []);
   const [ready, setReady] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -272,9 +278,57 @@ function App() {
       setBusy(false);
     }
   };
+  const filteredRooms = lobby.rooms.filter(
+    (r) =>
+      r.title.toLowerCase().includes(filter.toLowerCase()) &&
+      (!mode || r.mode === mode) &&
+      (!status || r.status === status) &&
+      (!vacancies || r.players < r.capacity) &&
+      (!protection || r.protected === (protection === 'yes')),
+  );
   const num = (n: number) => new Intl.NumberFormat(i18n.language).format(n);
   const me = snapshot?.players.find((p) => p.id === snapshot.me);
-  const tables = snapshot?.tables ?? [];
+  const tables: Snapshot['tables'] =
+    snapshot?.status === 'WAITING'
+      ? balance(
+          snapshot.players.filter((p) => !p.left).map((p) => p.id),
+          snapshot.config.seats,
+        ).map((ids, i) => ({ id: `preview-${i}`, ids, deadline: 0, hand: undefined }))
+      : (snapshot?.tables ?? []);
+  const ownTableId = tables.find((t) => t.ids.includes(snapshot?.me ?? ''))?.id;
+  useEffect(() => {
+    setTableIndex(0);
+    setRailTab('players');
+    setSelectedPlayer('');
+  }, [roomId]);
+  useEffect(() => {
+    const index = tables.findIndex((t) => t.id === ownTableId);
+    if (index >= 0) setTableIndex(index);
+  }, [ownTableId]);
+  const handActive = snapshot?.tables.some(
+    (t) => t.hand && !t.hand.done && t.ids.includes(snapshot.me),
+  );
+  const canTopUp =
+    !!snapshot &&
+    !!me &&
+    !me.left &&
+    !handActive &&
+    snapshot.status !== 'FINISHED' &&
+    snapshot.config.rebuy &&
+    (snapshot.config.mode === 'CASH'
+      ? snapshot.config.maxBuyIn - me.stack >= snapshot.config.minBuyIn
+      : me.stack === 0 &&
+        me.rebuyCount < snapshot.config.rebuyLimit &&
+        snapshot.level.index <= snapshot.config.rebuyUntil);
+  const canAddOn =
+    !!snapshot &&
+    !!me &&
+    !handActive &&
+    snapshot.config.mode !== 'CASH' &&
+    snapshot.status !== 'FINISHED' &&
+    !me.addOn &&
+    me.stack > 0 &&
+    snapshot.level.index === snapshot.config.addOnLevel;
   const table = tables[tableIndex] ?? tables.find((t) => t.ids.includes(snapshot!.me)) ?? tables[0];
   const played = useRef(new Set<string>());
   useEffect(() => {
@@ -309,7 +363,7 @@ function App() {
   return (
     <ErrorContext.Provider value={error}>
       <div
-        className="app"
+        className={`app ${roomId ? 'in-room' : 'in-lobby'}`}
         data-theme={prefs.theme}
         data-back={prefs.cardBack}
         style={{ '--chip': prefs.chipColor } as React.CSSProperties}
@@ -394,18 +448,44 @@ function App() {
                   </button>
                   <p className="micro">{t('lobby:stats')}</p>
                 </div>
-                <div className="hero-art" aria-hidden>
-                  <div className="halo" />
-                  <div className="art-card black">
-                    A<span>♠</span>
-                    <small>A</small>
+                <div className="lobby-feature">
+                  <div className="feature-top">
+                    <span className="badge">TEXAS HOLD’EM · NO LIMIT</span>
+                    <span className={`connection ${connected ? 'live' : ''}`}>
+                      ● {t(connected ? 'online' : 'offline')}
+                    </span>
                   </div>
-                  <div className="art-card red">
-                    K<span>♥</span>
-                    <small>K</small>
+                  <div className="feature-table">
+                    <div className="feature-felt">
+                      <span>HIGHLORDS ♠</span>
+                      <div className="feature-cards">
+                        <b>
+                          A<small>♠</small>
+                        </b>
+                        <b>
+                          K<small>♥</small>
+                        </b>
+                        <b>
+                          Q<small>♣</small>
+                        </b>
+                      </div>
+                      <i className="feature-chip">H</i>
+                    </div>
                   </div>
-                  <div className="art-chip">H</div>
-                  <span className="art-caption">{t('lobby:artCaption')}</span>
+                  <div className="feature-bottom">
+                    <div>
+                      <strong>{lobby.rooms.filter((r) => r.status === 'RUNNING').length}</strong>
+                      <small>{t('lobby:liveTables')}</small>
+                    </div>
+                    <div>
+                      <strong>{lobby.rooms.reduce((n, r) => n + r.players, 0)}</strong>
+                      <small>{t('game:players')}</small>
+                    </div>
+                    <div>
+                      <strong>2—9</strong>
+                      <small>{t('lobby:seats')}</small>
+                    </div>
+                  </div>
                 </div>
               </section>
               <div className="lobby-layout">
@@ -471,54 +551,54 @@ function App() {
                     </label>
                   </div>
                   <div className="room-list">
-                    {lobby.rooms
-                      .filter(
-                        (r) =>
-                          r.title.toLowerCase().includes(filter.toLowerCase()) &&
-                          (!mode || r.mode === mode) &&
-                          (!status || r.status === status) &&
-                          (!vacancies || r.players < r.capacity) &&
-                          (!protection || r.protected === (protection === 'yes')),
-                      )
-                      .map((r) => (
-                        <article className="room-card" key={r.id}>
-                          <div className="room-symbol">
-                            {r.mode === 'CASH' ? '♠' : r.mode === 'SIT_AND_GO' ? '♜' : '♛'}
+                    {filteredRooms.map((r) => (
+                      <article className={`room-card room-${r.mode.toLowerCase()}`} key={r.id}>
+                        <div className="room-symbol">
+                          {r.mode === 'CASH' ? '♠' : r.mode === 'SIT_AND_GO' ? '♜' : '♛'}
+                        </div>
+                        <div className="room-info">
+                          <span className="badge">{t(`game:${r.mode}`)}</span>
+                          <h3>
+                            {r.title}{' '}
+                            {r.protected && <span aria-label={t('lobby:protected')}>⌑</span>}
+                          </h3>
+                          <p>
+                            {num(r.small)} / {num(r.big)} · {r.players}/{r.capacity} ·{' '}
+                            {t(`game:${r.status}`)}
+                          </p>
+                          <div className="room-occupancy" aria-label={`${r.players}/${r.capacity}`}>
+                            {Array.from({ length: Math.min(r.capacity, 9) }, (_, i) => (
+                              <i className={i < r.players ? 'occupied' : ''} key={i} />
+                            ))}
                           </div>
-                          <div className="room-info">
-                            <span className="badge">{t(`game:${r.mode}`)}</span>
-                            <h3>
-                              {r.title}{' '}
-                              {r.protected && <span aria-label={t('lobby:protected')}>⌑</span>}
-                            </h3>
-                            <p>
-                              {num(r.small)} / {num(r.big)} · {r.players}/{r.capacity} ·{' '}
-                              {t(`game:${r.status}`)}
-                            </p>
-                          </div>
-                          <div className="room-buttons">
-                            <button
-                              disabled={busy}
-                              className="primary small"
-                              onClick={() => setJoinDialog({ id: r.id, watch: false })}
-                            >
-                              {t('lobby:join')}
-                            </button>
-                            <button
-                              disabled={busy}
-                              className="text-button"
-                              onClick={() => setJoinDialog({ id: r.id, watch: true })}
-                            >
-                              {t('watch')}
-                            </button>
-                          </div>
-                        </article>
-                      ))}
-                    {lobby.rooms.length === 0 && (
+                        </div>
+                        <div className="room-buttons">
+                          <button
+                            disabled={
+                              busy ||
+                              r.players >= r.capacity ||
+                              ['FINISHED', 'EXPIRED'].includes(r.status)
+                            }
+                            className="primary small"
+                            onClick={() => setJoinDialog({ id: r.id, watch: false })}
+                          >
+                            {t('lobby:join')}
+                          </button>
+                          <button
+                            disabled={busy}
+                            className="text-button"
+                            onClick={() => setJoinDialog({ id: r.id, watch: true })}
+                          >
+                            {t('watch')}
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                    {filteredRooms.length === 0 && (
                       <div className="empty-state">
                         <span>♧</span>
-                        <h3>{t('lobby:noRooms')}</h3>
-                        <p>{t('lobby:noRoomsText')}</p>
+                        <h3>{t(lobby.rooms.length ? 'lobby:noResults' : 'lobby:noRooms')}</h3>
+                        <p>{t(lobby.rooms.length ? 'lobby:changeFilters' : 'lobby:noRoomsText')}</p>
                       </div>
                     )}
                   </div>
@@ -535,7 +615,9 @@ function App() {
                         ← {t('back')}
                       </button>
                       <p className="eyebrow">
-                        {t(`game:${snapshot.config.mode}`)} / {t(`game:${snapshot.status}`)}
+                        <span className={`status-dot status-${snapshot.status.toLowerCase()}`} />
+                        {t(`game:${snapshot.status}`)} <span className="heading-divider">/</span>{' '}
+                        {t(`game:${snapshot.config.mode}`)}
                       </p>
                       <h1>{snapshot.config.title}</h1>
                     </div>
@@ -553,68 +635,21 @@ function App() {
                       >
                         {t('copy')}
                       </button>
-                      {snapshot.host && snapshot.botsSupported && snapshot.status === 'WAITING' && (
-                        <div className="bot-controls">
-                          <label>
-                            {t('game:botDifficulty')}
-                            <select
-                              value={botDifficulty}
-                              onChange={(e) => setBotDifficulty(e.target.value)}
-                            >
-                              {(Object.keys(botLabels) as (keyof typeof botLabels)[]).map(
-                                (level) => (
-                                  <option key={level} value={level}>
-                                    {t(botLabels[level])}
-                                  </option>
-                                ),
-                              )}
-                            </select>
-                          </label>
-                          <button
-                            disabled={
-                              busy ||
-                              snapshot.players.filter((p) => p.bot && !p.left).length >= 8 ||
-                              snapshot.players.filter((p) => !p.left).length >=
-                                (snapshot.config.mode === 'TOURNAMENT'
-                                  ? snapshot.config.capacity
-                                  : snapshot.config.seats)
-                            }
-                            onClick={() =>
-                              void run('ADD_BOTS', { difficulty: botDifficulty, count: 1 })
-                            }
-                          >
-                            {t('game:addBot')}
-                          </button>
-                          <button
-                            disabled={
-                              busy ||
-                              snapshot.players.filter((p) => !p.left).length >=
-                                snapshot.config.seats
-                            }
-                            onClick={() =>
-                              void run('ADD_BOTS', {
-                                difficulty: botDifficulty,
-                                count: Math.min(
-                                  8 - snapshot.players.filter((p) => p.bot && !p.left).length,
-                                  snapshot.config.seats -
-                                    snapshot.players.filter((p) => !p.left).length,
-                                ),
-                              })
-                            }
-                          >
-                            {t('game:fillBots')}
-                          </button>
-                        </div>
-                      )}
+                      <button
+                        className="mobile-director-trigger"
+                        onClick={() => {
+                          setRailTab('players');
+                          document
+                            .getElementById('room-director')
+                            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }}
+                      >
+                        {t('game:manageRoom')}
+                      </button>
                       {snapshot.host && (
                         <>
                           <button
-                            disabled={busy || snapshot.status !== 'WAITING'}
-                            onClick={() => void run('START')}
-                          >
-                            {t('game:start')}
-                          </button>
-                          <button
+                            className="pause-button"
                             disabled={busy || !['RUNNING', 'PAUSED'].includes(snapshot.status)}
                             onClick={() =>
                               void run(snapshot.status === 'PAUSED' ? 'RESUME' : 'PAUSE')
@@ -626,9 +661,8 @@ function App() {
                         </>
                       )}
                       <button
-                        onClick={async () => {
-                          if (await run('LEAVE')) navigate();
-                        }}
+                        className="text-button leave-button"
+                        onClick={() => setLeaveOpen(true)}
                       >
                         {t('leave')}
                       </button>
@@ -637,24 +671,9 @@ function App() {
                   {snapshot.pauseReason === 'EMPTY' && (
                     <p className="banner">{t('game:pauseEmpty')}</p>
                   )}
-                  {snapshot.config.mode !== 'CASH' && (
-                    <div className="tournament-bar">
-                      <span>
-                        {snapshot.level.break
-                          ? t('game:break')
-                          : t('game:level', { number: snapshot.level.index + 1 })}
-                      </span>
-                      <strong>
-                        {num(snapshot.level.small)} / {num(snapshot.level.big)}
-                      </strong>
-                      <span>{Math.ceil(snapshot.level.remaining / 60000)} min</span>
-                      <span>
-                        {t('game:prizePool')}: {num(snapshot.pool)}
-                      </span>
-                    </div>
-                  )}
+                  <RoomStats snapshot={snapshot} num={num} />
                   <div className="game-layout">
-                    <section>
+                    <section className="game-stage">
                       <div className="table-tabs">
                         {tables.map((tb, i) => (
                           <button
@@ -666,38 +685,26 @@ function App() {
                           </button>
                         ))}
                       </div>
-                      {table?.hand ? (
-                        <>
-                          <PokerTable snapshot={snapshot} table={table} clock={clock} num={num} />
-                          <ActionBar
-                            snapshot={snapshot}
-                            table={table}
-                            busy={busy || !connected}
-                            onAction={(action, amount) => run('ACT', { action, amount })}
-                          />
-                        </>
-                      ) : (
-                        <div className="waiting-table">
-                          <span>♠</span>
-                          <h2>
-                            {t(
-                              snapshot.status === 'WAITING' ? 'game:waiting' : 'game:waitingRebuy',
-                            )}
-                          </h2>
-                          <div className="waiting-players">
-                            {snapshot.players
-                              .filter((p) => !p.left)
-                              .map((p) => (
-                                <div key={p.id}>
-                                  <span style={{ color: p.profile?.accent }}>
-                                    {p.profile?.avatar}
-                                  </span>
-                                  {p.profile?.nickname}
-                                  <small>{num(p.stack)}</small>
-                                </div>
-                              ))}
-                          </div>
-                        </div>
+                      <PokerTable
+                        snapshot={snapshot}
+                        table={table}
+                        clock={clock}
+                        num={num}
+                        busy={busy || !connected}
+                        onSelect={(id) => {
+                          setSelectedPlayer(id);
+                          setRailTab('players');
+                        }}
+                        onAddBot={() => void run('ADD_BOTS', { difficulty: 'MEDIUM', count: 1 })}
+                        onStart={() => void run('START')}
+                      />
+                      {table?.hand && (
+                        <ActionBar
+                          snapshot={snapshot}
+                          table={table}
+                          busy={busy || !connected}
+                          onAction={(action, amount) => run('ACT', { action, amount })}
+                        />
                       )}
                       <div className="personal-controls">
                         {me && !me.left ? (
@@ -712,25 +719,19 @@ function App() {
                               </button>
                             )}
                             <button
-                              disabled={busy}
-                              onClick={() => {
-                                const value = prompt(
-                                  t('game:amount'),
-                                  String(
-                                    snapshot.config.mode === 'CASH'
-                                      ? snapshot.config.minBuyIn
-                                      : snapshot.config.stack,
-                                  ),
-                                );
-                                if (value) void run('TOP_UP', { amount: Number(value) });
-                              }}
+                              disabled={busy || !canTopUp}
+                              title={t('game:topUpHint')}
+                              onClick={() =>
+                                setTopUp(
+                                  snapshot.config.mode === 'CASH'
+                                    ? snapshot.config.minBuyIn
+                                    : snapshot.config.stack,
+                                )
+                              }
                             >
                               {t('game:topUp')}
                             </button>
-                            <button
-                              disabled={busy || snapshot.config.mode === 'CASH'}
-                              onClick={() => void run('ADD_ON')}
-                            >
+                            <button disabled={busy || !canAddOn} onClick={() => void run('ADD_ON')}>
                               {t('game:addOn')}
                             </button>
                             <button
@@ -780,82 +781,24 @@ function App() {
                             </div>
                           ))}
                       </details>
-                      <section className="standings">
-                        <h2>{t('game:standings')}</h2>
-                        {snapshot.config.mode !== 'CASH' && <p>{t('game:rebuyWindow')}</p>}
-                        <table>
-                          <thead>
-                            <tr>
-                              <th>{t('game:rank')}</th>
-                              <th>{t('profile:nickname')}</th>
-                              <th>{t('game:stack')}</th>
-                              <th>{t('game:prize')}</th>
-                              <th />
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {[...snapshot.players]
-                              .sort(
-                                (a, b) => (a.rank ?? 999) - (b.rank ?? 999) || b.stack - a.stack,
-                              )
-                              .map((p) => (
-                                <tr key={p.id}>
-                                  <td>{p.rank ?? '—'}</td>
-                                  <td>
-                                    <span className={p.online ? 'online-dot' : ''}>●</span>{' '}
-                                    {p.profile?.avatar} {p.profile?.nickname}{' '}
-                                    {p.bot && <span>{t(botLabels[p.bot.difficulty])}</span>}{' '}
-                                    {p.left ? '↗' : ''}
-                                  </td>
-                                  <td>{num(p.stack)}</td>
-                                  <td>{num(snapshot.payouts[p.id] ?? 0)}</td>
-                                  <td>
-                                    {p.bot && snapshot.host && snapshot.status === 'WAITING' && (
-                                      <button
-                                        disabled={busy}
-                                        onClick={() => void run('REMOVE_BOT', { target: p.id })}
-                                      >
-                                        {t('game:removeBot')}
-                                      </button>
-                                    )}
-                                    {p.id !== snapshot.me && (
-                                      <details className="moderation">
-                                        <summary>⋯</summary>
-                                        {snapshot.host &&
-                                          ['MUTE', 'KICK', 'BAN'].map((a) => (
-                                            <button
-                                              key={a}
-                                              onClick={() =>
-                                                void run('MODERATE', { target: p.id, action: a })
-                                              }
-                                            >
-                                              {t(`chat:${a.toLowerCase()}`)}
-                                            </button>
-                                          ))}
-                                        <button
-                                          onClick={() => {
-                                            const reason = prompt(t('chat:reportReason'));
-                                            if (reason)
-                                              void run('REPORT', { target: p.id, text: reason });
-                                          }}
-                                        >
-                                          {t('chat:report')}
-                                        </button>
-                                      </details>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </section>
                     </section>
-                    <Chat
-                      messages={snapshot.chat as Messages}
-                      me={snapshot.me}
-                      disabled={busy || !connected}
-                      onSend={(text) => run('CHAT', { text })}
-                      onReact={(messageId, emoji) => run('REACT', { messageId, emoji })}
+                    <RoomDirector
+                      snapshot={snapshot}
+                      busy={busy || !connected}
+                      num={num}
+                      run={run}
+                      tab={railTab}
+                      onTab={setRailTab}
+                      selected={selectedPlayer}
+                      chat={
+                        <Chat
+                          messages={snapshot.chat as Messages}
+                          me={snapshot.me}
+                          disabled={busy || !connected}
+                          onSend={(text) => run('CHAT', { text })}
+                          onReact={(messageId, emoji) => run('REACT', { messageId, emoji })}
+                        />
+                      }
                     />
                   </div>
                 </>
@@ -876,6 +819,60 @@ function App() {
           <p>{t('virtual')}</p>
           <span>{t('tagline')}</span>
         </footer>
+        {topUp !== null && snapshot && (
+          <Modal title={t('game:topUp')} onClose={closeTopUp}>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (await run('TOP_UP', { amount: topUp })) setTopUp(null);
+              }}
+            >
+              <p className="muted">{t('game:topUpHint')}</p>
+              <label>
+                {t('game:amount')}
+                <input
+                  type="number"
+                  required
+                  min={
+                    snapshot.config.mode === 'CASH'
+                      ? snapshot.config.minBuyIn
+                      : snapshot.config.stack
+                  }
+                  max={
+                    snapshot.config.mode === 'CASH'
+                      ? snapshot.config.maxBuyIn - (me?.stack ?? 0)
+                      : snapshot.config.stack
+                  }
+                  value={topUp}
+                  onChange={(e) => setTopUp(Number(e.target.value))}
+                />
+              </label>
+              <button className="primary" disabled={busy}>
+                {t('confirm')}
+              </button>
+            </form>
+          </Modal>
+        )}
+        {leaveOpen && (
+          <Modal title={t('leave')} onClose={closeLeave}>
+            <p>{t('game:leaveHint')}</p>
+            <div className="modal-actions">
+              <button onClick={closeLeave}>{t('cancel')}</button>
+              <button
+                className="danger"
+                disabled={busy}
+                onClick={async () => {
+                  if (await run('LEAVE')) {
+                    setLeaveOpen(false);
+                    navigate();
+                  }
+                }}
+              >
+                {t('leave')}
+              </button>
+            </div>
+          </Modal>
+        )}
         {profileOpen && (
           <ProfileEditor
             value={prefs}

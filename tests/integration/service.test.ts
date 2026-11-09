@@ -309,3 +309,27 @@ it('restricts bot management to the host, bounds capacity and removes waiting bo
   expect(s.state.rooms[0].players).toHaveLength(1);
   expect(s.state.rooms[0].pool).toBe(cfg.buyIn);
 });
+
+it('host pause and resume survive intervening bot turns while betting still rejects stale versions', async () => {
+  const { s, a, b } = await setup();
+  const { roomId } = await create(s, a.token);
+  await s.command(
+    a.token,
+    cmd('ADD_BOTS', roomId, { difficulty: 'MEDIUM', count: 1 }, s.state.rooms[0].version),
+  );
+  const stale = s.state.rooms[0].version;
+  await s.command(a.token, cmd('START', roomId, {}, stale));
+  await s.command(a.token, cmd('ACT', roomId, { action: 'CALL' }, s.state.rooms[0].version));
+  const beforeBot = s.state.rooms[0].version;
+  await s.tick();
+  expect(s.state.rooms[0].version).toBeGreaterThan(beforeBot);
+  await s.command(b.token, cmd('SPECTATE', roomId));
+  await expect(s.command(b.token, cmd('PAUSE', roomId, {}, stale))).rejects.toThrow('FORBIDDEN');
+  await s.command(a.token, cmd('PAUSE', roomId, {}, stale));
+  expect(s.state.rooms[0].status).toBe('PAUSED');
+  await s.command(a.token, cmd('RESUME', roomId, {}, stale));
+  expect(s.state.rooms[0].status).toBe('RUNNING');
+  await expect(s.command(a.token, cmd('ACT', roomId, { action: 'ALL_IN' }, stale))).rejects.toThrow(
+    'STALE_VERSION',
+  );
+});

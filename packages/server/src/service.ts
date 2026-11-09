@@ -305,7 +305,13 @@ export class PokerService {
       const joining = c.type === 'JOIN' || c.type === 'SPECTATE';
       const member = r.players.find((p) => p.id === me.id && !p.left);
       if (!joining) demand(member || r.spectators.includes(me.id), 'JOIN_REQUIRED');
-      if (!['JOIN', 'SPECTATE', 'CHAT', 'REACT', 'REPORT', 'EXPORT'].includes(c.type))
+      // Pausing is a host intent independent of which player just acted.
+      // Keep optimistic version checks for bets and chip/seat mutations.
+      if (
+        !['JOIN', 'SPECTATE', 'CHAT', 'REACT', 'REPORT', 'EXPORT', 'PAUSE', 'RESUME'].includes(
+          c.type,
+        )
+      )
         demand(c.version === r.version, 'STALE_VERSION');
       let result: unknown = { ok: true };
       if (joining) {
