@@ -15,12 +15,9 @@ try {
 } catch {
   /* optional storage */
 }
-const detected = navigator.languages.find(
-  (l) => l.toLowerCase().startsWith('en') || l.toLowerCase().startsWith('pt'),
-);
 void i18n.use(initReactI18next).init({
   resources,
-  lng: saved === 'en' || saved === 'pt-BR' ? saved : detected?.startsWith('en') ? 'en' : 'pt-BR',
+  lng: saved === 'en' ? 'en' : 'pt-BR',
   fallbackLng: 'pt-BR',
   defaultNS: 'common',
   interpolation: { escapeValue: false },

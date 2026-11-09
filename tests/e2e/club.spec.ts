@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 async function enter(page: Page, nickname: string) {
   await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
   await page.getByLabel('Como te chamamos?').fill(nickname);
   await page.getByRole('button', { name: 'Salvar', exact: true }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
@@ -9,8 +10,8 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
   browser,
   baseURL,
 }) => {
-  const contextA = await browser.newContext({ baseURL, locale: 'pt-BR' }),
-    contextB = await browser.newContext({ baseURL, locale: 'pt-BR' });
+  const contextA = await browser.newContext({ baseURL, locale: 'en-US' }),
+    contextB = await browser.newContext({ baseURL, locale: 'en-US' });
   const a = await contextA.newPage(),
     b = await contextB.newPage();
   try {
