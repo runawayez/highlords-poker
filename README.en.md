@@ -6,11 +6,11 @@
 
 ### [Visit Highlords Poker →](https://highlords-poker.vercel.app)
 
-> **Status:** the interface is published. Online games will become available after the multiplayer backend is connected; the public website is not playable yet.
+> **Status:** multiplayer is deployed and connected. Room creation, a hand with two independent sessions, chat and reconnection have been verified on the public website.
 
 ## How it works
 
-Once multiplayer is available:
+To play:
 
 1. Visit the website and choose your nickname and avatar.
 2. Create a table or join a room from the lobby.
