@@ -4,7 +4,11 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-11-09",
   "workers_dev": true,
-  "vars": { "ALLOWED_ORIGINS": "https://highlords-poker.vercel.app,https://highlords-poker-highlords.vercel.app", "MAX_ROOMS": "30", "MAINTENANCE": "false" },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://highlords-poker.vercel.app,https://highlords-poker-highlords.vercel.app",
+    "MAX_ROOMS": "30",
+    "MAINTENANCE": "false",
+  },
   "durable_objects": { "bindings": [{ "name": "POKER", "class_name": "PokerCoordinator" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PokerCoordinator"] }],
   "observability": { "enabled": false },
