@@ -2,7 +2,7 @@ import type { Command } from '../../../packages/contracts/src/index.ts';
 import type { PokerService } from '../../../packages/server/src/service.ts';
 export type Snapshot = Awaited<ReturnType<PokerService['snapshot']>>;
 export type Lobby = ReturnType<PokerService['lobby']>;
-export type Messages = ReturnType<PokerService['lobbyChat']>;
+export type Messages = Snapshot['chat'];
 export const API = import.meta.env.VITE_API_URL ?? '';
 export class ApiError extends Error {}
 export function read<T>(key: string, fallback: T): T {
@@ -40,6 +40,8 @@ export async function request<T>(path: string, body?: unknown): Promise<T> {
   } catch {
     throw new ApiError('NETWORK');
   }
+  if (!response.headers.get('content-type')?.includes('application/json'))
+    throw new ApiError('NETWORK');
   const value = (await response.json()) as { error?: string };
   if (!response.ok) throw new ApiError(value.error ?? 'INTERNAL');
   return value as T;

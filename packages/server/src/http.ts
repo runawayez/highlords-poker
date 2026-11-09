@@ -30,7 +30,7 @@ export async function handleApi(service: PokerService, req: Request, ip: string)
     if (!limiter.take(ip)) return json({ error: 'RATE_LIMIT' }, 429);
     if (url.pathname === '/api/health') return json({ ok: true, policy: 'highlords-nlhe-v1' });
     if (url.pathname === '/api/lobby' && req.method === 'GET')
-      return json({ rooms: service.lobby(), chat: service.lobbyChat() });
+      return json({ rooms: service.lobby() });
     if (url.pathname.startsWith('/api/rooms/') && req.method === 'GET') {
       await service.heartbeat(token);
       return json(await service.snapshot(url.pathname.split('/')[3], token));

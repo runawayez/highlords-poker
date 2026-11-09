@@ -1813,3 +1813,7 @@ footer > span:first-child {
   min-width: 0;
   width: auto;
 }
+
+.lobby-layout {
+  grid-template-columns: minmax(0, 1fr);
+}

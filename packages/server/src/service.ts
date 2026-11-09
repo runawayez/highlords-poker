@@ -176,12 +176,6 @@ export class PokerService {
         version: r.version,
       }));
   }
-  lobbyChat() {
-    return this.state.chat.map((m) => ({
-      ...m,
-      profile: this.state.sessions.find((s) => s.id === m.player)?.profile,
-    }));
-  }
   async snapshot(roomId: string, token: string) {
     const id = await this.authenticate(token);
     const r = this.state.rooms.find((r) => r.id === roomId && r.status !== 'EXPIRED');
@@ -293,19 +287,7 @@ export class PokerService {
         r.receipts[c.id] = { actor: me.id, result };
         return result;
       }
-      if (!c.roomId) {
-        demand(c.type === 'CHAT', 'ROOM_NOT_FOUND');
-        if (s.lobbyReceipts.includes(me.id + ':' + c.id)) return { ok: true };
-        const text = ChatSchema.parse(c.payload.text);
-        demand(
-          !s.chat.some((m) => m.player === me.id && !m.code && now() - m.at < 1500),
-          'RATE_LIMIT',
-        );
-        s.chat.push({ id: uuid(), player: me.id, text, at: now(), reactions: {} });
-        s.chat = s.chat.filter((m) => now() - m.at < 3600000).slice(-100);
-        s.lobbyReceipts = [...s.lobbyReceipts, me.id + ':' + c.id].slice(-500);
-        return { ok: true };
-      }
+      demand(c.roomId, 'ROOM_NOT_FOUND');
       const r = s.rooms.find((r) => r.id === c.roomId && r.status !== 'EXPIRED');
       demand(r, 'ROOM_NOT_FOUND');
       const receipt = r.receipts[c.id];

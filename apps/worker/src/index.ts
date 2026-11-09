@@ -96,7 +96,7 @@ export class PokerCoordinator {
     try {
       const data = a.roomId
         ? await this.service.snapshot(a.roomId, a.token)
-        : { rooms: this.service.lobby(), chat: this.service.lobbyChat() };
+        : { rooms: this.service.lobby() };
       ws.send(JSON.stringify({ type: 'SNAPSHOT', data }));
     } catch {
       ws.send(JSON.stringify({ type: 'REFRESH' }));

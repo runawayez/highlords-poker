@@ -24,7 +24,7 @@ The project's creator handles hosting and operation. **Players use the official 
 - **No-limit Texas Hold'em:** tables for 2–9 players, blinds, antes, all-ins, side pots and split pots.
 - **Different formats:** virtual-chip cash games, Sit & Go and multi-table tournaments.
 - **Your table, your settings:** optional passwords, stacks, buy-ins, rebuys, add-ons, blind levels and breaks.
-- **Poker with friends:** a public lobby, room invitation links, spectators, chat and reactions.
+- **Poker with friends:** a public lobby, room invitation links, spectators, room-only chat and reactions.
 - **Customizable profiles:** nickname, avatar, frame, accent color, tagline, table theme and card back.
 - **Recoverable sessions:** return to your seat and cards in the same browser while your session and local credential remain valid.
 - **Portuguese and English:** Brazilian Portuguese on the first visit, with a language selector and a saved preference.
@@ -42,12 +42,12 @@ Suggestions and bug reports are welcome through the [project's issues](https://g
 
 For readers who want to study the code or contribute to development:
 
-- [Development environment](docs/development.md)
-- [Architecture](docs/architecture.md)
-- [House rules](docs/game-rules.md)
-- [Testing and verification](docs/testing.md)
-- [Internationalization](docs/i18n.md)
-- [Security](docs/threat-model.md)
-- [Maintainer operations and deployment](docs/deployment.md)
+- [Development environment](docs/development.en.md)
+- [Architecture](docs/architecture.en.md)
+- [House rules](docs/game-rules.en.md)
+- [Testing and verification](docs/testing.en.md)
+- [Internationalization](docs/i18n.en.md)
+- [Security](docs/threat-model.en.md)
+- [Maintainer operations and deployment](docs/deployment.en.md)
 
-Technical documentation is in English. The original product brief is preserved in [PROJECT.md](PROJECT.md).
+The links above open the English technical references. The original product brief is preserved in [PROJECT.md](PROJECT.md).

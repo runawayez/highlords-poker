@@ -23,5 +23,6 @@
   "rules": "Regras da casa",
   "rulesText": "Texas Hold’em sem limite. Apostas em fichas inteiras. Aumento mínimo igual ao último aumento completo; all-ins curtos só reabrem a ação quando somam um aumento completo. Ficha ímpar vai ao primeiro vencedor à esquerda do botão. Ausência: check quando possível, senão fold. Mesas de torneio avançam juntas ao fim das mãos para transferências seguras.",
   "watch": "Observar",
-  "leave": "Sair da sala"
+  "leave": "Sair da sala",
+  "offlineNotice": "Multiplayer indisponível no momento. Você pode personalizar e salvar seu perfil neste navegador."
 }

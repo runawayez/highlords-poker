@@ -221,3 +221,18 @@ it('clock-only ticks do not invalidate a current betting version', async () => {
   await s.tick();
   expect((await s.snapshot(roomId, a.token)).version).toBe(before.version);
 });
+it('rejects global chat and isolates messages by room', async () => {
+  const { s, a, b } = await setup();
+  const first = await create(s, a.token),
+    second = await create(s, b.token);
+  await expect(s.command(a.token, cmd('CHAT', undefined, { text: 'global' }))).rejects.toThrow(
+    'ROOM_NOT_FOUND',
+  );
+  await expect(s.command(b.token, cmd('CHAT', first.roomId, { text: 'intruder' }))).rejects.toThrow(
+    'JOIN_REQUIRED',
+  );
+  await s.command(a.token, cmd('CHAT', first.roomId, { text: 'private conversation' }));
+  expect(
+    (await s.snapshot(second.roomId, b.token)).chat.some((m) => m.text === 'private conversation'),
+  ).toBe(false);
+});

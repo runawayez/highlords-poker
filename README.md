@@ -24,7 +24,7 @@ A hospedagem e a operação do site ficam a cargo do criador do projeto. **Os jo
 - **Texas Hold'em No-Limit:** mesas de 2 a 9 jogadores, blinds, antes, all-in, side pots e divisão de potes.
 - **Diferentes formatos:** cash game com fichas virtuais, Sit & Go e torneios multimesa.
 - **Mesas do seu jeito:** senha opcional, stacks, buy-ins, rebuys, add-on, níveis de blinds e intervalos configuráveis.
-- **Poker entre amigos:** lobby público, convites por link, espectadores, chat e reações.
+- **Poker entre amigos:** lobby público, convites por link, espectadores, chat restrito a cada sala e reações.
 - **Perfil personalizável:** nickname, avatar, moldura, cor, frase, tema da mesa e verso das cartas.
 - **Sessões retomáveis:** recuperação da cadeira e das cartas no mesmo navegador, enquanto a sessão e a credencial local permanecerem válidas.
 - **Português e inglês:** português do Brasil na primeira visita, com seletor de idioma e preferência salva.
@@ -50,4 +50,4 @@ Para quem deseja estudar o código ou contribuir com o desenvolvimento:
 - [Segurança](docs/threat-model.md)
 - [Operação e publicação pelo mantenedor](docs/deployment.md)
 
-A documentação técnica está em inglês. O documento original do produto permanece em [PROJECT.md](PROJECT.md).
+Os guias técnicos abrem em português e incluem links para as referências detalhadas em inglês. O documento original do produto permanece em [PROJECT.md](PROJECT.md).

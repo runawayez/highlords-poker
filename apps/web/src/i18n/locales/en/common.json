@@ -23,5 +23,6 @@
   "rules": "House rules",
   "rulesText": "No-limit Texas Hold’em. Whole chips. Minimum raise equals the last full raise; short all-ins reopen action only when cumulatively a full raise. Odd chip goes to the first winner left of the button. Timeout: check if possible, otherwise fold. Tournament tables advance together at hand boundaries for safe transfers.",
   "watch": "Watch",
-  "leave": "Leave room"
+  "leave": "Leave room",
+  "offlineNotice": "Multiplayer is currently unavailable. You can customize and save your profile in this browser."
 }

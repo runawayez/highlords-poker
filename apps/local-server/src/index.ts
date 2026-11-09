@@ -170,9 +170,7 @@ async function send(ws: WebSocket) {
   const a = sockets.get(ws);
   if (!a || ws.readyState !== 1) return;
   try {
-    const data = a.roomId
-      ? await service.snapshot(a.roomId, a.token)
-      : { rooms: service.lobby(), chat: service.lobbyChat() };
+    const data = a.roomId ? await service.snapshot(a.roomId, a.token) : { rooms: service.lobby() };
     if (ws.bufferedAmount > 100000) {
       ws.close(1013);
       return;

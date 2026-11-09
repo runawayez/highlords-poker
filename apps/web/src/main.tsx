@@ -35,12 +35,12 @@ function App() {
   const { t, i18n } = useTranslation();
   const [prefs, setPrefs] = useState(storedPreferences);
   const [ready, setReady] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(!prefs.profile.nickname);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [roomId, setRoomId] = useState(roomPath);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [lobby, setLobby] = useState<{ rooms: Lobby; chat: Messages }>({ rooms: [], chat: [] });
+  const [lobby, setLobby] = useState<{ rooms: Lobby }>({ rooms: [] });
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -91,23 +91,48 @@ function App() {
       fail(new Error('VALIDATION'));
       return;
     }
-    setBusy(true);
-    try {
-      const session = await request<{ token: string }>('/api/session', { profile: valid.data });
-      setToken(session.token);
-      setPrefs(p);
-      write('highlords.preferences', p);
-      setReady(true);
-      setProfileOpen(false);
-    } catch (e) {
-      fail(e);
-    } finally {
-      setBusy(false);
-    }
+    write('highlords.preferences', p);
+    setPrefs(p);
+    setError('');
+    setProfileOpen(false);
+    await connectProfile(p);
   };
+  async function connectProfile(p: Preferences) {
+    try {
+      const session = await request<{ token: string }>('/api/session', { profile: p.profile });
+      setToken(session.token);
+      setReady(true);
+      return true;
+    } catch {
+      setReady(false);
+      setConnected(false);
+      return false;
+    }
+  }
   useEffect(() => {
-    if (prefs.profile.nickname) void saveProfile(prefs);
+    if (prefs.profile.nickname) void connectProfile(prefs);
   }, []);
+  useEffect(() => {
+    if (ready || roomId) return;
+    let active = true;
+    const poll = async () => {
+      try {
+        const result = await request<{ rooms: Lobby }>('/api/lobby');
+        if (active) {
+          setLobby(result);
+          setConnected(true);
+        }
+      } catch {
+        if (active) setConnected(false);
+      }
+    };
+    void poll();
+    const timer = setInterval(poll, 10000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [ready, roomId]);
   const refresh = useCallback(async () => {
     if (!ready) return;
     try {
@@ -213,6 +238,12 @@ function App() {
   const join = async (id: string, password: string, watch: boolean, buyIn?: number) => {
     setBusy(true);
     try {
+      if (!prefs.profile.nickname) {
+        setJoinDialog(null);
+        setProfileOpen(true);
+        return;
+      }
+      if (!ready && !(await connectProfile(prefs))) throw new Error('NETWORK');
       await command({
         type: watch ? 'SPECTATE' : 'JOIN',
         roomId: id,
@@ -229,6 +260,7 @@ function App() {
   const create = async (config: Config) => {
     setBusy(true);
     try {
+      if (!ready && !(await connectProfile(prefs))) throw new Error('NETWORK');
       const result = await command({ type: 'CREATE', payload: { config } });
       setCreateOpen(false);
       navigate(result.roomId);
@@ -339,11 +371,7 @@ function App() {
           </div>
         )}
         <main>
-          {!ready && !profileOpen && (
-            <div className="banner">
-              <button onClick={() => setProfileOpen(true)}>{t('profile')}</button>
-            </div>
-          )}
+          {!connected && <p className="banner">{t('offlineNotice')}</p>}
           {!roomId ? (
             <>
               <section className="hero">
@@ -355,8 +383,10 @@ function App() {
                   <p className="hero-intro">{t('lobby:intro')}</p>
                   <button
                     className="primary"
-                    disabled={!ready || busy}
-                    onClick={() => setCreateOpen(true)}
+                    disabled={busy}
+                    onClick={() =>
+                      prefs.profile.nickname ? setCreateOpen(true) : setProfileOpen(true)
+                    }
                   >
                     ＋ {t('lobby:createRoom')} <span>↗</span>
                   </button>
@@ -466,14 +496,14 @@ function App() {
                           </div>
                           <div className="room-buttons">
                             <button
-                              disabled={!ready || busy}
+                              disabled={busy}
                               className="primary small"
                               onClick={() => setJoinDialog({ id: r.id, watch: false })}
                             >
                               {t('lobby:join')}
                             </button>
                             <button
-                              disabled={!ready || busy}
+                              disabled={busy}
                               className="text-button"
                               onClick={() => setJoinDialog({ id: r.id, watch: true })}
                             >
@@ -491,12 +521,6 @@ function App() {
                     )}
                   </div>
                 </section>
-                <Chat
-                  messages={lobby.chat}
-                  me=""
-                  disabled={!ready || busy}
-                  onSend={(text) => run('CHAT', { text }, undefined)}
-                />
               </div>
             </>
           ) : (

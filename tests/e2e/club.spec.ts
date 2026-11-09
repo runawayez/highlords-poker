@@ -2,6 +2,9 @@ import { test, expect, type Page } from '@playwright/test';
 async function enter(page: Page, nickname: string) {
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect(page.locator('.chat')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Meu perfil', exact: true }).click();
   await page.getByLabel('Como te chamamos?').fill(nickname);
   await page.getByRole('button', { name: 'Salvar', exact: true }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
@@ -81,4 +84,14 @@ test('mobile profile, language menu and lobby fit without horizontal overflow', 
   } finally {
     await context.close().catch(() => undefined);
   }
+});
+
+test('profile survives reload when multiplayer returns the static site', async ({ page }) => {
+  await page.route('**/api/**', (route) =>
+    route.fulfill({ contentType: 'text/html', body: '<html></html>' }),
+  );
+  await enter(page, 'Berkas');
+  await page.reload();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Berkas', exact: true })).toBeVisible();
 });
