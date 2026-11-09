@@ -1,0 +1,6 @@
+node_modules
+pnpm-lock.yaml
+apps/web/dist
+.data
+.wrangler
+PROJECT.md

@@ -1,0 +1,52 @@
+{
+  "name": "highlords-poker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:server": "tsx watch apps/local-server/src/index.ts",
+    "dev:web": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
+    "build": "vite build --config apps/web/vite.config.ts",
+    "start": "node --env-file-if-exists=.env --import tsx apps/local-server/src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "worker:dev": "wrangler dev --config apps/worker/wrangler.jsonc",
+    "worker:deploy": "node scripts/deploy-worker.mjs",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "i18next": "^25.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-i18next": "^15.5.0",
+    "ws": "^8.18.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251101.0",
+    "@playwright/test": "^1.51.0",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@types/ws": "^8.18.0",
+    "@vitejs/plugin-react": "^4.4.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^10.14.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^6.3.0",
+    "vitest": "^3.1.0",
+    "wrangler": "^4.45.0"
+  }
+}
