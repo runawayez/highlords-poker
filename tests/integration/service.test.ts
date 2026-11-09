@@ -236,3 +236,76 @@ it('rejects global chat and isolates messages by room', async () => {
     (await s.snapshot(second.roomId, b.token)).chat.some((m) => m.text === 'private conversation'),
   ).toBe(false);
 });
+
+it.each(['EASY', 'MEDIUM', 'HARD'])(
+  'runs durable %s bots with one human and no bot credentials',
+  async (difficulty) => {
+    vi.useFakeTimers();
+    const { s, db, a } = await setup();
+    const { roomId } = await create(s, a.token);
+    const version = () => s.state.rooms[0].version;
+    const add = cmd('ADD_BOTS', roomId, { difficulty, count: 3 }, version());
+    await s.command(a.token, add);
+    await s.command(a.token, add);
+    expect(s.state.rooms[0].players.filter((p) => p.bot)).toHaveLength(3);
+    expect(s.state.sessions).toHaveLength(2);
+    await s.command(a.token, cmd('START', roomId, {}, version()));
+    await expect(
+      s.command(
+        a.token,
+        cmd('REMOVE_BOT', roomId, { target: s.state.rooms[0].players[1].id }, version()),
+      ),
+    ).rejects.toThrow('INVALID_ACTION');
+    const restored = new PokerService(db);
+    await restored.init();
+    for (let step = 0; step < 200 && !restored.state.rooms[0].tables[0].hand!.done; step++) {
+      const r = restored.state.rooms[0];
+      const h = r.tables[0].hand!;
+      if (h.actor === a.playerId) {
+        const opts = (await restored.snapshot(roomId, a.token)).tables[0].hand!.legal;
+        await restored.command(
+          a.token,
+          cmd(
+            'ACT',
+            roomId,
+            {
+              action: opts.actions.includes('ALL_IN')
+                ? 'ALL_IN'
+                : opts.actions.includes('CALL')
+                  ? 'CALL'
+                  : 'CHECK',
+            },
+            r.version,
+          ),
+        );
+      }
+      vi.advanceTimersByTime(5000);
+      await restored.heartbeat(a.token);
+      await restored.tick();
+    }
+    const h = restored.state.rooms[0].tables[0].hand!;
+    expect(h.done).toBe(true);
+    expect(h.players.reduce((sum, p) => sum + p.stack, 0)).toBe(4000);
+    vi.advanceTimersByTime(61000);
+    await restored.tick();
+    expect(restored.state.rooms[0].status).toBe('PAUSED');
+  },
+);
+it('restricts bot management to the host, bounds capacity and removes waiting bots', async () => {
+  const { s, a, b } = await setup();
+  const { roomId } = await create(s, a.token, { seats: 2 });
+  await s.command(b.token, cmd('SPECTATE', roomId));
+  const version = () => s.state.rooms[0].version;
+  await expect(
+    s.command(b.token, cmd('ADD_BOTS', roomId, { difficulty: 'EASY', count: 1 }, version())),
+  ).rejects.toThrow('FORBIDDEN');
+  await s.command(a.token, cmd('ADD_BOTS', roomId, { difficulty: 'HARD', count: 1 }, version()));
+  await expect(
+    s.command(a.token, cmd('ADD_BOTS', roomId, { difficulty: 'HARD', count: 1 }, version())),
+  ).rejects.toThrow('ROOM_FULL');
+  const view = await s.snapshot(roomId, a.token);
+  expect(view.players[1].profile!.nickname).toContain('Bot');
+  await s.command(a.token, cmd('REMOVE_BOT', roomId, { target: view.players[1].id }, version()));
+  expect(s.state.rooms[0].players).toHaveLength(1);
+  expect(s.state.rooms[0].pool).toBe(cfg.buyIn);
+});

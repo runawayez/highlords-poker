@@ -28,12 +28,14 @@ import {
   PokerTable,
   ActionBar,
 } from './components.tsx';
+const botLabels = { EASY: 'game:botEASY', MEDIUM: 'game:botMEDIUM', HARD: 'game:botHARD' } as const;
 function roomPath() {
   return location.pathname.match(/^\/room\/([a-f0-9-]+)$/)?.[1];
 }
 function App() {
   const { t, i18n } = useTranslation();
   const [prefs, setPrefs] = useState(storedPreferences);
+  const [botDifficulty, setBotDifficulty] = useState('MEDIUM');
   const [ready, setReady] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -551,6 +553,59 @@ function App() {
                       >
                         {t('copy')}
                       </button>
+                      {snapshot.host && snapshot.botsSupported && snapshot.status === 'WAITING' && (
+                        <div className="bot-controls">
+                          <label>
+                            {t('game:botDifficulty')}
+                            <select
+                              value={botDifficulty}
+                              onChange={(e) => setBotDifficulty(e.target.value)}
+                            >
+                              {(Object.keys(botLabels) as (keyof typeof botLabels)[]).map(
+                                (level) => (
+                                  <option key={level} value={level}>
+                                    {t(botLabels[level])}
+                                  </option>
+                                ),
+                              )}
+                            </select>
+                          </label>
+                          <button
+                            disabled={
+                              busy ||
+                              snapshot.players.filter((p) => p.bot && !p.left).length >= 8 ||
+                              snapshot.players.filter((p) => !p.left).length >=
+                                (snapshot.config.mode === 'TOURNAMENT'
+                                  ? snapshot.config.capacity
+                                  : snapshot.config.seats)
+                            }
+                            onClick={() =>
+                              void run('ADD_BOTS', { difficulty: botDifficulty, count: 1 })
+                            }
+                          >
+                            {t('game:addBot')}
+                          </button>
+                          <button
+                            disabled={
+                              busy ||
+                              snapshot.players.filter((p) => !p.left).length >=
+                                snapshot.config.seats
+                            }
+                            onClick={() =>
+                              void run('ADD_BOTS', {
+                                difficulty: botDifficulty,
+                                count: Math.min(
+                                  8 - snapshot.players.filter((p) => p.bot && !p.left).length,
+                                  snapshot.config.seats -
+                                    snapshot.players.filter((p) => !p.left).length,
+                                ),
+                              })
+                            }
+                          >
+                            {t('game:fillBots')}
+                          </button>
+                        </div>
+                      )}
                       {snapshot.host && (
                         <>
                           <button
@@ -748,11 +803,21 @@ function App() {
                                   <td>{p.rank ?? '—'}</td>
                                   <td>
                                     <span className={p.online ? 'online-dot' : ''}>●</span>{' '}
-                                    {p.profile?.avatar} {p.profile?.nickname} {p.left ? '↗' : ''}
+                                    {p.profile?.avatar} {p.profile?.nickname}{' '}
+                                    {p.bot && <span>{t(botLabels[p.bot.difficulty])}</span>}{' '}
+                                    {p.left ? '↗' : ''}
                                   </td>
                                   <td>{num(p.stack)}</td>
                                   <td>{num(snapshot.payouts[p.id] ?? 0)}</td>
                                   <td>
+                                    {p.bot && snapshot.host && snapshot.status === 'WAITING' && (
+                                      <button
+                                        disabled={busy}
+                                        onClick={() => void run('REMOVE_BOT', { target: p.id })}
+                                      >
+                                        {t('game:removeBot')}
+                                      </button>
+                                    )}
                                     {p.id !== snapshot.me && (
                                       <details className="moderation">
                                         <summary>⋯</summary>

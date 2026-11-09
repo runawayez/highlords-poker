@@ -64,6 +64,8 @@ export const CommandSchema = z.object({
   version: z.number().int().nonnegative().optional(),
   type: z.enum([
     'CREATE',
+    'ADD_BOTS',
+    'REMOVE_BOT',
     'JOIN',
     'SPECTATE',
     'LEAVE',

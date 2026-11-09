@@ -1817,3 +1817,17 @@ footer > span:first-child {
 .lobby-layout {
   grid-template-columns: minmax(0, 1fr);
 }
+
+.bot-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+}
+.bot-controls label {
+  font-size: 11px;
+}
+.bot-controls select {
+  display: block;
+  margin-top: 6px;
+}

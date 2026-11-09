@@ -53,5 +53,12 @@
   "rebuyWindow": "Busted players have up to 60s to rebuy when eligible.",
   "pauseEmpty": "Room paused due to inactivity. The host can resume.",
   "waitingRebuy": "Waiting for rebuys or the next round.",
-  "BET": "Bet"
+  "BET": "Bet",
+  "botDifficulty": "Bot difficulty",
+  "botEASY": "Easy",
+  "botMEDIUM": "Medium",
+  "botHARD": "Hard",
+  "addBot": "Add bot",
+  "fillBots": "Fill with bots",
+  "removeBot": "Remove bot"
 }

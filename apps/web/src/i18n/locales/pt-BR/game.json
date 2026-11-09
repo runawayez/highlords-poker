@@ -53,5 +53,12 @@
   "rebuyWindow": "Eliminados têm até 60s para rebuy quando permitido.",
   "pauseEmpty": "A sala pausou por ausência. O anfitrião pode retomar.",
   "waitingRebuy": "Aguardando rebuy ou próxima rodada.",
-  "BET": "Apostar"
+  "BET": "Apostar",
+  "botDifficulty": "Dificuldade dos bots",
+  "botEASY": "Fácil",
+  "botMEDIUM": "Médio",
+  "botHARD": "Difícil",
+  "addBot": "Adicionar bot",
+  "fillBots": "Completar com bots",
+  "removeBot": "Remover bot"
 }

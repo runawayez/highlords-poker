@@ -16,10 +16,12 @@ import {
   type Hand,
   type Action,
 } from '../../poker-engine/src/index.ts';
+import { decide, type Difficulty } from '../../poker-bot/src/index.ts';
 import { balance, levelAt, prizes } from '../../tournament-engine/src/index.ts';
 import { hash, passwordHash, secret, equal } from './security.ts';
 export type Session = { id: string; hash: string; profile: Profile; seen: number; expires: number };
 type Player = {
+  bot?: { difficulty: Difficulty; profile: Profile };
   id: string;
   seat: number;
   stack: number;
@@ -191,6 +193,7 @@ export class PokerService {
     const level = this.level(r);
     return {
       id: r.id,
+      botsSupported: true,
       config: r.config,
       status: r.status,
       version: r.version,
@@ -203,8 +206,9 @@ export class PokerService {
       pauseReason: r.pauseReason,
       players: r.players.map((p) => ({
         ...p,
-        profile: this.state.sessions.find((s) => s.id === p.id)?.profile,
-        online: now() - (this.state.sessions.find((s) => s.id === p.id)?.seen ?? 0) < 45000,
+        profile: p.bot?.profile ?? this.state.sessions.find((s) => s.id === p.id)?.profile,
+        online:
+          !!p.bot || now() - (this.state.sessions.find((s) => s.id === p.id)?.seen ?? 0) < 45000,
         muted: r.muted[p.id] > now(),
       })),
       tables: r.tables.map((t) => ({
@@ -215,7 +219,9 @@ export class PokerService {
       })),
       chat: r.chat.map((m) => ({
         ...m,
-        profile: this.state.sessions.find((s) => s.id === m.player)?.profile,
+        profile:
+          r.players.find((p) => p.id === m.player)?.bot?.profile ??
+          this.state.sessions.find((s) => s.id === m.player)?.profile,
       })),
       history: r.history,
     };
@@ -315,6 +321,36 @@ export class PokerService {
           demand(r.spectators.length < 20, 'CAPACITY');
           r.spectators.push(me.id);
         }
+      } else if (c.type === 'ADD_BOTS') {
+        demand(r.host === me.id, 'FORBIDDEN');
+        demand(r.status === 'WAITING', 'INVALID_ACTION');
+        const difficulty = c.payload.difficulty as Difficulty;
+        demand(['EASY', 'MEDIUM', 'HARD'].includes(difficulty), 'VALIDATION');
+        const count = c.payload.count as number;
+        demand(Number.isInteger(count) && count >= 1 && count <= 8, 'VALIDATION');
+        demand(r.players.filter((p) => p.bot && !p.left).length + count <= 8, 'CAPACITY');
+        for (let i = 0; i < count; i++) {
+          const id = uuid();
+          this.join(r, id);
+          const player = r.players.find((p) => p.id === id)!;
+          player.bot = {
+            difficulty,
+            profile: {
+              nickname: 'Highlord Bot ' + id.slice(0, 4),
+              avatar: '♜',
+              frame: 'plain',
+              accent: '#d9b66b',
+              tagline: '',
+            },
+          };
+        }
+      } else if (c.type === 'REMOVE_BOT') {
+        demand(r.host === me.id, 'FORBIDDEN');
+        demand(r.status === 'WAITING', 'INVALID_ACTION');
+        const player = r.players.find((p) => p.id === c.payload.target && p.bot && !p.left);
+        demand(player, 'INVALID_ACTION');
+        r.players = r.players.filter((p) => p.id !== player.id);
+        r.pool -= r.config.buyIn;
       } else if (c.type === 'START') {
         demand(r.host === me.id, 'FORBIDDEN');
         demand(r.status === 'WAITING', 'INVALID_ACTION');
@@ -605,7 +641,22 @@ export class PokerService {
         for (const t of r.tables) {
           if (!t.hand || t.hand.done) continue;
           const p = r.players.find((p) => p.id === t.hand!.actor);
-          if (p && (time >= t.deadline || p.left || p.sitOut)) {
+          if (p?.bot && !p.left && !p.sitOut) {
+            const own = t.hand.players.find((hp) => hp.id === p.id)!;
+            const decision = decide(
+              {
+                cards: [...own.cards],
+                board: [...t.hand.board],
+                opponents: t.hand.players.filter((hp) => hp.id !== p.id && !hp.folded).length,
+                pot: t.hand.players.reduce((sum, hp) => sum + hp.total, 0),
+                bigBlind: t.hand.bigBlind,
+                legal: legal(t.hand, p.id),
+              },
+              p.bot.difficulty,
+            );
+            act(t.hand, p.id, decision.action, decision.amount);
+            this.afterAction(r, t);
+          } else if (p && (time >= t.deadline || p.left || p.sitOut)) {
             const opts = legal(t.hand, p.id);
             act(t.hand, p.id, opts.actions.includes('CHECK') ? 'CHECK' : 'FOLD');
             this.afterAction(r, t);

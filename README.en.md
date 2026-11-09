@@ -51,3 +51,9 @@ For readers who want to study the code or contribute to development:
 - [Maintainer operations and deployment](docs/deployment.en.md)
 
 The links above open the English technical references. The original product brief is preserved in [PROJECT.md](PROJECT.md).
+
+## Bots
+
+Before dealing, the host can add up to eight bots, choose Easy, Medium or Hard, fill the table with bots, and remove them. Friends and bots can share a room in all three formats. Bots follow the same rules and only see their own cards and the public board. Strategies and bounded simulations run on the server without paid AI services; Hard is not a professional poker player.
+
+Bots use virtual chips and do not automatically rebuy or take add-ons. Games pause when all humans disconnect. This feature requires updating both the Worker and the frontend.

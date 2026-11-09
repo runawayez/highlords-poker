@@ -95,3 +95,26 @@ test('profile survives reload when multiplayer returns the static site', async (
   await expect(page.getByRole('dialog')).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Berkas', exact: true })).toBeVisible();
 });
+
+test('host adds and removes bots, plays a hand and reconnects', async ({ page }) => {
+  await enter(page, 'Solo');
+  await page.getByRole('button', { name: /Criar uma mesa/ }).click();
+  await page.getByLabel('Nome da mesa').fill('Bots ' + Date.now());
+  await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+  await expect(page).toHaveURL(/\/room\//);
+  await page.getByLabel('Dificuldade dos bots').selectOption('HARD');
+  await page.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Remover bot', exact: true })).toHaveCount(1);
+  await page.getByRole('button', { name: 'Remover bot', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Remover bot', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
+  await expect(page.getByRole('cell', { name: /Highlord Bot/ }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Distribuir cartas', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Adicionar bot', exact: true })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'All-in', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'All-in', exact: true }).click();
+  await expect(page.locator('.winner').first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('cell', { name: /Highlord Bot/ }).first()).toBeVisible();
+  await expect(page.locator('.winner').first()).toBeVisible();
+});

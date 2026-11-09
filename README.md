@@ -24,6 +24,7 @@ A hospedagem e a operação do site ficam a cargo do criador do projeto. **Os jo
 - **Texas Hold'em No-Limit:** mesas de 2 a 9 jogadores, blinds, antes, all-in, side pots e divisão de potes.
 - **Diferentes formatos:** cash game com fichas virtuais, Sit & Go e torneios multimesa.
 - **Mesas do seu jeito:** senha opcional, stacks, buy-ins, rebuys, add-on, níveis de blinds e intervalos configuráveis.
+- **Jogue com bots:** o anfitrião pode adicionar até oito bots antes de começar, escolher dificuldade fácil, média ou difícil e misturar amigos e bots na mesma sala.
 - **Poker entre amigos:** lobby público, convites por link, espectadores, chat restrito a cada sala e reações.
 - **Perfil personalizável:** nickname, avatar, moldura, cor, frase, tema da mesa e verso das cartas.
 - **Sessões retomáveis:** recuperação da cadeira e das cartas no mesmo navegador, enquanto a sessão e a credencial local permanecerem válidas.
@@ -51,3 +52,9 @@ Para quem deseja estudar o código ou contribuir com o desenvolvimento:
 - [Operação e publicação pelo mantenedor](docs/deployment.md)
 
 Os guias técnicos abrem em português e incluem links para as referências detalhadas em inglês. O documento original do produto permanece em [PROJECT.md](PROJECT.md).
+
+## Bots
+
+Na sala, antes de distribuir as cartas, escolha a dificuldade e use **Adicionar bot** ou **Completar com bots**. O anfitrião também pode remover bots antes do início. Eles seguem as mesmas regras e enxergam apenas suas próprias cartas e a mesa. As dificuldades usam estratégias e simulações locais no servidor, sem serviços de IA pagos; o nível difícil não é um jogador profissional.
+
+Bots usam fichas virtuais e podem participar dos três formatos. Não fazem rebuy ou add-on automaticamente. Quando todos os humanos ficam desconectados, a partida pausa; bots não mantêm salas jogando sozinhas. O recurso exige a atualização do Worker além do frontend.

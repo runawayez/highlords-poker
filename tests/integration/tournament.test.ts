@@ -138,3 +138,77 @@ it('supports one rebuy and one add-on without duplicating command receipts', asy
     expect(room().players.find((p) => p.id === actor.playerId)!.rebuyCount).toBe(1);
   }
 });
+
+it.each(['SIT_AND_GO', 'TOURNAMENT'])(
+  'finishes %s with eight bots and a human, preserving chips and prizes',
+  async (mode) => {
+    vi.useFakeTimers();
+    let s = new PokerService(store);
+    await s.init();
+    const host = await s.openSession({ nickname: 'Solo' });
+    const { roomId } = (await s.command(
+      host.token,
+      command('CREATE', undefined, {
+        config: {
+          ...cfg,
+          mode,
+          seats: mode === 'TOURNAMENT' ? 3 : 9,
+          small: 500,
+          big: 1000,
+          levels: [{ small: 500, big: 1000, ante: 100, minutes: 10, breakMinutes: 0 }],
+        },
+      }),
+    )) as { roomId: string };
+    await s.command(
+      host.token,
+      command('ADD_BOTS', roomId, { difficulty: 'MEDIUM', count: 8 }, s.state.rooms[0].version),
+    );
+    await expect(
+      s.command(
+        host.token,
+        command('ADD_BOTS', roomId, { difficulty: 'EASY', count: 1 }, s.state.rooms[0].version),
+      ),
+    ).rejects.toThrow('CAPACITY');
+    await s.command(host.token, command('START', roomId, {}, s.state.rooms[0].version));
+    let steps = 0;
+    while (s.state.rooms[0].status !== 'FINISHED') {
+      expect(++steps).toBeLessThan(1000);
+      const humanTable = s.state.rooms[0].tables.find(
+        (t) => !t.hand?.done && t.hand?.actor === host.playerId,
+      );
+      if (humanTable?.hand) {
+        const opts = legal(humanTable.hand, host.playerId);
+        await s.command(
+          host.token,
+          command(
+            'ACT',
+            roomId,
+            {
+              action: opts.actions.includes('ALL_IN')
+                ? 'ALL_IN'
+                : opts.actions.includes('CALL')
+                  ? 'CALL'
+                  : 'CHECK',
+            },
+            s.state.rooms[0].version,
+          ),
+        );
+      }
+      vi.advanceTimersByTime(9000);
+      await s.heartbeat(host.token);
+      await s.tick();
+      const room = s.state.rooms[0];
+      const held = room.tables
+        .filter((t) => t.hand && !t.hand.done)
+        .flatMap((t) => t.hand!.players)
+        .reduce((n, p) => n + p.total, 0);
+      expect(room.players.reduce((n, p) => n + p.stack, 0) + held).toBe(9000);
+      s = new PokerService(store);
+      await s.init();
+    }
+    const room = s.state.rooms[0];
+    expect(room.players.filter((p) => p.stack > 0)).toHaveLength(1);
+    expect(new Set(room.players.map((p) => p.rank)).size).toBe(9);
+    expect(Object.values(room.payouts).reduce((a, b) => a + b, 0)).toBe(9000);
+  },
+);
