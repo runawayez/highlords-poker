@@ -40,6 +40,8 @@ function App() {
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [topUp, setTopUp] = useState<number | null>(null);
   const [leaveOpen, setLeaveOpen] = useState(false);
+  const [closeRoomOpen, setCloseRoomOpen] = useState(false);
+  const dismissCloseRoom = useCallback(() => setCloseRoomOpen(false), []);
   const closeTopUp = useCallback(() => setTopUp(null), []);
   const closeLeave = useCallback(() => setLeaveOpen(false), []);
   const [ready, setReady] = useState(false);
@@ -152,9 +154,23 @@ function App() {
     } catch (e) {
       if ((e as Error).message === 'JOIN_REQUIRED') {
         setJoinDialog((d) => d ?? { id: roomId!, watch: false });
+      } else if ((e as Error).message === 'ROOM_NOT_FOUND' && roomPath() === roomId) {
+        history.replaceState({}, '', '/');
+        setRoomId(undefined);
+        setSnapshot(null);
+        setJoinDialog(null);
+        setCloseRoomOpen(false);
+        setError('');
+        setNotice(t('game:roomGone'));
+        try {
+          setLobby(await request('/api/lobby'));
+          setConnected(true);
+        } catch {
+          setConnected(false);
+        }
       } else fail(e);
     }
-  }, [ready, roomId, fail]);
+  }, [ready, roomId, fail, t]);
   useEffect(() => {
     if (!ready) return;
     let disposed = false;
@@ -229,6 +245,13 @@ function App() {
         roomId: targetRoom,
         version: snapshotRef.current?.version,
       });
+      if (type === 'CLOSE_ROOM') {
+        setCloseRoomOpen(false);
+        navigate();
+        setNotice(t('game:roomClosed'));
+        setLobby(await request('/api/lobby'));
+        return result;
+      }
       if (type === 'EXPORT') {
         download('highlords-public-record.json', result);
         setNotice(t('game:download'));
@@ -478,8 +501,8 @@ function App() {
                       <small>{t('lobby:liveTables')}</small>
                     </div>
                     <div>
-                      <strong>{lobby.rooms.reduce((n, r) => n + r.players, 0)}</strong>
-                      <small>{t('game:players')}</small>
+                      <strong>{lobby.rooms.reduce((n, r) => n + (r.humansOnline ?? 0), 0)}</strong>
+                      <small>{t('lobby:onlinePeople')}</small>
                     </div>
                     <div>
                       <strong>2—9</strong>
@@ -496,6 +519,7 @@ function App() {
                         {t('lobby:rooms')} <span className="count">{lobby.rooms.length}</span>
                       </h2>
                       <p>{t('lobby:subtitle')}</p>
+                      <p className="lobby-retention">{t('lobby:retentionHint')}</p>
                     </div>
                     <span className={`connection ${connected ? 'live' : ''}`}>
                       ● {t(connected ? 'online' : 'offline')}
@@ -563,9 +587,22 @@ function App() {
                             {r.protected && <span aria-label={t('lobby:protected')}>⌑</span>}
                           </h3>
                           <p>
-                            {num(r.small)} / {num(r.big)} · {r.players}/{r.capacity} ·{' '}
-                            {t(`game:${r.status}`)}
+                            {num(r.small)} / {num(r.big)} · {r.players}/{r.capacity}{' '}
+                            {t('lobby:occupiedSeats')} · {t(`game:${r.status}`)}
                           </p>
+                          {r.humansOnline !== undefined && (
+                            <p className="room-presence">
+                              <span className={r.humansOnline ? 'online-dot' : ''}>●</span>{' '}
+                              {t('lobby:humansOnline', { count: r.humansOnline })} ·{' '}
+                              {t('lobby:botsCount', { count: r.bots })}
+                              {r.humansOffline > 0 && (
+                                <> · {t('lobby:humansOffline', { count: r.humansOffline })}</>
+                              )}
+                              {r.spectatorsOnline > 0 && (
+                                <> · {t('lobby:spectatorsOnline', { count: r.spectatorsOnline })}</>
+                              )}
+                            </p>
+                          )}
                           <div className="room-occupancy" aria-label={`${r.players}/${r.capacity}`}>
                             {Array.from({ length: Math.min(r.capacity, 9) }, (_, i) => (
                               <i className={i < r.players ? 'occupied' : ''} key={i} />
@@ -658,6 +695,15 @@ function App() {
                             {t(snapshot.status === 'PAUSED' ? 'game:resume' : 'game:pause')}
                           </button>
                           <button onClick={() => void run('EXPORT')}>{t('game:export')}</button>
+                          {snapshot.closeSupported && (
+                            <button
+                              className="close-room-button"
+                              disabled={busy || !connected}
+                              onClick={() => setCloseRoomOpen(true)}
+                            >
+                              {t('game:closeRoom')}
+                            </button>
+                          )}
                         </>
                       )}
                       <button
@@ -670,6 +716,16 @@ function App() {
                   </div>
                   {snapshot.pauseReason === 'EMPTY' && (
                     <p className="banner">{t('game:pauseEmpty')}</p>
+                  )}
+                  {snapshot.expiresAt && (
+                    <p className="retention-notice">
+                      {t(snapshot.status === 'FINISHED' ? 'game:resultsUntil' : 'game:emptyUntil', {
+                        time: new Intl.DateTimeFormat(i18n.language, {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }).format(snapshot.expiresAt),
+                      })}
+                    </p>
                   )}
                   <RoomStats snapshot={snapshot} num={num} />
                   <div className="game-layout">
@@ -851,6 +907,17 @@ function App() {
                 {t('confirm')}
               </button>
             </form>
+          </Modal>
+        )}
+        {closeRoomOpen && (
+          <Modal title={t('game:closeRoom')} onClose={dismissCloseRoom}>
+            <p>{t('game:closeRoomHint')}</p>
+            <div className="modal-actions">
+              <button onClick={dismissCloseRoom}>{t('cancel')}</button>
+              <button className="danger" disabled={busy} onClick={() => void run('CLOSE_ROOM')}>
+                {t('game:confirmCloseRoom')}
+              </button>
+            </div>
           </Modal>
         )}
         {leaveOpen && (

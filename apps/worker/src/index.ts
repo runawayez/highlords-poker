@@ -76,12 +76,12 @@ export class PokerCoordinator {
       }
       const m = JSON.parse(message);
       if (m.type === 'AUTH') {
-        await this.service.authenticate(m.token);
+        await this.service.heartbeat(m.token, typeof m.roomId === 'string' ? m.roomId : undefined);
         ws.serializeAttachment({ token: m.token, roomId: m.roomId, opened: Date.now() });
         await this.send(ws);
       } else if (m.type === 'PING') {
         const a = ws.deserializeAttachment();
-        if (a?.token) await this.service.heartbeat(a.token);
+        if (a?.token) await this.service.heartbeat(a.token, a.roomId);
       }
     } catch {
       ws.close(1008);

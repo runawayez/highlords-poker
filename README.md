@@ -60,3 +60,11 @@ Na sala, antes de distribuir as cartas, escolha a dificuldade e use **Adicionar 
 Bots usam fichas virtuais e podem participar dos três formatos. Não fazem rebuy ou add-on automaticamente. Quando todos os humanos ficam desconectados, a partida pausa; bots não mantêm salas jogando sozinhas. O recurso exige a atualização do Worker além do frontend.
 
 Consulte [Interface e experiência de jogo](docs/interface.md) para criação com prévia, organização da sala e referências visuais.
+
+## Organização das salas
+
+Não é necessário criar uma conta. O lobby separa **pessoas online**, **pessoas ausentes**, **bots**, **espectadores online** e **assentos ocupados**. A presença pertence à sala: ficar no lobby ou em outra mesa não mantém uma sala antiga aberta.
+
+Após até um minuto sem sinal de conexão de nenhum humano, uma partida em andamento pausa. A sala fica reservada por **30 minutos de ausência** para reconectar e retomar. Bots não mantêm salas abertas. Isso também vale para salas em espera ou pausadas manualmente. Se um humano voltar antes do prazo, a reserva é renovada; o anfitrião pode retomar a partida.
+
+Torneios encerrados mantêm os resultados por **1 hora**, mesmo que alguém continue visitando ou conversando na sala. O anfitrião também pode usar **Encerrar sala**, com confirmação, para removê-la do lobby para todos. Perfis e credenciais de outras salas são preservados. Não há painel administrativo global nem login obrigatório.

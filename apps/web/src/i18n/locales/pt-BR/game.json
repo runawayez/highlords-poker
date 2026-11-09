@@ -95,5 +95,12 @@
   "player": "Jogador",
   "disconnected": "Desconectado",
   "manageRoom": "Gerenciar sala",
-  "finalLevel": "Último nível"
+  "finalLevel": "Último nível",
+  "closeRoom": "Encerrar sala",
+  "closeRoomHint": "Encerrar remove esta sala do lobby para todos e encerra a partida atual. Seus perfis continuam salvos. Esta ação não pode ser desfeita.",
+  "confirmCloseRoom": "Sim, encerrar sala",
+  "roomClosed": "Sala encerrada.",
+  "roomGone": "Esta sala foi encerrada ou expirou. Você voltou ao lobby.",
+  "emptyUntil": "Sem pessoas conectadas, esta sala expira às {{time}}.",
+  "resultsUntil": "Resultados disponíveis até {{time}}. Visitas não prolongam esse prazo."
 }

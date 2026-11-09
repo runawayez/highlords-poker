@@ -67,7 +67,7 @@ it('completes a nine-player multitable tournament, restores at every barrier, ne
       }
     }
     vi.advanceTimersByTime(9000);
-    for (const p of players) await s.heartbeat(p.token);
+    for (const p of players) await s.heartbeat(p.token, roomId);
     await s.tick();
     const room = s.state.rooms[0];
     const committed = room.players.reduce((n, p) => n + p.stack, 0);
@@ -195,7 +195,7 @@ it.each(['SIT_AND_GO', 'TOURNAMENT'])(
         );
       }
       vi.advanceTimersByTime(9000);
-      await s.heartbeat(host.token);
+      await s.heartbeat(host.token, roomId);
       await s.tick();
       const room = s.state.rooms[0];
       const held = room.tables

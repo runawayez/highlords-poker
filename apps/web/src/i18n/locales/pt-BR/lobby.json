@@ -80,5 +80,16 @@
   "liveTables": "Mesas em jogo",
   "noResults": "Nenhuma mesa com esses filtros",
   "changeFilters": "Ajuste a busca ou os filtros para encontrar sua partida.",
-  "defaultTitle": "Noite dos Highlords"
+  "defaultTitle": "Noite dos Highlords",
+  "onlinePeople": "Pessoas online",
+  "humansOnline": "{{count}} pessoa online",
+  "humansOnline_other": "{{count}} pessoas online",
+  "botsCount": "{{count}} bot",
+  "botsCount_other": "{{count}} bots",
+  "humansOffline": "{{count}} pessoa ausente",
+  "humansOffline_other": "{{count}} pessoas ausentes",
+  "spectatorsOnline": "{{count}} espectador online",
+  "spectatorsOnline_other": "{{count}} espectadores online",
+  "occupiedSeats": "assentos",
+  "retentionHint": "Salas sem pessoas conectadas encerram após 30 min de ausência. Resultados de torneios ficam disponíveis por 1 hora."
 }

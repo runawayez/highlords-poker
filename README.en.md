@@ -59,3 +59,11 @@ Before dealing, the host can add up to eight bots, choose Easy, Medium or Hard, 
 Bots use virtual chips and do not automatically rebuy or take add-ons. Games pause when all humans disconnect. This feature requires updating both the Worker and the frontend.
 
 See [Interface and game experience](docs/interface.en.md) for the live room preview, room controls and design references.
+
+## Room lifecycle
+
+No account registration is required. The lobby separates **online people**, **away people**, **bots**, **online spectators** and **occupied seats**. Presence is tracked per room: staying in the lobby or another room does not keep an old room alive.
+
+After up to one minute without a connection signal from any human, a running game pauses. The room is reserved for **30 minutes of absence** so people can reconnect and the host can resume. Bots never keep rooms open. Waiting and manually paused rooms use the same expiry rule. A human returning before the deadline renews the reservation.
+
+Finished tournaments retain results for **1 hour**, unaffected by visits or chat. The host can also **Close room**, with confirmation, removing it from the lobby for everyone. Saved profiles and credentials for other rooms are kept. There is no global administration panel or mandatory login.

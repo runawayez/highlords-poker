@@ -74,6 +74,9 @@ export type Room = {
   payouts: Record<string, number>;
   history: ReturnType<typeof publicHand>[];
   pauseReason?: string;
+  presence?: Record<string, number>;
+  finishedAt?: number;
+  expiredAt?: number;
 };
 export type State = {
   schema: 1;
@@ -90,6 +93,9 @@ export interface Store {
 const empty = (): State => ({ schema: 1, sessions: [], rooms: [], chat: [], lobbyReceipts: [] });
 const uuid = () => crypto.randomUUID();
 const now = () => Date.now();
+export const PRESENCE_TTL = 60_000;
+export const EMPTY_ROOM_TTL = 30 * 60_000;
+export const FINISHED_ROOM_TTL = 60 * 60_000;
 export class PokerService {
   state: State = empty();
   private queue: Promise<unknown> = Promise.resolve();
@@ -100,6 +106,18 @@ export class PokerService {
   async init() {
     this.state = (await this.store.load()) ?? empty();
     demand(this.state.schema === 1, 'SCHEMA_MISMATCH');
+    // Upgrade old saved rooms without discarding sessions or game state.
+    for (const room of this.state.rooms) {
+      room.presence ??= Object.fromEntries(
+        this.state.sessions
+          .filter(
+            (s) =>
+              room.players.some((p) => !p.bot && p.id === s.id) || room.spectators.includes(s.id),
+          )
+          .map((s) => [s.id, s.seen]),
+      );
+      if (room.status === 'FINISHED') room.finishedAt ??= room.updated;
+    }
   }
   private transaction<T>(fn: (s: State) => Promise<T> | T, skipUnchanged = false): Promise<T> {
     const job = this.queue.then(async () => {
@@ -153,17 +171,90 @@ export class PokerService {
       return { token: credential!, playerId: p.id };
     });
   }
-  async heartbeat(token: string) {
+  private humanOnline(r: Room, id: string, time = now()) {
+    const session = this.state.sessions.find((s) => s.id === id);
+    return !!session && session.expires > time && time - (r.presence?.[id] ?? 0) < PRESENCE_TTL;
+  }
+  private hasHuman(r: Room, time = now()) {
+    return (
+      r.players.some((p) => !p.bot && !p.left && this.humanOnline(r, p.id, time)) ||
+      r.spectators.some((id) => this.humanOnline(r, id, time))
+    );
+  }
+  private pauseEmpty(r: Room, time = now()) {
+    if (r.status !== 'RUNNING' || this.hasHuman(r, time)) return false;
+    const pausedAt = Math.min(time, this.lastPresence(r) + PRESENCE_TTL);
+    r.elapsed += Math.max(0, pausedAt - r.clock);
+    r.status = 'PAUSED';
+    r.pauseReason = 'EMPTY';
+    r.clock = pausedAt;
+    r.version++;
+    return true;
+  }
+  private lastPresence(r: Room) {
+    // Presence only belongs to authenticated humans; bots never heartbeat.
+    return Math.max(r.created, ...Object.values(r.presence ?? {}));
+  }
+  private expiryAt(r: Room) {
+    return r.status === 'FINISHED'
+      ? (r.finishedAt ?? r.updated) + FINISHED_ROOM_TTL
+      : this.lastPresence(r) + PRESENCE_TTL + EMPTY_ROOM_TTL;
+  }
+  private available(r: Room) {
+    return r.status !== 'EXPIRED' && now() < this.expiryAt(r);
+  }
+  private expire(r: Room, time: number) {
+    r.status = 'EXPIRED';
+    r.expiredAt = time;
+    r.updated = time;
+    r.tables = [];
+    r.chat = [];
+    r.history = [];
+    r.receipts = {};
+    r.players = [];
+    r.spectators = [];
+    r.presence = {};
+    r.reports = [];
+    r.payouts = {};
+  }
+  async heartbeat(token: string, roomId?: string) {
     const h = await hash(token);
     const session = this.session(this.state, h);
-    if (now() - session.seen < 15000) return;
+    const room = roomId ? this.state.rooms.find((r) => r.id === roomId) : undefined;
+    if (roomId) {
+      demand(room && this.available(room), 'ROOM_NOT_FOUND');
+      demand(
+        room.players.some((p) => p.id === session.id && !p.left) ||
+          room.spectators.includes(session.id),
+        'JOIN_REQUIRED',
+      );
+      demand(!(room.banned[session.id] > now()), 'BANNED');
+    }
+    if (
+      now() - session.seen < 15000 &&
+      (!room || now() - (room.presence?.[session.id] ?? 0) < 15000)
+    )
+      return;
     await this.transaction((s) => {
-      this.session(s, h).seen = now();
+      const current = this.session(s, h);
+      current.seen = now();
+      if (roomId) {
+        const currentRoom = s.rooms.find((r) => r.id === roomId)!;
+        demand(currentRoom && this.available(currentRoom), 'ROOM_NOT_FOUND');
+        demand(
+          currentRoom.players.some((p) => p.id === current.id && !p.left) ||
+            currentRoom.spectators.includes(current.id),
+          'JOIN_REQUIRED',
+        );
+        demand(!(currentRoom.banned[current.id] > now()), 'BANNED');
+        this.pauseEmpty(currentRoom);
+        (currentRoom.presence ??= {})[current.id] = now();
+      }
     });
   }
   lobby() {
     return this.state.rooms
-      .filter((r) => r.status !== 'EXPIRED')
+      .filter((r) => this.available(r))
       .map((r) => ({
         id: r.id,
         title: r.config.title,
@@ -171,6 +262,12 @@ export class PokerService {
         seats: r.config.seats,
         capacity: r.config.mode === 'TOURNAMENT' ? r.config.capacity : r.config.seats,
         players: r.players.filter((p) => !p.left).length,
+        humansOnline: r.players.filter((p) => !p.bot && !p.left && this.humanOnline(r, p.id))
+          .length,
+        humansOffline: r.players.filter((p) => !p.bot && !p.left && !this.humanOnline(r, p.id))
+          .length,
+        bots: r.players.filter((p) => p.bot && !p.left).length,
+        spectatorsOnline: r.spectators.filter((id) => this.humanOnline(r, id)).length,
         status: r.status,
         protected: !!r.password,
         small: r.config.small,
@@ -180,7 +277,7 @@ export class PokerService {
   }
   async snapshot(roomId: string, token: string) {
     const id = await this.authenticate(token);
-    const r = this.state.rooms.find((r) => r.id === roomId && r.status !== 'EXPIRED');
+    const r = this.state.rooms.find((r) => r.id === roomId && this.available(r));
     demand(r, 'ROOM_NOT_FOUND');
     demand(
       r.players.some((p) => p.id === id && !p.left) || r.spectators.includes(id),
@@ -194,6 +291,8 @@ export class PokerService {
     return {
       id: r.id,
       botsSupported: true,
+      closeSupported: true,
+      expiresAt: r.status === 'FINISHED' || !this.hasHuman(r) ? this.expiryAt(r) : undefined,
       config: r.config,
       status: r.status,
       version: r.version,
@@ -207,8 +306,7 @@ export class PokerService {
       players: r.players.map((p) => ({
         ...p,
         profile: p.bot?.profile ?? this.state.sessions.find((s) => s.id === p.id)?.profile,
-        online:
-          !!p.bot || now() - (this.state.sessions.find((s) => s.id === p.id)?.seen ?? 0) < 45000,
+        online: !p.left && (!!p.bot || this.humanOnline(r, p.id)),
         muted: r.muted[p.id] > now(),
       })),
       tables: r.tables.map((t) => ({
@@ -252,12 +350,9 @@ export class PokerService {
       if (c.type === 'CREATE') {
         const duplicate = s.rooms.find((r) => r.receipts[c.id]?.actor === me.id);
         if (duplicate) return duplicate.receipts[c.id].result;
+        demand(s.rooms.filter((r) => this.available(r)).length < this.options.maxRooms, 'CAPACITY');
         demand(
-          s.rooms.filter((r) => r.status !== 'EXPIRED').length < this.options.maxRooms,
-          'CAPACITY',
-        );
-        demand(
-          s.rooms.filter((r) => r.host === me.id && r.status !== 'EXPIRED').length < 3,
+          s.rooms.filter((r) => r.host === me.id && this.available(r)).length < 3,
           'RATE_LIMIT',
         );
         const cfg = ConfigSchema.parse(c.payload.config);
@@ -286,6 +381,7 @@ export class PokerService {
           pool: 0,
           payouts: {},
           history: [],
+          presence: { [me.id]: now() },
         };
         this.join(r, me.id);
         s.rooms.push(r);
@@ -294,13 +390,14 @@ export class PokerService {
         return result;
       }
       demand(c.roomId, 'ROOM_NOT_FOUND');
-      const r = s.rooms.find((r) => r.id === c.roomId && r.status !== 'EXPIRED');
+      const r = s.rooms.find((r) => r.id === c.roomId);
       demand(r, 'ROOM_NOT_FOUND');
       const receipt = r.receipts[c.id];
       if (receipt) {
         demand(receipt.actor === me.id, 'FORBIDDEN');
         return receipt.result;
       }
+      demand(this.available(r), 'ROOM_NOT_FOUND');
       demand(!(r.banned[me.id] > now()), 'BANNED');
       const joining = c.type === 'JOIN' || c.type === 'SPECTATE';
       const member = r.players.find((p) => p.id === me.id && !p.left);
@@ -308,9 +405,17 @@ export class PokerService {
       // Pausing is a host intent independent of which player just acted.
       // Keep optimistic version checks for bets and chip/seat mutations.
       if (
-        !['JOIN', 'SPECTATE', 'CHAT', 'REACT', 'REPORT', 'EXPORT', 'PAUSE', 'RESUME'].includes(
-          c.type,
-        )
+        ![
+          'JOIN',
+          'SPECTATE',
+          'CHAT',
+          'REACT',
+          'REPORT',
+          'EXPORT',
+          'PAUSE',
+          'RESUME',
+          'CLOSE_ROOM',
+        ].includes(c.type)
       )
         demand(c.version === r.version, 'STALE_VERSION');
       let result: unknown = { ok: true };
@@ -357,6 +462,9 @@ export class PokerService {
         demand(player, 'INVALID_ACTION');
         r.players = r.players.filter((p) => p.id !== player.id);
         r.pool -= r.config.buyIn;
+      } else if (c.type === 'CLOSE_ROOM') {
+        demand(r.host === me.id, 'FORBIDDEN');
+        this.expire(r, now());
       } else if (c.type === 'START') {
         demand(r.host === me.id, 'FORBIDDEN');
         demand(r.status === 'WAITING', 'INVALID_ACTION');
@@ -496,6 +604,7 @@ export class PokerService {
           policy: 'public-v1; secret deck, credentials and unrevealed hole cards excluded',
         };
       }
+      if (r.status !== 'EXPIRED') (r.presence ??= {})[me.id] = now();
       r.updated = now();
       r.version++;
       r.chat = r.chat.filter((m) => now() - m.at < 3600000);
@@ -610,13 +719,9 @@ export class PokerService {
       const time = now();
       for (const r of s.rooms) {
         if (r.status === 'EXPIRED') continue;
-        if (
-          time - r.updated > 24 * 3600000 ||
-          (r.status === 'FINISHED' && time - r.updated > 3600000)
-        ) {
-          r.status = 'EXPIRED';
-          r.tables = [];
-          r.receipts = {};
+        if (time >= this.expiryAt(r)) {
+          this.expire(r, time);
+          r.version++;
           changed = true;
           continue;
         }
@@ -631,17 +736,7 @@ export class PokerService {
             break: this.level(r).break,
           });
         const beforeGame = gameState();
-        const connected = r.players.some(
-          (p) => !p.left && s.sessions.some((x) => x.id === p.id && time - x.seen < 60000),
-        );
-        if (!connected) {
-          r.elapsed += time - r.clock;
-          r.status = 'PAUSED';
-          r.pauseReason = 'EMPTY';
-          r.clock = time;
-          r.version++;
-          continue;
-        }
+        if (this.pauseEmpty(r, time)) continue;
         r.elapsed += time - r.clock;
         r.clock = time;
         for (const t of r.tables) {
@@ -697,6 +792,7 @@ export class PokerService {
             );
             if (alive.length <= 1 && !rebuyWaiting) {
               r.status = 'FINISHED';
+              r.finishedAt = time;
               if (alive[0]) alive[0].rank = 1;
               const order = r.players
                 .filter((p) => !p.left)
@@ -710,7 +806,9 @@ export class PokerService {
         }
         if (gameState() !== beforeGame) r.version++;
       }
-      s.rooms = s.rooms.filter((r) => r.status !== 'EXPIRED' || time - r.updated < 48 * 3600000);
+      s.rooms = s.rooms.filter(
+        (r) => r.status !== 'EXPIRED' || time - (r.expiredAt ?? r.updated) < FINISHED_ROOM_TTL,
+      );
       s.chat = s.chat.filter((m) => time - m.at < 3600000);
       return changed;
     }, true);

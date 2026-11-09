@@ -280,7 +280,7 @@ it.each(['EASY', 'MEDIUM', 'HARD'])(
         );
       }
       vi.advanceTimersByTime(5000);
-      await restored.heartbeat(a.token);
+      await restored.heartbeat(a.token, roomId);
       await restored.tick();
     }
     const h = restored.state.rooms[0].tables[0].hand!;
@@ -332,4 +332,179 @@ it('host pause and resume survive intervening bot turns while betting still reje
   await expect(s.command(a.token, cmd('ACT', roomId, { action: 'ALL_IN' }, stale))).rejects.toThrow(
     'STALE_VERSION',
   );
+});
+
+it('separates real room presence from bots, disconnected seats, spectators and lobby heartbeats', async () => {
+  vi.useFakeTimers();
+  const { s, a, b } = await setup();
+  const { roomId } = await create(s, a.token);
+  await s.command(
+    a.token,
+    cmd('ADD_BOTS', roomId, { difficulty: 'EASY', count: 2 }, s.state.rooms[0].version),
+  );
+  await s.command(b.token, cmd('SPECTATE', roomId));
+  expect(s.lobby()[0]).toMatchObject({
+    players: 3,
+    humansOnline: 1,
+    humansOffline: 0,
+    bots: 2,
+    spectatorsOnline: 1,
+  });
+  vi.advanceTimersByTime(60_001);
+  await s.heartbeat(a.token); // Being online in the lobby is not presence in a room.
+  await s.snapshot(roomId, a.token); // Server broadcasts are read-only.
+  expect(s.lobby()[0]).toMatchObject({
+    players: 3,
+    humansOnline: 0,
+    humansOffline: 1,
+    bots: 2,
+    spectatorsOnline: 0,
+  });
+  await s.heartbeat(b.token, roomId);
+  expect(s.lobby()[0].spectatorsOnline).toBe(1);
+  expect((await s.snapshot(roomId, a.token)).players[0].online).toBe(false);
+});
+
+it.each(['WAITING', 'PAUSED', 'RUNNING'] as const)(
+  'expires %s rooms after 30 minutes of absence even with bots and lobby activity',
+  async (status) => {
+    vi.useFakeTimers();
+    const { s, a, db } = await setup();
+    const { roomId } = await create(s, a.token);
+    await s.command(
+      a.token,
+      cmd('ADD_BOTS', roomId, { difficulty: 'MEDIUM', count: 1 }, s.state.rooms[0].version),
+    );
+    if (status !== 'WAITING')
+      await s.command(a.token, cmd('START', roomId, {}, s.state.rooms[0].version));
+    if (status === 'PAUSED') await s.command(a.token, cmd('PAUSE', roomId));
+    vi.advanceTimersByTime(60_000);
+    await s.tick();
+    if (status === 'RUNNING') expect(s.state.rooms[0].status).toBe('PAUSED');
+    for (let minute = 0; minute < 29; minute++) {
+      vi.advanceTimersByTime(60_000);
+      await s.heartbeat(a.token);
+      await s.tick();
+    }
+    expect(s.lobby()).toHaveLength(1);
+    vi.advanceTimersByTime(60_000);
+    await s.tick();
+    expect(s.lobby()).toHaveLength(0);
+    expect(s.state.rooms[0].status).toBe('EXPIRED');
+    expect(s.state.rooms[0].tables).toEqual([]);
+    const reboot = new PokerService(db);
+    await reboot.init();
+    expect(reboot.lobby()).toHaveLength(0);
+    expect(await reboot.authenticate(a.token)).toBe(a.playerId);
+  },
+);
+
+it('reserves a disconnected hand, resets the absence deadline on return and lets the host resume', async () => {
+  vi.useFakeTimers();
+  const { s, a, db } = await setup();
+  const { roomId } = await create(s, a.token);
+  await s.command(
+    a.token,
+    cmd('ADD_BOTS', roomId, { difficulty: 'HARD', count: 1 }, s.state.rooms[0].version),
+  );
+  await s.command(a.token, cmd('START', roomId, {}, s.state.rooms[0].version));
+  vi.advanceTimersByTime(60_001);
+  await s.tick();
+  const before = await s.snapshot(roomId, a.token);
+  expect(before.status).toBe('PAUSED');
+  expect(before.expiresAt).toBeTruthy();
+  vi.advanceTimersByTime(29 * 60_000);
+  const reboot = new PokerService(db);
+  await reboot.init();
+  await reboot.heartbeat(a.token, roomId);
+  const after = await reboot.snapshot(roomId, a.token);
+  expect(after.tables[0].hand).toEqual(before.tables[0].hand);
+  expect(after.players[0].online).toBe(true);
+  expect(after.expiresAt).toBeUndefined();
+  await reboot.command(a.token, cmd('RESUME', roomId));
+  expect((await reboot.snapshot(roomId, a.token)).status).toBe('RUNNING');
+});
+
+it('does not resurrect a room after the deadline if cleanup has not run yet', async () => {
+  vi.useFakeTimers();
+  const { s, a, b } = await setup();
+  const { roomId } = await create(s, a.token);
+  vi.advanceTimersByTime(31 * 60_000);
+  await s.heartbeat(a.token);
+  expect(s.lobby()).toHaveLength(0);
+  await expect(s.heartbeat(a.token, roomId)).rejects.toThrow('ROOM_NOT_FOUND');
+  await expect(s.snapshot(roomId, a.token)).rejects.toThrow('ROOM_NOT_FOUND');
+  await expect(s.command(b.token, cmd('JOIN', roomId))).rejects.toThrow('ROOM_NOT_FOUND');
+});
+
+it('retains finished results for exactly one hour without extending them for chat, visits or exports', async () => {
+  vi.useFakeTimers();
+  const { s, a } = await setup();
+  const { roomId } = await create(s, a.token);
+  const finished = Date.now();
+  s.state.rooms[0].status = 'FINISHED';
+  s.state.rooms[0].finishedAt = finished;
+  vi.advanceTimersByTime(59 * 60_000);
+  await s.heartbeat(a.token, roomId);
+  await s.command(a.token, cmd('CHAT', roomId, { text: 'GG' }));
+  await s.command(a.token, cmd('EXPORT', roomId));
+  expect((await s.snapshot(roomId, a.token)).expiresAt).toBe(finished + 60 * 60_000);
+  expect(s.lobby()).toHaveLength(1);
+  vi.advanceTimersByTime(60_000);
+  await s.tick();
+  expect(s.lobby()).toHaveLength(0);
+});
+
+it('only the host closes a room, with idempotent receipts, durable removal and saved profiles kept', async () => {
+  const { s, a, b, db } = await setup();
+  const first = await create(s, a.token);
+  const other = await create(s, b.token);
+  await s.command(b.token, cmd('JOIN', first.roomId));
+  await expect(s.command(b.token, cmd('CLOSE_ROOM', first.roomId))).rejects.toThrow('FORBIDDEN');
+  const close = cmd('CLOSE_ROOM', first.roomId);
+  await s.command(a.token, close);
+  await s.command(a.token, close);
+  expect(s.lobby().map((r) => r.id)).toEqual([other.roomId]);
+  await expect(s.snapshot(first.roomId, b.token)).rejects.toThrow('ROOM_NOT_FOUND');
+  const reboot = new PokerService(db);
+  await reboot.init();
+  expect(reboot.lobby().map((r) => r.id)).toEqual([other.roomId]);
+  expect(await reboot.authenticate(a.token)).toBe(a.playerId);
+  expect(await reboot.authenticate(b.token)).toBe(b.playerId);
+  expect(reboot.state.sessions.map((s) => s.profile.nickname)).toEqual(['Alice', 'Bob']);
+});
+
+it('upgrades old persisted rooms and removes old inactive test rooms without deleting sessions', async () => {
+  vi.useFakeTimers();
+  const { s, a, db } = await setup();
+  await create(s, a.token);
+  delete db.state!.rooms[0].presence;
+  vi.advanceTimersByTime(31 * 60_000);
+  const reboot = new PokerService(db);
+  await reboot.init();
+  await reboot.tick();
+  expect(reboot.lobby()).toHaveLength(0);
+  expect(await reboot.authenticate(a.token)).toBe(a.playerId);
+});
+
+it('pauses a disconnected game on reconnect after a server restart even before its first cleanup tick', async () => {
+  vi.useFakeTimers();
+  const { s, a, db } = await setup();
+  const { roomId } = await create(s, a.token);
+  await s.command(
+    a.token,
+    cmd('ADD_BOTS', roomId, { difficulty: 'EASY', count: 1 }, s.state.rooms[0].version),
+  );
+  await s.command(a.token, cmd('START', roomId, {}, s.state.rooms[0].version));
+  const hand = s.state.rooms[0].tables[0].hand!.id;
+  vi.advanceTimersByTime(29 * 60_000);
+  const reboot = new PokerService(db);
+  await reboot.init();
+  await reboot.heartbeat(a.token, roomId);
+  const view = await reboot.snapshot(roomId, a.token);
+  expect(view.status).toBe('PAUSED');
+  expect(view.tables[0].hand!.id).toBe(hand);
+  expect(view.elapsed).toBe(60_000);
+  await reboot.command(a.token, cmd('RESUME', roomId));
+  expect((await reboot.snapshot(roomId, a.token)).status).toBe('RUNNING');
 });

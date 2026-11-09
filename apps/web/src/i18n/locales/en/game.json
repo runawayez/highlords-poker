@@ -95,5 +95,12 @@
   "player": "Player",
   "disconnected": "Disconnected",
   "manageRoom": "Manage room",
-  "finalLevel": "Final level"
+  "finalLevel": "Final level",
+  "closeRoom": "Close room",
+  "closeRoomHint": "Closing removes this room from the lobby for everyone and ends the current game. Saved profiles are kept. This cannot be undone.",
+  "confirmCloseRoom": "Yes, close room",
+  "roomClosed": "Room closed.",
+  "roomGone": "This room was closed or expired. You are back in the lobby.",
+  "emptyUntil": "Without connected people, this room expires at {{time}}.",
+  "resultsUntil": "Results available until {{time}}. Visits do not extend this deadline."
 }

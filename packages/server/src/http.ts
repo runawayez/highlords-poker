@@ -32,7 +32,7 @@ export async function handleApi(service: PokerService, req: Request, ip: string)
     if (url.pathname === '/api/lobby' && req.method === 'GET')
       return json({ rooms: service.lobby() });
     if (url.pathname.startsWith('/api/rooms/') && req.method === 'GET') {
-      await service.heartbeat(token);
+      await service.heartbeat(token, url.pathname.split('/')[3]);
       return json(await service.snapshot(url.pathname.split('/')[3], token));
     }
     if (req.method === 'POST') {

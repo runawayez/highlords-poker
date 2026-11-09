@@ -238,3 +238,59 @@ test('tournament builder edits levels, validates values and previews multiple ta
   await expect(page.locator('.room-stats')).toContainText(/\/\s*15/);
   await page.screenshot({ path: 'test-results/ui-tournament-structure.png', fullPage: true });
 });
+
+test('real disconnect changes presence counts and host closure redirects everyone without losing profiles', async ({
+  browser,
+  baseURL,
+}) => {
+  test.setTimeout(110000);
+  const hostContext = await browser.newContext({ baseURL });
+  const guestContext = await browser.newContext({ baseURL });
+  const publicContext = await browser.newContext({ baseURL });
+  const host = await hostContext.newPage();
+  let guest = await guestContext.newPage();
+  const lobby = await publicContext.newPage();
+  const title = 'Lifecycle ' + Date.now();
+  try {
+    await enter(host, 'Lifecycle host');
+    await host.getByRole('button', { name: /Criar uma mesa/ }).click();
+    await host.getByLabel('Nome da mesa').fill(title);
+    await host.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+    await expect(host).toHaveURL(/\/room\//);
+    const roomUrl = host.url();
+    await host.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
+    await enter(guest, 'Lifecycle guest');
+    await guest.goto(roomUrl);
+    await guest.getByRole('button', { name: 'Confirmar', exact: true }).click();
+    await expect(guest.getByRole('dialog')).not.toBeVisible();
+    await expect(guest.getByRole('button', { name: 'Encerrar sala', exact: true })).toHaveCount(0);
+    await lobby.goto('/');
+    const card = lobby.locator('.room-card').filter({ hasText: title });
+    await expect(card).toContainText('2 pessoas online');
+    await expect(card).toContainText('1 bot');
+    await expect(card).toContainText('3/6 assentos');
+    await guest.close(); // No LEAVE command: browser closure must be detected from heartbeats.
+    await expect(card).toContainText('1 pessoa online', { timeout: 75000 });
+    await expect(card).toContainText('1 pessoa ausente');
+    await expect(card).toContainText('1 bot');
+    guest = await guestContext.newPage();
+    await guest.goto(roomUrl);
+    await expect(guest.getByRole('heading', { name: title, exact: true })).toBeVisible();
+    await expect(card).toContainText('2 pessoas online');
+    await host.getByRole('button', { name: 'Encerrar sala', exact: true }).click();
+    const dialog = host.getByRole('dialog', { name: 'Encerrar sala', exact: true });
+    await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
+    await expect(host).toHaveURL(roomUrl);
+    await host.getByRole('button', { name: 'Encerrar sala', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Sim, encerrar sala', exact: true }).click();
+    await expect(host).toHaveURL(baseURL! + '/');
+    await expect(guest).toHaveURL(baseURL! + '/');
+    await expect(card).toHaveCount(0);
+    await expect(host.getByRole('button', { name: 'Lifecycle host', exact: true })).toBeVisible();
+    await expect(guest.getByRole('button', { name: 'Lifecycle guest', exact: true })).toBeVisible();
+  } finally {
+    await hostContext.close();
+    await guestContext.close();
+    await publicContext.close();
+  }
+});

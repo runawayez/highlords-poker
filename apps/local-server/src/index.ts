@@ -146,7 +146,7 @@ wss.on('connection', (ws) => {
     try {
       const m = JSON.parse(raw.toString());
       if (m.type === 'AUTH') {
-        await service.authenticate(m.token);
+        await service.heartbeat(m.token, typeof m.roomId === 'string' ? m.roomId : undefined);
         sockets.set(ws, {
           token: m.token,
           roomId: typeof m.roomId === 'string' ? m.roomId : undefined,
@@ -154,7 +154,7 @@ wss.on('connection', (ws) => {
         await send(ws);
       } else if (m.type === 'PING') {
         const auth = sockets.get(ws);
-        if (auth) await service.heartbeat(auth.token);
+        if (auth) await service.heartbeat(auth.token, auth.roomId);
       }
     } catch {
       ws.send(JSON.stringify({ error: 'SESSION_EXPIRED' }));

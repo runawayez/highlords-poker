@@ -3386,3 +3386,47 @@ footer > span:first-child {
     width: 170px;
   }
 }
+
+.room-info .room-presence {
+  color: #b3c6d6;
+  font-size: 11px;
+  margin-top: 6px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.room-controls .close-room-button {
+  border-color: #79404d;
+  color: #f3a7b6;
+  background: #34212a;
+}
+.lobby-retention {
+  font-size: 10px !important;
+  color: #8fa3b6 !important;
+  max-width: 650px;
+}
+.retention-notice {
+  font-size: 12px;
+  border: 1px solid #665434;
+  background: #28271e;
+  color: #e0c691;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+@media (max-width: 650px) {
+  .room-info .room-presence {
+    font-size: 9px;
+  }
+  .section-heading {
+    gap: 10px;
+  }
+  .lobby-retention {
+    font-size: 9px !important;
+  }
+  .retention-notice {
+    font-size: 11px;
+  }
+  .room-controls .close-room-button {
+    font-size: 9px;
+  }
+}

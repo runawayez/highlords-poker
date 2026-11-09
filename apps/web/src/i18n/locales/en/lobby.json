@@ -80,5 +80,16 @@
   "liveTables": "Tables playing",
   "noResults": "No tables match your filters",
   "changeFilters": "Change your search or filters to find a game.",
-  "defaultTitle": "Highlords Night"
+  "defaultTitle": "Highlords Night",
+  "onlinePeople": "People online",
+  "humansOnline": "{{count}} person online",
+  "humansOnline_other": "{{count}} people online",
+  "botsCount": "{{count}} bot",
+  "botsCount_other": "{{count}} bots",
+  "humansOffline": "{{count}} person away",
+  "humansOffline_other": "{{count}} people away",
+  "spectatorsOnline": "{{count}} spectator online",
+  "spectatorsOnline_other": "{{count}} spectators online",
+  "occupiedSeats": "seats",
+  "retentionHint": "Rooms close after 30 minutes without connected people. Tournament results remain available for 1 hour."
 }
