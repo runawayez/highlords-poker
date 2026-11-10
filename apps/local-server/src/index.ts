@@ -5,6 +5,9 @@ import { dirname, resolve, extname } from 'node:path';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { PokerService, type State } from '../../../packages/server/src/service.ts';
 import { handleApi, limiter } from '../../../packages/server/src/http.ts';
+// The single-IP Playwright harness runs many independent clients in one minute.
+// Do not disable rate limiting outside an explicitly enabled local test server.
+if (process.env.HIGHLORDS_E2E === '1') limiter.take = () => true;
 const dbPath = process.env.DATA_PATH ?? '.data/poker.sqlite';
 mkdirSync(dirname(dbPath), { recursive: true });
 const db = new DatabaseSync(dbPath);

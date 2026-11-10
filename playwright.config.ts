@@ -9,7 +9,12 @@ export default defineConfig({
     command: 'node scripts/dev.mjs --port 4174 --strictPort',
     url: 'http://localhost:4174',
     reuseExistingServer: !process.env.CI,
-    env: { PORT: '3001', DATA_PATH: '.data/e2e.sqlite', ALLOWED_ORIGINS: 'http://localhost:4174' },
+    env: {
+      PORT: '3001',
+      DATA_PATH: '.data/e2e.sqlite',
+      ALLOWED_ORIGINS: 'http://localhost:4174',
+      HIGHLORDS_E2E: '1',
+    },
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   reporter: [['list'], ['html', { open: 'never' }]],
