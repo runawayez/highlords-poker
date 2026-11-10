@@ -399,4 +399,6 @@
 }
 
 /* Keep decorative gradients from increasing the document's scrollable width. */
-.club-theme.view-home { overflow-x: clip; }
+.club-theme.view-home {
+  overflow-x: clip;
+}
