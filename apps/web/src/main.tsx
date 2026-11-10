@@ -5,6 +5,7 @@ import './i18n/index.ts';
 import './styles.css';
 import './club.css';
 import './premium.css';
+import './experience.css';
 import { ClubArtwork, ClubFeatures } from './club-art.tsx';
 import { ProfileSchema, type Config, type Command } from '../../../packages/contracts/src/index.ts';
 import {
@@ -624,7 +625,7 @@ function App() {
                   </button>
                 </div>
               )}
-              <div className="lobby-layout">
+              <div className="lobby-layout lobby-layout-premium">
                 <section className="rooms">
                   <div className="section-heading">
                     <div>
@@ -687,72 +688,92 @@ function App() {
                       {t('lobby:vacancies')}
                     </label>
                   </div>
-                  <div className="room-list">
-                    {filteredRooms.map((r) => (
-                      <article className={`room-card room-${r.mode.toLowerCase()}`} key={r.id}>
-                        <div className="room-symbol">
-                          {r.mode === 'CASH' ? '♠' : r.mode === 'SIT_AND_GO' ? '♜' : '♛'}
-                        </div>
-                        <div className="room-info">
-                          <span className="badge">{t(`game:${r.mode}`)}</span>
-                          <h3>
-                            {r.title}{' '}
-                            {r.protected && <span aria-label={t('lobby:protected')}>⌑</span>}
-                          </h3>
-                          <p>
-                            {num(r.small)} / {num(r.big)} · {r.players}/{r.capacity}{' '}
-                            {t('lobby:occupiedSeats')} · {t(`game:${r.status}`)}
-                          </p>
-                          {r.humansOnline !== undefined && (
-                            <p className="room-presence">
-                              <span className={r.humansOnline ? 'online-dot' : ''}>●</span>{' '}
-                              {t('lobby:humansOnline', { count: r.humansOnline })} ·{' '}
-                              {t('lobby:botsCount', { count: r.bots })}
-                              {r.humansOffline > 0 && (
-                                <> · {t('lobby:humansOffline', { count: r.humansOffline })}</>
-                              )}
-                              {r.spectatorsOnline > 0 && (
-                                <> · {t('lobby:spectatorsOnline', { count: r.spectatorsOnline })}</>
-                              )}
-                            </p>
-                          )}
-                          <div className="room-occupancy" aria-label={`${r.players}/${r.capacity}`}>
-                            {Array.from({ length: Math.min(r.capacity, 9) }, (_, i) => (
-                              <i className={i < r.players ? 'occupied' : ''} key={i} />
-                            ))}
+                  <div className="lobby-table" role="region" aria-label={t('lobby:rooms')}>
+                    <div className="lobby-table-head" aria-hidden="true">
+                      <span>{t('lobby:rooms')}</span>
+                      <span>{t('lobby:mode')}</span>
+                      <span>Blinds</span>
+                      <span>{t('lobby:occupiedSeats')}</span>
+                      <span>{t('lobby:status')}</span>
+                      <span />
+                    </div>
+                    <div className="room-list">
+                      {filteredRooms.map((r) => (
+                        <article className={`room-card room-${r.mode.toLowerCase()}`} key={r.id}>
+                          <div className="room-title-cell">
+                            <span className="room-symbol" aria-hidden="true">
+                              {r.mode === 'CASH' ? '♠' : r.mode === 'SIT_AND_GO' ? '♜' : '♛'}
+                            </span>
+                            <div className="room-info">
+                              <h3>
+                                {r.title}
+                                {r.protected && <span className="room-lock" title={t('lobby:protected')}>⌑</span>}
+                              </h3>
+                              <p className="room-presence">
+                                <span className={r.humansOnline ? 'online-dot' : ''}>●</span>{' '}
+                                {t('lobby:humansOnline', { count: r.humansOnline ?? 0 })} ·{' '}
+                                {t('lobby:botsCount', { count: r.bots ?? 0 })}
+                              </p>
+                            </div>
                           </div>
+                          <span className="room-mode-cell">{t(`game:${r.mode}`)}</span>
+                          <strong className="room-blinds-cell">{num(r.small)} / {num(r.big)}</strong>
+                          <div className="room-players-cell">
+                            <strong>{r.players} / {r.capacity}</strong>
+                            <div className="room-occupancy" aria-label={`${r.players}/${r.capacity}`}>
+                              {Array.from({ length: Math.min(r.capacity, 9) }, (_, i) => (
+                                <i className={i < r.players ? 'occupied' : ''} key={i} />
+                              ))}
+                            </div>
+                          </div>
+                          <span className={`room-status-cell status-${r.status.toLowerCase()}`}>
+                            <i aria-hidden="true" /> {t(`game:${r.status}`)}
+                          </span>
+                          <div className="room-buttons">
+                            <button
+                              disabled={
+                                busy ||
+                                r.players >= r.capacity ||
+                                ['FINISHED', 'EXPIRED'].includes(r.status)
+                              }
+                              className="primary small"
+                              onClick={() => setJoinDialog({ id: r.id, watch: false })}
+                            >
+                              {t('lobby:join')}
+                            </button>
+                            <button
+                              disabled={busy}
+                              className="text-button"
+                              onClick={() => setJoinDialog({ id: r.id, watch: true })}
+                            >
+                              {t('watch')}
+                            </button>
+                          </div>
+                        </article>
+                      ))}
+                      {filteredRooms.length === 0 && (
+                        <div className="empty-state">
+                          <span>♠</span>
+                          <h3>{t(lobby.rooms.length ? 'lobby:noResults' : 'lobby:noRooms')}</h3>
+                          <p>{t(lobby.rooms.length ? 'lobby:changeFilters' : 'lobby:noRoomsText')}</p>
                         </div>
-                        <div className="room-buttons">
-                          <button
-                            disabled={
-                              busy ||
-                              r.players >= r.capacity ||
-                              ['FINISHED', 'EXPIRED'].includes(r.status)
-                            }
-                            className="primary small"
-                            onClick={() => setJoinDialog({ id: r.id, watch: false })}
-                          >
-                            {t('lobby:join')}
-                          </button>
-                          <button
-                            disabled={busy}
-                            className="text-button"
-                            onClick={() => setJoinDialog({ id: r.id, watch: true })}
-                          >
-                            {t('watch')}
-                          </button>
-                        </div>
-                      </article>
-                    ))}
-                    {filteredRooms.length === 0 && (
-                      <div className="empty-state">
-                        <span>♧</span>
-                        <h3>{t(lobby.rooms.length ? 'lobby:noResults' : 'lobby:noRooms')}</h3>
-                        <p>{t(lobby.rooms.length ? 'lobby:changeFilters' : 'lobby:noRoomsText')}</p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </section>
+                {homeScreen === 'lobby' && (
+                  <aside className="lobby-aside">
+                    <div className="lobby-aside-crest" aria-hidden="true">♠</div>
+                    <p className="eyebrow">HIGHLORDS POKER CLUB</p>
+                    <h2>{t('club:goodCompany')}</h2>
+                    <p>{t('club:lobbyIntro')}</p>
+                    <div className="lobby-aside-divider" />
+                    <strong>{t('learn:guideNav')}</strong>
+                    <button onClick={() => openLearning('guide')}>{t('learn:guideNav')} <span>↗</span></button>
+                    <button onClick={() => openLearning('hands')}>{t('learn:handsNav')} <span>↗</span></button>
+                    <button onClick={() => openLearning('help')}>{t('learn:helpNav')} <span>↗</span></button>
+                  </aside>
+                )}
               </div>
               {homeScreen === 'home' && <ClubFeatures onLearn={() => openLearning('guide')} />}
             </>
