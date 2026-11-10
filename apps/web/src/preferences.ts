@@ -14,7 +14,7 @@ export const defaults: Preferences = {
   theme: 'felt',
   cardBack: 'classic',
   chipColor: '#d9b66b',
-  sound: false,
+  sound: true,
 };
 const avatars: Profile['avatar'][] = ['♠', '♣', '♦', '♥', '☠', '♜', '⚔', '☾'];
 const accents = ['#c73546', '#a976c5', '#d0a264', '#558e9e', '#9b768e', '#7caa95'];

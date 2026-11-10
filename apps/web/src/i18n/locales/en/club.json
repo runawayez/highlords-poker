@@ -18,5 +18,11 @@
   "chooseSeat": "YOUR SEAT AT THE TABLE",
   "lobbyTitle": "Find your next game.",
   "lobbyIntro": "Join friends, watch a table or organize your own night.",
-  "quickBot": "Add medium bot"
+  "quickBot": "Add medium bot",
+  "muteSound": "Mute sound effects",
+  "enableSound": "Enable sound effects",
+  "soundOn": "Sound on",
+  "soundOff": "Sound off",
+  "liveChat": "Table chat",
+  "chatHint": "Live conversation"
 }

@@ -370,7 +370,7 @@ test('real disconnect changes presence counts and host closure redirects everyon
     await guest.getByRole('button', { name: 'Confirmar', exact: true }).click();
     await expect(guest.getByRole('dialog')).not.toBeVisible();
     await expect(guest.getByRole('button', { name: 'Encerrar sala', exact: true })).toHaveCount(0);
-    await lobby.goto('/');
+    await lobby.goto('/mesas');
     const card = lobby.locator('.room-card').filter({ hasText: title });
     await expect(card).toContainText('2 pessoas online');
     await expect(card).toContainText('1 bot');
@@ -716,4 +716,26 @@ test('fresh browser receives a reusable guest identity and can edit it in room c
   await expect(page.locator('.profile-trigger')).toContainText('Guest Alfa');
   await page.reload();
   await expect(page.locator('.profile-trigger')).toContainText('Guest Alfa');
+});
+
+test('home is an invitation, not a duplicate lobby', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.hero')).toBeVisible();
+  await expect(page.locator('.room-list')).toHaveCount(0);
+  await page.getByRole('button', { name: /Encontrar uma mesa/ }).click();
+  await expect(page).toHaveURL(/\/mesas$/);
+  await expect(page.locator('.room-list')).toBeVisible();
+});
+
+test('playing room keeps chat visible and offers sound control', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Criar uma mesa/ }).click();
+  await page.getByLabel('Nome da mesa').fill('Sound and chat smoke');
+  await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+  await expect(page).toHaveURL(/\/room\//);
+  await expect(page.locator('.table-chat-dock .chat-form')).toBeVisible();
+  const sound = page.getByRole('button', { name: /Silenciar efeitos|Ativar efeitos sonoros/ });
+  await expect(sound).toBeVisible();
+  await sound.click();
+  await expect(sound).toHaveAttribute('aria-pressed', 'false');
 });

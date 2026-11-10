@@ -18,5 +18,11 @@
   "chooseSeat": "SEU LUGAR À MESA",
   "lobbyTitle": "Encontre sua próxima partida.",
   "lobbyIntro": "Entre com amigos, observe uma mesa ou organize sua própria noite.",
-  "quickBot": "Adicionar bot médio"
+  "quickBot": "Adicionar bot médio",
+  "muteSound": "Silenciar efeitos",
+  "enableSound": "Ativar efeitos sonoros",
+  "soundOn": "Som ligado",
+  "soundOff": "Som desligado",
+  "liveChat": "Chat da mesa",
+  "chatHint": "Conversa em tempo real"
 }

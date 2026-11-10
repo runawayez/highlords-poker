@@ -7,6 +7,8 @@ import './club.css';
 import './premium.css';
 import './experience.css';
 import './quick-profile.css';
+import './club-premium.css';
+import { playTableSound, primeTableAudio } from './table-audio.ts';
 import { ClubArtwork, ClubFeatures } from './club-art.tsx';
 import {
   ProfileSchema,
@@ -58,6 +60,7 @@ function App() {
   const lastSessionProfile = useRef('');
   const [railTab, setRailTab] = useState('players');
   const [directorOpen, setDirectorOpen] = useState(false);
+  const [mobileChatOpen, setMobileChatOpen] = useState(true);
   const closeDirector = useCallback(() => setDirectorOpen(false), []);
   const [homeScreen, setHomeScreen] = useState(() =>
     location.pathname === '/mesas' ? 'lobby' : 'home',
@@ -441,27 +444,44 @@ function App() {
       if (!seen.includes(hand.id)) write('highlords.wins', [...seen, hand.id].slice(-1000));
     }
   }, [table?.hand, snapshot?.me]);
-  const previousActor = useRef('');
+  const soundState = useRef<{ room: string; actor: string; board: number; actions: number; chatId: string; handId: string; done: boolean } | null>(null);
   useEffect(() => {
-    const actor = table?.hand?.actor ?? '';
-    if (actor !== previousActor.current && actor === snapshot?.me && prefs.sound) {
-      try {
-        const ctx = new AudioContext();
-        const o = ctx.createOscillator(),
-          g = ctx.createGain();
-        o.connect(g);
-        g.connect(ctx.destination);
-        g.gain.value = 0.05;
-        o.frequency.value = 660;
-        o.start();
-        o.stop(ctx.currentTime + 0.12);
-        setTimeout(() => void ctx.close(), 300);
-      } catch {
-        /* browser may require a user gesture */
-      }
+    if (!snapshot || !roomId) {
+      soundState.current = null;
+      return;
     }
-    previousActor.current = actor;
-  }, [table?.hand?.actor, snapshot?.me, prefs.sound]);
+    const hand = table?.hand;
+    const next = {
+      room: roomId,
+      actor: hand?.actor ?? '',
+      board: hand?.board.length ?? 0,
+      actions: hand?.log.length ?? 0,
+      chatId: snapshot.chat.at(-1)?.id ?? '',
+      handId: hand?.id ?? '',
+      done: hand?.done ?? false,
+    };
+    const prev = soundState.current;
+    soundState.current = next;
+    // Initial room snapshots must remain silent; sounds only accompany live events.
+    if (!prev || prev.room !== roomId || !prefs.sound) return;
+    if (next.chatId && prev.chatId && prev.chatId !== next.chatId) {
+      const newest = snapshot.chat.at(-1);
+      if (newest && !newest.code && newest.player !== snapshot.me) playTableSound('message');
+    }
+    if (next.handId && prev.handId !== next.handId) {
+      playTableSound('deal');
+    } else if (next.board > prev.board) {
+      playTableSound('deal');
+    } else if (next.actions > prev.actions) {
+      playTableSound('chip');
+    }
+    if (next.actor && next.actor !== prev.actor && next.actor === snapshot.me) {
+      playTableSound('turn');
+    }
+    if (hand?.done && !prev.done && hand?.awards[snapshot.me]) {
+      playTableSound('win');
+    }
+  }, [snapshot?.version, table?.id, roomId, prefs.sound]);
   return (
     <ErrorContext.Provider value={error}>
       <div
@@ -593,7 +613,7 @@ function App() {
             </button>
           </div>
         )}
-        <main>
+        <main onPointerDownCapture={primeTableAudio}>
           {!connected && page === 'play' && <p className="banner">{t('offlineNotice')}</p>}
           {page !== 'play' ? (
             <LearningPage kind={page} onPlay={() => navigate()} onSection={openLearning} />
@@ -615,9 +635,9 @@ function App() {
                       ＋ {t('lobby:createRoom')} <span>↗</span>
                     </button>
                     <button className="hero-find text-button" onClick={openLobby}>
-                      {t('club:findTable')} →
+                      {t('club:findTable')} <span aria-hidden="true">→</span>
                     </button>
-                    <p className="micro">{t('lobby:stats')}</p>
+                    <div className="hero-trust"><span>♠</span> {t('lobby:stats')}</div>
                   </div>
                   <ClubArtwork />
                 </section>
@@ -634,6 +654,7 @@ function App() {
                   </button>
                 </div>
               )}
+              {homeScreen === 'lobby' && (
               <div className="lobby-layout lobby-layout-premium">
                 <section className="rooms">
                   <div className="section-heading">
@@ -814,6 +835,7 @@ function App() {
                   </aside>
                 )}
               </div>
+              )}
               {homeScreen === 'home' && <ClubFeatures onLearn={() => openLearning('guide')} />}
             </>
           ) : (
@@ -852,11 +874,11 @@ function App() {
                         </svg>
                       </button>
                       <button
-                        className="panel-trigger"
+                        className="panel-trigger chat-shortcut"
                         aria-label={t('game:panelchat')}
                         onClick={() => {
-                          setRailTab('chat');
-                          setDirectorOpen(true);
+                          setMobileChatOpen(true);
+                          document.getElementById('table-live-chat')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         }}
                       >
                         <span className="button-label">{t('game:panelchat')}</span>
@@ -876,6 +898,22 @@ function App() {
                           {t(snapshot.status === 'PAUSED' ? 'game:resume' : 'game:pause')}
                         </button>
                       )}
+                      <button
+                        className="sound-toggle"
+                        aria-label={t(prefs.sound ? 'club:muteSound' : 'club:enableSound')}
+                        title={t(prefs.sound ? 'club:muteSound' : 'club:enableSound')}
+                        aria-pressed={prefs.sound}
+                        onClick={() => {
+                          const next = { ...prefs, sound: !prefs.sound };
+                          setPrefs(next);
+                          write('highlords.preferences', next);
+                          primeTableAudio();
+                          if (next.sound) playTableSound('enable');
+                        }}
+                      >
+                        <span aria-hidden="true">{prefs.sound ? '♪' : '♪̸'}</span>
+                        <span className="sound-text">{t(prefs.sound ? 'club:soundOn' : 'club:soundOff')}</span>
+                      </button>
                       <label className="language">
                         <select
                           aria-label={t('selectLanguage')}
@@ -1011,6 +1049,30 @@ function App() {
                         </div>
                       )}
                     </section>
+                    <aside className={`table-chat-dock ${mobileChatOpen ? 'chat-expanded' : ''}`} id="table-live-chat" aria-label={t('game:panelchat')}>
+                      <div className="table-chat-topline">
+                        <div>
+                          <span className="live-indicator" />
+                          <strong>{t('club:liveChat')}</strong>
+                          <small>{t('club:chatHint')}</small>
+                        </div>
+                        <button
+                          type="button"
+                          className="mobile-chat-toggle"
+                          aria-expanded={mobileChatOpen}
+                          onClick={() => setMobileChatOpen((value) => !value)}
+                        >
+                          {mobileChatOpen ? '−' : '+'}
+                        </button>
+                      </div>
+                      <Chat
+                        messages={snapshot.chat as Messages}
+                        me={snapshot.me}
+                        disabled={busy || !connected}
+                        onSend={(text) => run('CHAT', { text })}
+                        onReact={(messageId, emoji) => run('REACT', { messageId, emoji })}
+                      />
+                    </aside>
                   </div>
                 </div>
               ) : (
