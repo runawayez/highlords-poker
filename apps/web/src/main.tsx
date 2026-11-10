@@ -726,6 +726,12 @@ function App() {
                                 <span className={r.humansOnline ? 'online-dot' : ''}>●</span>{' '}
                                 {t('lobby:humansOnline', { count: r.humansOnline ?? 0 })} ·{' '}
                                 {t('lobby:botsCount', { count: r.bots ?? 0 })}
+                                {r.humansOffline > 0 && (
+                                  <> · {t('lobby:humansOffline', { count: r.humansOffline })}</>
+                                )}
+                                {r.spectatorsOnline > 0 && (
+                                  <> · {t('lobby:spectatorsOnline', { count: r.spectatorsOnline })}</>
+                                )}
                               </p>
                             </div>
                           </div>
@@ -735,7 +741,7 @@ function App() {
                           </strong>
                           <div className="room-players-cell">
                             <strong>
-                              {r.players} / {r.capacity}
+                              {r.players}/{r.capacity} {t('lobby:occupiedSeats')}
                             </strong>
                             <div
                               className="room-occupancy"

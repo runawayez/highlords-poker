@@ -21,6 +21,31 @@ async function closePanel(page: Page) {
   await expect(close).toBeInViewport();
   await close.click();
 }
+test('direct invite accepts an anonymous guest without a mandatory profile dialog', async ({
+  browser,
+  baseURL,
+}) => {
+  const a = await browser.newContext({ baseURL });
+  const b = await browser.newContext({ baseURL });
+  try {
+    const host = await a.newPage();
+    const guest = await b.newPage();
+    await host.goto('/');
+    await host.getByRole('button', { name: /Criar uma mesa/ }).click();
+    await host.getByLabel('Nome da mesa').fill('Guest invite ' + Date.now());
+    await host.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+    await expect(host).toHaveURL(/\/room\//);
+    await guest.goto(host.url());
+    await expect(guest.locator('.quick-profile')).toContainText(/Highlord-\d{6}/);
+    await guest.getByRole('button', { name: 'Confirmar', exact: true }).click();
+    await expect(guest.getByRole('dialog')).not.toBeVisible();
+    await expect(guest.locator('.seat.self')).toBeVisible();
+  } finally {
+    await a.close();
+    await b.close();
+  }
+});
+
 test('two independent guests play, chat, change language mid-hand and reconnect', async ({
   browser,
   baseURL,
@@ -691,29 +716,4 @@ test('fresh browser receives a reusable guest identity and can edit it in room c
   await expect(page.locator('.profile-trigger')).toContainText('Guest Alfa');
   await page.reload();
   await expect(page.locator('.profile-trigger')).toContainText('Guest Alfa');
-});
-
-test('direct invite accepts an anonymous guest without a mandatory profile dialog', async ({
-  browser,
-  baseURL,
-}) => {
-  const a = await browser.newContext({ baseURL });
-  const b = await browser.newContext({ baseURL });
-  try {
-    const host = await a.newPage();
-    const guest = await b.newPage();
-    await host.goto('/');
-    await host.getByRole('button', { name: /Criar uma mesa/ }).click();
-    await host.getByLabel('Nome da mesa').fill('Guest invite ' + Date.now());
-    await host.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
-    await expect(host).toHaveURL(/\/room\//);
-    await guest.goto(host.url());
-    await expect(guest.locator('.quick-profile')).toContainText(/Highlord-\d{6}/);
-    await guest.getByRole('button', { name: 'Confirmar', exact: true }).click();
-    await expect(guest.getByRole('dialog')).not.toBeVisible();
-    await expect(guest.locator('.seat.self')).toBeVisible();
-  } finally {
-    await a.close();
-    await b.close();
-  }
 });
