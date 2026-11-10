@@ -6,7 +6,7 @@ async function enter(page: Page, nickname: string) {
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
   await expect(page.getByRole('dialog')).not.toBeVisible();
   await expect(page.locator('.chat')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Meu perfil', exact: true }).click();
+  await page.locator('.profile-trigger').click();
   await page.getByLabel('Como te chamamos?').fill(nickname);
   await page.getByRole('button', { name: 'Salvar', exact: true }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
@@ -670,5 +670,42 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
           await page.screenshot({ path: `test-results/ui-fixed-${state}-${width}.png` });
       }
     }
+  }
+});
+
+test('fresh browser receives a reusable guest identity and can edit it in room creation', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  const label = await page.locator('.profile-trigger').innerText();
+  expect(label).toMatch(/Highlord-\\d{6}/);
+  await page.getByRole('button', { name: /Criar uma mesa/ }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.locator('.quick-profile')).toContainText(label);
+  await page.getByRole('button', { name: 'Editar', exact: true }).click();
+  await page.locator('.quick-profile').getByLabel('Como te chamamos?').fill('Guest Alfa');
+  await expect(page.locator('.profile-trigger')).toContainText('Guest Alfa');
+  await page.reload();
+  await expect(page.locator('.profile-trigger')).toContainText('Guest Alfa');
+});
+
+test('direct invite accepts an anonymous guest without a mandatory profile dialog', async ({ browser, baseURL }) => {
+  const a = await browser.newContext({ baseURL });
+  const b = await browser.newContext({ baseURL });
+  try {
+    const host = await a.newPage();
+    const guest = await b.newPage();
+    await host.goto('/');
+    await host.getByRole('button', { name: /Criar uma mesa/ }).click();
+    await host.getByLabel('Nome da mesa').fill('Guest invite ' + Date.now());
+    await host.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+    await expect(host).toHaveURL(/\\/room\\//);
+    await guest.goto(host.url());
+    await expect(guest.locator('.quick-profile')).toContainText(/Highlord-\\d{6}/);
+    await guest.getByRole('button', { name: 'Confirmar', exact: true }).click();
+    await expect(guest.getByRole('dialog')).not.toBeVisible();
+    await expect(guest.locator('.seat.self')).toBeVisible();
+  } finally {
+    await a.close();
+    await b.close();
   }
 });

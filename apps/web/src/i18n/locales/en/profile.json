@@ -21,5 +21,10 @@
   "local": "Your profile stays in this browser. Exports never include credentials.",
   "achievements": "Local achievements",
   "handsWon": "Hands won in this browser: {{count}}",
-  "sound": "Turn notification sound"
+  "sound": "Turn notification sound",
+  "playingAs": "YOU'LL PLAY AS",
+  "guestHint": "Guest profile · no account needed",
+  "editQuick": "Edit",
+  "done": "Done",
+  "invalidQuick": "Use a nickname of 2–24 characters, without special symbols."
 }

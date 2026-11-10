@@ -87,20 +87,70 @@ export function Modal({
     </dialog>
   );
 }
+export function QuickProfile({
+  value, onChange,
+}: { value: Profile; onChange: (profile: Profile) => void }) {
+  const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
+  return (
+    <section className="quick-profile">
+      <div className="quick-profile-heading">{t('profile:playingAs')}</div>
+      <div className="quick-profile-summary">
+        <span className="quick-profile-avatar" style={{ color: value.accent }}>{value.avatar}</span>
+        <div className="quick-profile-name">
+          <strong>{value.nickname}</strong>
+          <small>{t('profile:guestHint')}</small>
+        </div>
+        <button type="button" className="quick-profile-edit" aria-expanded={editing}
+          onClick={() => setEditing((current) => !current)}>
+          {editing ? t('profile:done') : t('profile:editQuick')}
+        </button>
+      </div>
+      {editing && (
+        <div className="quick-profile-fields">
+          <label>{t('profile:nickname')}
+            <input aria-label={t('profile:nickname')} minLength={2} maxLength={24}
+              value={value.nickname}
+              onChange={(e) => onChange({ ...value, nickname: e.target.value })} />
+          </label>
+          <label>{t('profile:accent')}
+            <input type="color" value={value.accent}
+              onChange={(e) => onChange({ ...value, accent: e.target.value })} />
+          </label>
+          <fieldset>
+            <legend>{t('profile:avatar')}</legend>
+            <div className="quick-profile-symbols">
+              {(['♠', '♣', '♦', '♥', '☠', '♜', '⚔', '☾'] as const).map((avatar) => (
+                <button key={avatar} type="button" aria-label={avatar}
+                  aria-pressed={value.avatar === avatar}
+                  onClick={() => onChange({ ...value, avatar })}>{avatar}</button>
+              ))}
+            </div>
+          </fieldset>
+        </div>
+      )}
+    </section>
+  );
+}
 export function JoinDialog({
   onJoin,
   onClose,
   busy,
+  profile,
+  onProfileChange,
 }: {
   onJoin: (password: string, buyIn?: number) => void;
   onClose: () => void;
   busy: boolean;
+  profile: Profile;
+  onProfileChange: (profile: Profile) => void;
 }) {
   const { t } = useTranslation();
   const [pw, setPw] = useState('');
   const [buyIn, setBuyIn] = useState('');
   return (
     <Modal title={t('lobby:joinTitle')} onClose={onClose}>
+      <QuickProfile value={profile} onChange={onProfileChange} />
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -308,11 +358,15 @@ export function CreateRoom({
   onCreate,
   busy,
   onError,
+  profile,
+  onProfileChange,
 }: {
   onClose: () => void;
   onCreate: (c: Config) => void;
   busy: boolean;
   onError: (e: unknown) => void;
+  profile: Profile;
+  onProfileChange: (profile: Profile) => void;
 }) {
   const { t, i18n } = useTranslation();
   const [c, setC] = useState<Config>(() => ({ ...defaultConfig, title: t('lobby:defaultTitle') }));
@@ -360,6 +414,11 @@ export function CreateRoom({
   };
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ProfileSchema.safeParse(profile).success) {
+      setInvalid(t('profile:invalidQuick'));
+      setStep(0);
+      return;
+    }
     const parsed = ConfigSchema.safeParse(c);
     if (!parsed.success) {
       const fields = [
@@ -389,6 +448,7 @@ export function CreateRoom({
     <Modal title={t('lobby:createTitle')} onClose={onClose} wide>
       <form className="room-builder" onSubmit={submit} noValidate>
         <div className="builder-main">
+          <QuickProfile value={profile} onChange={onProfileChange} />
           <p className="builder-intro">{t('lobby:builderIntro')}</p>
           <div className="builder-steps" aria-label={t('lobby:setupSteps')}>
             {['format', 'rules', 'review'].map((key, i) => (

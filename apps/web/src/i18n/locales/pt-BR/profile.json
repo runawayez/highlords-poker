@@ -21,5 +21,10 @@
   "local": "Seu perfil fica neste navegador. Exportações não incluem credenciais.",
   "achievements": "Conquistas locais",
   "handsWon": "Mãos vencidas neste navegador: {{count}}",
-  "sound": "Aviso sonoro de turno"
+  "sound": "Aviso sonoro de turno",
+  "playingAs": "VOCÊ VAI JOGAR COMO",
+  "guestHint": "Perfil de convidado · sem cadastro",
+  "editQuick": "Editar",
+  "done": "Concluir",
+  "invalidQuick": "Use um apelido de 2 a 24 caracteres, sem símbolos especiais."
 }

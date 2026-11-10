@@ -6,8 +6,9 @@ import './styles.css';
 import './club.css';
 import './premium.css';
 import './experience.css';
+import './quick-profile.css';
 import { ClubArtwork, ClubFeatures } from './club-art.tsx';
-import { ProfileSchema, type Config, type Command } from '../../../packages/contracts/src/index.ts';
+import { ProfileSchema, type Profile, type Config, type Command } from '../../../packages/contracts/src/index.ts';
 import {
   API,
   request,
@@ -49,6 +50,7 @@ function roomPath() {
 function App() {
   const { t, i18n } = useTranslation();
   const [prefs, setPrefs] = useState(storedPreferences);
+  const lastSessionProfile = useRef('');
   const [railTab, setRailTab] = useState('players');
   const [directorOpen, setDirectorOpen] = useState(false);
   const closeDirector = useCallback(() => setDirectorOpen(false), []);
@@ -146,6 +148,12 @@ function App() {
     window.addEventListener('popstate', fn);
     return () => window.removeEventListener('popstate', fn);
   }, []);
+  const changeQuickProfile = (profile: Profile) => {
+    const updated = { ...prefs, profile };
+    setPrefs(updated);
+    write('highlords.preferences', updated);
+    setError('');
+  };
   const saveProfile = async (p: Preferences) => {
     const valid = ProfileSchema.safeParse(p.profile);
     if (!valid.success) {
@@ -162,6 +170,7 @@ function App() {
     try {
       const session = await request<{ token: string }>('/api/session', { profile: p.profile });
       setToken(session.token);
+      lastSessionProfile.current = JSON.stringify(p.profile);
       setReady(true);
       return true;
     } catch {
@@ -320,12 +329,9 @@ function App() {
   const join = async (id: string, password: string, watch: boolean, buyIn?: number) => {
     setBusy(true);
     try {
-      if (!prefs.profile.nickname) {
-        setJoinDialog(null);
-        setProfileOpen(true);
-        return;
-      }
-      if (!ready && !(await connectProfile(prefs))) throw new Error('NETWORK');
+      if (!ProfileSchema.safeParse(prefs.profile).success) throw new Error('VALIDATION');
+      if ((!ready || lastSessionProfile.current !== JSON.stringify(prefs.profile)) &&
+          !(await connectProfile(prefs))) throw new Error('NETWORK');
       await command({
         type: watch ? 'SPECTATE' : 'JOIN',
         roomId: id,
@@ -342,7 +348,9 @@ function App() {
   const create = async (config: Config) => {
     setBusy(true);
     try {
-      if (!ready && !(await connectProfile(prefs))) throw new Error('NETWORK');
+      if (!ProfileSchema.safeParse(prefs.profile).success) throw new Error('VALIDATION');
+      if ((!ready || lastSessionProfile.current !== JSON.stringify(prefs.profile)) &&
+          !(await connectProfile(prefs))) throw new Error('NETWORK');
       const result = await command({ type: 'CREATE', payload: { config } });
       setCreateOpen(false);
       navigate(result.roomId);
@@ -595,7 +603,7 @@ function App() {
                       className="primary"
                       disabled={busy}
                       onClick={() =>
-                        prefs.profile.nickname ? setCreateOpen(true) : setProfileOpen(true)
+                        setCreateOpen(true)
                       }
                     >
                       ＋ {t('lobby:createRoom')} <span>↗</span>
@@ -618,7 +626,7 @@ function App() {
                   <button
                     className="primary"
                     onClick={() =>
-                      prefs.profile.nickname ? setCreateOpen(true) : setProfileOpen(true)
+                      setCreateOpen(true)
                     }
                   >
                     {t('lobby:createRoom')}
@@ -1171,7 +1179,8 @@ function App() {
           />
         )}
         {createOpen && (
-          <CreateRoom busy={busy} onClose={closeCreate} onCreate={create} onError={fail} />
+          <CreateRoom busy={busy} onClose={closeCreate} onCreate={create} onError={fail}
+            profile={prefs.profile} onProfileChange={changeQuickProfile} />
         )}
         {lesson && (
           <Modal title={t('learn:learningModal')} onClose={closeLesson}>
@@ -1188,6 +1197,8 @@ function App() {
           <JoinDialog
             busy={busy}
             onClose={closeJoin}
+            profile={prefs.profile}
+            onProfileChange={changeQuickProfile}
             onJoin={(password, buyIn) => join(joinDialog.id, password, joinDialog.watch, buyIn)}
           />
         )}
