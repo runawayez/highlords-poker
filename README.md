@@ -33,6 +33,15 @@ A hospedagem e a operação do site ficam a cargo do criador do projeto. **Os jo
 
 **Todas as fichas e premiações são fictícias.** Não há depósitos, saques, apostas monetárias ou prêmios reais.
 
+## Aprenda e acompanhe a partida
+
+- [Como jogar](https://highlords-poker.vercel.app/como-jogar): guia visual das etapas e decisões de uma mão.
+- [Ranking de mãos](https://highlords-poker.vercel.app/ranking-de-maos): dez combinações ilustradas, empates e kickers.
+- [Ajuda](https://highlords-poker.vercel.app/ajuda): perguntas frequentes e glossário com busca.
+- Ajuda opcional na mesa: descreve sua melhor mão usando somente suas cartas e as comunitárias; preferência salva no navegador. Consulte o ranking sem sair da sala.
+- Cartas próprias junto das ações, valores de pagar/aumentar explícitos e opções da sala agrupadas. Menus disponíveis em desktop e celular.
+- Torneios com acompanhamento de jogadores restantes, próximos blinds, janela de rebuy e pódio final com premiações virtuais.
+
 ## Sobre este repositório
 
 Este é o **código público do site Highlords Poker**, mantido aqui para consulta, transparência e acompanhamento do desenvolvimento. A experiência principal para quem quer jogar acontece no site oficial.

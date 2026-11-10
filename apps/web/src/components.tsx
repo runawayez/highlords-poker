@@ -809,7 +809,8 @@ export function ActionBar({
   busy: boolean;
   onAction: (action: string, amount?: number) => Promise<unknown>;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const num = (n: number) => new Intl.NumberFormat(i18n.language).format(n);
   const opts = table.hand!.legal;
   const [amount, setAmount] = useState(opts.min);
   useEffect(() => setAmount(Math.min(opts.min, opts.max)), [opts.min, opts.max, table.hand?.actor]);
@@ -841,12 +842,19 @@ export function ActionBar({
               key={a}
               onClick={() => void onAction(a)}
             >
-              {t(`game:${a}`)}
-              {a === 'CALL' ? ` ${opts.call}` : ''}
+              {a === 'CALL'
+                ? t('learn:callAmount', { amount: num(opts.call) })
+                : a === 'ALL_IN'
+                  ? t('learn:allinAmount', {
+                      amount: num(
+                        table.hand!.players.find((p) => p.id === snapshot.me)?.stack ?? 0,
+                      ),
+                    })
+                  : t(`game:${a}`)}
             </button>
           ))}
       </div>
-      {opts.actions.includes('RAISE') && (
+      {(opts.actions.includes('RAISE') || opts.actions.includes('BET')) && (
         <form
           className="raise-controls"
           onSubmit={(e) => {
@@ -899,7 +907,9 @@ export function ActionBar({
             onChange={(e) => setAmount(Number(e.target.value))}
           />
           <button className="primary" disabled={busy}>
-            {t(table.hand!.currentBet === 0 ? 'game:BET' : 'game:RAISE')}
+            {t(table.hand!.currentBet === 0 ? 'learn:betAmount' : 'learn:raiseAmount', {
+              amount: num(amount),
+            })}
           </button>
         </form>
       )}

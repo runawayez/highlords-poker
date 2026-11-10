@@ -30,6 +30,15 @@ import {
   PokerTable,
   ActionBar,
 } from './components.tsx';
+import {
+  LearningPage,
+  DecisionDock,
+  TournamentPresentation,
+  learningRoute,
+  learningPaths,
+  type LearningKind,
+} from './learning.tsx';
+import { visibleHand } from './poker-learning.ts';
 function roomPath() {
   return location.pathname.match(/^\/room\/([a-f0-9-]+)$/)?.[1];
 }
@@ -49,6 +58,24 @@ function App() {
   const [createOpen, setCreateOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [roomId, setRoomId] = useState(roomPath);
+  const [page, setPage] = useState(learningRoute);
+  const [lesson, setLesson] = useState<LearningKind | null>(null);
+  const closeLesson = useCallback(() => setLesson(null), []);
+  const [coach, setCoach] = useState(() => read<boolean>('highlords.coach', true));
+  const toggleCoach = () =>
+    setCoach((value) => {
+      write('highlords.coach', !value);
+      return !value;
+    });
+  const openLearning = (kind: LearningKind) => {
+    if (roomId) {
+      setLesson(kind);
+      return;
+    }
+    history.pushState({}, '', learningPaths[kind]);
+    setPage(kind);
+    window.scrollTo(0, 0);
+  };
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [lobby, setLobby] = useState<{ rooms: Lobby }>({ rooms: [] });
   const [connected, setConnected] = useState(false);
@@ -82,6 +109,8 @@ function App() {
     [t],
   );
   const navigate = (id?: string) => {
+    setPage('play');
+    setLesson(null);
     history.pushState({}, '', id ? `/room/${id}` : '/');
     setRoomId(id);
     setSnapshot(null);
@@ -89,6 +118,7 @@ function App() {
   };
   useEffect(() => {
     const fn = () => {
+      setPage(learningRoute());
       setRoomId(roomPath());
       setSnapshot(null);
     };
@@ -123,7 +153,7 @@ function App() {
     if (prefs.profile.nickname) void connectProfile(prefs);
   }, []);
   useEffect(() => {
-    if (ready || roomId) return;
+    if (ready || roomId || page !== 'play') return;
     let active = true;
     const poll = async () => {
       try {
@@ -142,9 +172,9 @@ function App() {
       active = false;
       clearInterval(timer);
     };
-  }, [ready, roomId]);
+  }, [ready, roomId, page]);
   const refresh = useCallback(async () => {
-    if (!ready) return;
+    if (!ready || page !== 'play') return;
     try {
       if (roomId) {
         const result = await request<Snapshot>(`/api/rooms/${roomId}`);
@@ -170,9 +200,9 @@ function App() {
         }
       } else fail(e);
     }
-  }, [ready, roomId, fail, t]);
+  }, [ready, roomId, page, fail, t]);
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || page !== 'play') return;
     let disposed = false;
     let ws: WebSocket | undefined;
     let retry: ReturnType<typeof setTimeout>;
@@ -219,7 +249,7 @@ function App() {
       clearInterval(fallback);
       ws?.close();
     };
-  }, [ready, roomId, refresh]);
+  }, [ready, roomId, page, refresh]);
   useEffect(() => {
     const id = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(id);
@@ -353,6 +383,14 @@ function App() {
     me.stack > 0 &&
     snapshot.level.index === snapshot.config.addOnLevel;
   const table = tables[tableIndex] ?? tables.find((t) => t.ids.includes(snapshot!.me)) ?? tables[0];
+  useEffect(() => {
+    document.title =
+      page !== 'play'
+        ? `${t(`learn:${page}Nav`)} · Highlords Poker`
+        : snapshot
+          ? `${snapshot.config.title} · Highlords Poker`
+          : 'Highlords Poker';
+  }, [page, snapshot?.config.title, t]);
   const played = useRef(new Set<string>());
   useEffect(() => {
     const hand = table?.hand;
@@ -362,6 +400,17 @@ function App() {
       if (!seen.includes(hand.id)) write('highlords.wins', [...seen, hand.id].slice(-1000));
     }
   }, [table?.hand, snapshot?.me]);
+  useEffect(() => {
+    if (table?.hand?.actor !== snapshot?.me || snapshot?.status !== 'RUNNING') return;
+    const media = matchMedia('(max-width:650px)');
+    const focusTable = () => {
+      if (media.matches && !document.querySelector('dialog[open]'))
+        document.querySelector('.game-stage')?.scrollIntoView({ block: 'start', behavior: 'auto' });
+    };
+    focusTable();
+    media.addEventListener('change', focusTable);
+    return () => media.removeEventListener('change', focusTable);
+  }, [table?.hand?.actor, snapshot?.me, snapshot?.status]);
   const previousActor = useRef('');
   useEffect(() => {
     const actor = table?.hand?.actor ?? '';
@@ -405,14 +454,64 @@ function App() {
               HIGHLORDS<small>POKER CLUB</small>
             </span>
           </a>
-          <nav>
-            <button className={!roomId ? 'nav active' : 'nav'} onClick={() => navigate()}>
+          <nav className="desktop-nav">
+            <button
+              className={!roomId && page === 'play' ? 'nav active' : 'nav'}
+              onClick={() => navigate()}
+            >
               {t('lobby')}
             </button>
+            {(['guide', 'hands', 'help'] as const).map((kind) => (
+              <a
+                className={`nav ${page === kind ? 'active' : ''}`}
+                href={learningPaths[kind]}
+                key={kind}
+                onClick={(e) => {
+                  e.preventDefault();
+                  openLearning(kind);
+                }}
+              >
+                {t(`learn:${kind}Nav`)}
+              </a>
+            ))}
             <button className="nav" onClick={() => setRulesOpen(true)}>
               {t('rules')}
             </button>
           </nav>
+          <details className="mobile-nav">
+            <summary aria-label={t('learn:menu')}>☰</summary>
+            <div>
+              <button
+                onClick={(e) => {
+                  e.currentTarget.closest('details')!.open = false;
+                  navigate();
+                }}
+              >
+                {t('lobby')}
+              </button>
+              {(['guide', 'hands', 'help'] as const).map((kind) => (
+                <a
+                  href={learningPaths[kind]}
+                  key={kind}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.closest('details')!.open = false;
+                    openLearning(kind);
+                  }}
+                >
+                  {t(`learn:${kind}Nav`)}
+                </a>
+              ))}
+              <button
+                onClick={(e) => {
+                  e.currentTarget.closest('details')!.open = false;
+                  setRulesOpen(true);
+                }}
+              >
+                {t('rules')}
+              </button>
+            </div>
+          </details>
           <div className="header-right">
             <label className="language">
               <span aria-hidden>🌐</span>
@@ -450,8 +549,10 @@ function App() {
           </div>
         )}
         <main>
-          {!connected && <p className="banner">{t('offlineNotice')}</p>}
-          {!roomId ? (
+          {!connected && page === 'play' && <p className="banner">{t('offlineNotice')}</p>}
+          {page !== 'play' ? (
+            <LearningPage kind={page} onPlay={() => navigate()} onSection={openLearning} />
+          ) : !roomId ? (
             <>
               <section className="hero">
                 <div>
@@ -662,56 +763,63 @@ function App() {
                       <span className={`connection ${connected ? 'live' : ''}`}>
                         ● {t(connected ? 'online' : 'offline')}
                       </span>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard
-                            .writeText(location.href)
-                            .then(() => setNotice(t('copied')))
-                            .catch(() => fail(new Error('INTERNAL')));
-                        }}
-                      >
-                        {t('copy')}
-                      </button>
-                      <button
-                        className="mobile-director-trigger"
-                        onClick={() => {
-                          setRailTab('players');
-                          document
-                            .getElementById('room-director')
-                            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }}
-                      >
-                        {t('game:manageRoom')}
-                      </button>
-                      {snapshot.host && (
-                        <>
-                          <button
-                            className="pause-button"
-                            disabled={busy || !['RUNNING', 'PAUSED'].includes(snapshot.status)}
-                            onClick={() =>
-                              void run(snapshot.status === 'PAUSED' ? 'RESUME' : 'PAUSE')
-                            }
-                          >
-                            {t(snapshot.status === 'PAUSED' ? 'game:resume' : 'game:pause')}
-                          </button>
-                          <button onClick={() => void run('EXPORT')}>{t('game:export')}</button>
-                          {snapshot.closeSupported && (
-                            <button
-                              className="close-room-button"
-                              disabled={busy || !connected}
-                              onClick={() => setCloseRoomOpen(true)}
-                            >
-                              {t('game:closeRoom')}
-                            </button>
-                          )}
-                        </>
+                      {snapshot.host && ['RUNNING', 'PAUSED'].includes(snapshot.status) && (
+                        <button
+                          className="pause-button"
+                          disabled={busy || !['RUNNING', 'PAUSED'].includes(snapshot.status)}
+                          onClick={() =>
+                            void run(snapshot.status === 'PAUSED' ? 'RESUME' : 'PAUSE')
+                          }
+                        >
+                          {t(snapshot.status === 'PAUSED' ? 'game:resume' : 'game:pause')}
+                        </button>
                       )}
-                      <button
-                        className="text-button leave-button"
-                        onClick={() => setLeaveOpen(true)}
-                      >
-                        {t('leave')}
-                      </button>
+                      <details className="room-options">
+                        <summary>{t('learn:options')}</summary>
+                        <div>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard
+                                .writeText(location.href)
+                                .then(() => setNotice(t('copied')))
+                                .catch(() => fail(new Error('INTERNAL')));
+                            }}
+                          >
+                            {t('copy')}
+                          </button>
+                          <button
+                            className="mobile-director-trigger"
+                            onClick={() => {
+                              setRailTab('players');
+                              document
+                                .getElementById('room-director')
+                                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }}
+                          >
+                            {t('game:manageRoom')}
+                          </button>
+                          {snapshot.host && (
+                            <>
+                              <button onClick={() => void run('EXPORT')}>{t('game:export')}</button>
+                              {snapshot.closeSupported && (
+                                <button
+                                  className="close-room-button"
+                                  disabled={busy || !connected}
+                                  onClick={() => setCloseRoomOpen(true)}
+                                >
+                                  {t('game:closeRoom')}
+                                </button>
+                              )}
+                            </>
+                          )}
+                          <button
+                            className="text-button leave-button"
+                            onClick={() => setLeaveOpen(true)}
+                          >
+                            {t('leave')}
+                          </button>
+                        </div>
+                      </details>
                     </div>
                   </div>
                   {snapshot.pauseReason === 'EMPTY' && (
@@ -727,80 +835,115 @@ function App() {
                       })}
                     </p>
                   )}
-                  <RoomStats snapshot={snapshot} num={num} />
+                  {snapshot.status !== 'FINISHED' && (
+                    <>
+                      <RoomStats snapshot={snapshot} num={num} />
+                      <TournamentPresentation snapshot={snapshot} num={num} />
+                    </>
+                  )}
                   <div className="game-layout">
                     <section className="game-stage">
-                      <div className="table-tabs">
-                        {tables.map((tb, i) => (
-                          <button
-                            className={table?.id === tb.id ? 'selected' : ''}
-                            key={tb.id}
-                            onClick={() => setTableIndex(i)}
-                          >
-                            {t('game:table', { number: i + 1 })}
-                          </button>
-                        ))}
-                      </div>
-                      <PokerTable
-                        snapshot={snapshot}
-                        table={table}
-                        clock={clock}
-                        num={num}
-                        busy={busy || !connected}
-                        onSelect={(id) => {
-                          setSelectedPlayer(id);
-                          setRailTab('players');
-                        }}
-                        onAddBot={() => void run('ADD_BOTS', { difficulty: 'MEDIUM', count: 1 })}
-                        onStart={() => void run('START')}
-                      />
-                      {table?.hand && (
-                        <ActionBar
+                      {snapshot.status !== 'FINISHED' && (
+                        <div className="table-tabs">
+                          {tables.map((tb, i) => (
+                            <button
+                              className={table?.id === tb.id ? 'selected' : ''}
+                              key={tb.id}
+                              onClick={() => setTableIndex(i)}
+                            >
+                              {t('game:table', { number: i + 1 })}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {snapshot.status === 'FINISHED' && snapshot.config.mode !== 'CASH' ? (
+                        <TournamentPresentation snapshot={snapshot} num={num} finished />
+                      ) : (
+                        <PokerTable
                           snapshot={snapshot}
                           table={table}
+                          bestFive={
+                            coach && table?.hand
+                              ? visibleHand(
+                                  table.hand.players.find((p) => p.id === snapshot.me)?.cards ?? [],
+                                  table.hand.board,
+                                )?.bestFive
+                              : undefined
+                          }
+                          clock={clock}
+                          num={num}
                           busy={busy || !connected}
-                          onAction={(action, amount) => run('ACT', { action, amount })}
+                          onSelect={(id) => {
+                            setSelectedPlayer(id);
+                            setRailTab('players');
+                          }}
+                          onAddBot={() => void run('ADD_BOTS', { difficulty: 'MEDIUM', count: 1 })}
+                          onStart={() => void run('START')}
                         />
                       )}
-                      <div className="personal-controls">
-                        {me && !me.left ? (
-                          <>
-                            <span>
-                              {t('game:bank', { seconds: me.bank })}{' '}
-                              {me.sitOut && '· ' + t('game:sitOutStatus')}
-                            </span>
-                            {snapshot.config.mode === 'CASH' && (
-                              <button disabled={busy} onClick={() => void run('SIT_OUT')}>
-                                {t('game:sitOut')}
+                      {table?.hand && snapshot.status !== 'FINISHED' && (
+                        <div className="decision-zone">
+                          <DecisionDock
+                            snapshot={snapshot}
+                            table={table}
+                            coach={coach}
+                            onCoach={toggleCoach}
+                            onRankings={() => setLesson('hands')}
+                          />
+                          <ActionBar
+                            snapshot={snapshot}
+                            table={table}
+                            busy={busy || !connected}
+                            onAction={(action, amount) => run('ACT', { action, amount })}
+                          />
+                        </div>
+                      )}
+                      {snapshot.status !== 'FINISHED' && (
+                        <div className="personal-controls">
+                          {me && !me.left ? (
+                            <>
+                              <span>
+                                {t('game:bank', { seconds: me.bank })}{' '}
+                                {me.sitOut && '· ' + t('game:sitOutStatus')}
+                              </span>
+                              {snapshot.config.mode === 'CASH' && (
+                                <button disabled={busy} onClick={() => void run('SIT_OUT')}>
+                                  {t(me.sitOut ? 'learn:sitIn' : 'learn:sitOut')}
+                                </button>
+                              )}
+                              <button
+                                disabled={busy || !canTopUp}
+                                title={t('game:topUpHint')}
+                                onClick={() =>
+                                  setTopUp(
+                                    snapshot.config.mode === 'CASH'
+                                      ? snapshot.config.minBuyIn
+                                      : snapshot.config.stack,
+                                  )
+                                }
+                              >
+                                {t('game:topUp')}
                               </button>
-                            )}
-                            <button
-                              disabled={busy || !canTopUp}
-                              title={t('game:topUpHint')}
-                              onClick={() =>
-                                setTopUp(
-                                  snapshot.config.mode === 'CASH'
-                                    ? snapshot.config.minBuyIn
-                                    : snapshot.config.stack,
-                                )
-                              }
-                            >
-                              {t('game:topUp')}
-                            </button>
-                            <button disabled={busy || !canAddOn} onClick={() => void run('ADD_ON')}>
-                              {t('game:addOn')}
-                            </button>
-                            <button
-                              disabled={busy || !me.bank || table?.hand?.actor !== snapshot.me}
-                              onClick={() => void run('TIME_BANK')}
-                            >
-                              {t('game:timeBank')}
-                            </button>
-                          </>
-                        ) : (
-                          <p>{t('game:noSeat')}</p>
-                        )}
-                      </div>
+                              {snapshot.config.mode !== 'CASH' && (
+                                <button
+                                  disabled={busy || !canAddOn}
+                                  onClick={() => void run('ADD_ON')}
+                                >
+                                  {t('game:addOn')}
+                                </button>
+                              )}
+                              <button
+                                disabled={busy || !me.bank || table?.hand?.actor !== snapshot.me}
+                                onClick={() => void run('TIME_BANK')}
+                              >
+                                {t('game:timeBank')}
+                              </button>
+                            </>
+                          ) : (
+                            <p>{t('game:noSeat')}</p>
+                          )}
+                        </div>
+                      )}
                       {table?.hand && (
                         <details className="history">
                           <summary>{t('game:actions')}</summary>
@@ -951,6 +1094,12 @@ function App() {
         )}
         {createOpen && (
           <CreateRoom busy={busy} onClose={closeCreate} onCreate={create} onError={fail} />
+        )}
+        {lesson && (
+          <Modal title={t('learn:learningModal')} onClose={closeLesson}>
+            <LearningPage kind={lesson} onSection={setLesson} />
+            <p className="lesson-note">{t('learn:coachingNotice')}</p>
+          </Modal>
         )}
         {rulesOpen && (
           <Modal title={t('rules')} onClose={closeRules}>

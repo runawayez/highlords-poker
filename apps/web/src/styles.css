@@ -3347,20 +3347,6 @@ footer > span:first-child {
     top: 0;
     z-index: 5;
   }
-  .in-room:has(.action-bar) {
-    padding-bottom: 145px;
-  }
-  .game-stage .action-bar {
-    position: fixed;
-    left: 10px;
-    right: 10px;
-    bottom: 8px;
-    margin: 0;
-    z-index: 20;
-    border-color: #63755f;
-    background: #1b2a35f5;
-    backdrop-filter: blur(12px);
-  }
   .seat[data-edge='bottom'] .seat-bet {
     top: -19px;
   }
@@ -3428,5 +3414,723 @@ footer > span:first-child {
   }
   .room-controls .close-room-button {
     font-size: 9px;
+  }
+}
+
+/* Learning and gameplay hierarchy */
+.desktop-nav {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+a.nav {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.mobile-nav {
+  display: none;
+  position: relative;
+  z-index: 30;
+}
+.mobile-nav summary,
+.room-options summary {
+  cursor: pointer;
+  list-style: none;
+  border: 1px solid var(--border, #343b47);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+.mobile-nav > div,
+.room-options > div {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 220px;
+  padding: 12px;
+  background: #171e27;
+  border: 1px solid #3c4654;
+  border-radius: 12px;
+  box-shadow: 0 18px 50px #0008;
+  display: grid;
+  gap: 8px;
+  z-index: 35;
+}
+.mobile-nav a {
+  color: inherit;
+  text-decoration: none;
+  padding: 10px;
+}
+.room-options {
+  position: relative;
+}
+.room-options > div button {
+  width: 100%;
+}
+.learning-page {
+  max-width: 1120px;
+  margin: 40px auto 80px;
+}
+.learning-heading {
+  max-width: 850px;
+  margin-bottom: 34px;
+}
+.learning-heading h1 {
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.1;
+  margin: 12px 0 20px;
+}
+.learning-heading > p:not(.eyebrow),
+.learning-page p,
+.learning-page dd {
+  color: #b9c3d0;
+  line-height: 1.75;
+}
+.learning-heading nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+.learning-heading nav a {
+  color: #dce3ec;
+  text-decoration: none;
+  padding: 10px 16px;
+  border: 1px solid #354050;
+  border-radius: 8px;
+}
+.learning-heading nav a[aria-current='page'] {
+  background: #dc3653;
+  color: white;
+  border-color: #dc3653;
+}
+.learning-page section {
+  margin-bottom: 28px;
+}
+.learn-basics,
+.lesson-card,
+.walkthrough-scene {
+  padding: 28px;
+  border: 1px solid #303b49;
+  border-radius: 16px;
+  background: linear-gradient(140deg, #18212b, #111820);
+}
+.learn-facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 24px;
+}
+.learn-facts > div {
+  display: grid;
+  gap: 6px;
+  padding: 12px 0;
+  border-top: 1px solid #344151;
+}
+.learn-facts strong {
+  font-size: 32px;
+  color: #e5bb64;
+}
+.learn-facts span {
+  color: #b9c3d0;
+  font-size: 13px;
+}
+.hand-walkthrough {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  gap: 18px;
+}
+.walkthrough-nav {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.walkthrough-nav button {
+  text-align: left;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+}
+.walkthrough-nav button[aria-pressed='true'] {
+  border-color: #dc3653;
+  background: #42232f;
+}
+.walkthrough-nav button span {
+  color: #e5bb64;
+}
+.walkthrough-scene {
+  min-width: 0;
+  background: radial-gradient(ellipse at top, #164037, #111b23 75%);
+}
+.example-cards {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+.example-cards .playing-card {
+  position: relative;
+  width: 62px;
+  height: 88px;
+  flex-shrink: 0;
+  transform: none;
+}
+.walkthrough-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+.lesson-grid,
+.rank-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.lesson-card h3 {
+  margin-top: 0;
+}
+.rank-card {
+  display: flex;
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid #303b49;
+  border-radius: 14px;
+  background: #141d27;
+}
+.rank-card h2 {
+  margin: 0;
+  font-size: 21px;
+}
+.rank-card p {
+  font-size: 14px;
+  margin: 10px 0;
+}
+.rank-card .example-cards {
+  gap: 5px;
+  margin-bottom: 0;
+}
+.rank-card .playing-card {
+  width: 48px;
+  height: 70px;
+}
+.rank-number {
+  color: #e5bb64;
+  font-size: 20px;
+  font-weight: 700;
+}
+.lesson-note {
+  font-size: 12px;
+  color: #a2adbd;
+  margin: 20px 0;
+}
+.faq-item {
+  border-bottom: 1px solid #303b49;
+  padding: 18px 4px;
+}
+.faq-item summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 0;
+}
+.faq-item p {
+  max-width: 850px;
+}
+.glossary-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.glossary-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.glossary-list > div {
+  padding: 20px;
+  background: #151e28;
+  border: 1px solid #303b49;
+  border-radius: 12px;
+}
+.glossary-list dt {
+  font-weight: 700;
+  color: #e5bb64;
+  margin-bottom: 8px;
+}
+.glossary-list dd {
+  margin: 0;
+  font-size: 14px;
+}
+.learn-cta {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+  border-top: 1px solid #303b49;
+  padding-top: 24px;
+}
+.modal:has(.learning-page) {
+  width: min(1120px, 96vw);
+  max-width: 1120px;
+}
+.modal .learning-page {
+  margin: 20px 0;
+}
+.modal .learning-heading h1 {
+  font-size: 32px;
+}
+.decision-zone {
+  border: 1px solid #3d4b5e;
+  border-radius: 16px;
+  background: linear-gradient(140deg, #1b2633, #111923);
+  margin: 12px 0 18px;
+  overflow: hidden;
+}
+.decision-dock {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 18px 22px;
+}
+.decision-cards {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.decision-cards .playing-card {
+  position: relative;
+  width: 58px;
+  height: 82px;
+  transform: none;
+}
+.best-card {
+  outline: 2px solid #e8c374;
+  outline-offset: 2px;
+}
+.decision-summary {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+  min-width: 150px;
+}
+.decision-summary > strong {
+  font-size: 18px;
+}
+.decision-summary small {
+  color: #a8b5c6;
+}
+.current-hand {
+  color: #e8c374;
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+.coach-controls {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+.coach-controls button {
+  font-size: 12px;
+  padding: 8px 10px;
+}
+.coach-controls [aria-pressed='true'] {
+  border-color: #c6a253;
+  color: #e8c374;
+}
+.coach-tip {
+  flex-basis: 100%;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid #334153;
+  color: #b8c5d5;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.game-stage .decision-zone .action-bar {
+  position: static;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #0e1722;
+  padding: 18px 22px;
+  box-shadow: none;
+  width: auto;
+}
+.decision-zone .action-context {
+  color: #e8c374;
+}
+.decision-zone .action-buttons button {
+  min-height: 48px;
+  font-weight: 650;
+}
+.decision-zone .action-buttons .danger {
+  background: #282c37;
+  color: #d0d5df;
+  border-color: #4c515c;
+}
+.decision-zone .action-buttons button:not(.danger):not(.primary) {
+  border-color: #c39752;
+  color: #edcd8a;
+}
+.decision-zone .action-placeholder {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.tournament-overview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  background: #171d28;
+  border: 1px solid #514832;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin: 16px 0;
+}
+.tournament-overview > div {
+  display: grid;
+  gap: 6px;
+}
+.tournament-overview small {
+  color: #a8b5c6;
+  font-size: 11px;
+}
+.tournament-overview strong {
+  color: #e8c374;
+  font-size: 18px;
+}
+.tournament-overview > p {
+  grid-column: 1/-1;
+  margin: 0;
+  font-size: 11px;
+  color: #a8b5c6;
+}
+.tournament-finish {
+  padding: 40px 24px;
+  border: 1px solid #6a5630;
+  border-radius: 18px;
+  background: radial-gradient(ellipse at top, #443422, #151c27 70%);
+  text-align: center;
+}
+.trophy {
+  font-size: 60px;
+  color: #e8c374;
+}
+.tournament-finish h2 {
+  font-size: 20px;
+  color: #d4b474;
+}
+.tournament-finish h3 {
+  font-size: 36px;
+  margin: 12px 0;
+}
+.tournament-finish > p {
+  color: #aab6c8;
+}
+.podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 32px 0;
+}
+.podium article {
+  display: grid;
+  gap: 14px;
+  width: 30%;
+  border: 1px solid #4d515d;
+  border-radius: 12px;
+  padding: 20px 10px;
+  background: #202735;
+}
+.podium article[data-rank='1'] {
+  order: 2;
+  min-height: 220px;
+  border-color: #e8c374;
+  background: #3d3325;
+}
+.podium article[data-rank='2'] {
+  order: 1;
+  min-height: 185px;
+}
+.podium article[data-rank='3'] {
+  order: 3;
+  min-height: 165px;
+}
+.podium b {
+  font-size: 24px;
+  color: #e8c374;
+}
+.podium small {
+  font-size: 11px;
+  color: #b9c3d0;
+}
+@media (max-width: 1100px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .desktop-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .learning-page {
+    margin-top: 28px;
+  }
+}
+@media (max-width: 650px) {
+  .header {
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .header .desktop-nav {
+    display: none;
+  }
+  .header .mobile-nav {
+    display: block;
+    margin-left: auto;
+  }
+  .header-right {
+    margin-left: 0;
+    gap: 8px;
+  }
+  .brand small {
+    letter-spacing: 3px;
+  }
+  .brand {
+    font-size: 14px;
+  }
+  .language select {
+    max-width: 66px;
+  }
+  .profile-trigger > span:last-child {
+    display: none;
+  }
+  .learning-heading h1 {
+    font-size: 34px;
+  }
+  .learning-page {
+    margin: 28px 0 48px;
+  }
+  .learning-heading > p {
+    font-size: 14px;
+  }
+  .learn-basics,
+  .lesson-card,
+  .walkthrough-scene {
+    padding: 20px;
+  }
+  .hand-walkthrough {
+    grid-template-columns: 1fr;
+  }
+  .walkthrough-nav {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .walkthrough-nav button {
+    display: grid;
+    gap: 5px;
+    padding: 10px 6px;
+    font-size: 10px;
+    text-align: center;
+    justify-items: center;
+  }
+  .example-cards {
+    gap: 5px;
+  }
+  .example-cards .playing-card {
+    width: 44px;
+    height: 66px;
+  }
+  .lesson-grid,
+  .rank-grid,
+  .glossary-list {
+    grid-template-columns: 1fr;
+  }
+  .rank-card {
+    padding: 20px 14px;
+    gap: 12px;
+  }
+  .rank-card .playing-card {
+    width: 44px;
+    height: 66px;
+  }
+  .glossary-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0;
+  }
+  .learn-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .learn-facts {
+    gap: 10px;
+  }
+  .learn-facts strong {
+    font-size: 25px;
+  }
+  .learn-facts span {
+    font-size: 11px;
+  }
+  .decision-dock {
+    padding: 12px;
+    gap: 12px;
+  }
+  .decision-cards .playing-card {
+    width: 45px;
+    height: 64px;
+  }
+  .decision-summary {
+    min-width: 120px;
+  }
+  .decision-summary > strong {
+    font-size: 15px;
+  }
+  .coach-controls {
+    flex-basis: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  .coach-tip {
+    font-size: 11px;
+  }
+  .game-stage .decision-zone .action-bar {
+    padding: 12px;
+  }
+  .decision-zone .action-buttons {
+    gap: 7px;
+  }
+  .decision-zone .action-buttons button {
+    font-size: 12px;
+    padding: 10px 8px;
+  }
+  .decision-zone:has(.action-bar) {
+    position: sticky;
+    bottom: 8px;
+    z-index: 15;
+    box-shadow: 0 -8px 35px #0007;
+  }
+  .game-stage {
+    padding-bottom: 0 !important;
+  }
+  .tournament-overview {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 16px;
+  }
+  .podium {
+    gap: 6px;
+  }
+  .podium article {
+    padding: 16px 6px;
+  }
+  .podium strong {
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+  .tournament-finish {
+    padding: 28px 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .playing-card,
+  .seat,
+  .pulse-dot {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media (min-width: 651px) and (max-width: 1100px) {
+  .header {
+    height: auto;
+    min-height: 90px;
+    padding-top: 16px;
+    padding-bottom: 12px;
+  }
+  .header .desktop-nav {
+    display: flex;
+  }
+  .header .desktop-nav .nav {
+    padding: 10px;
+  }
+}
+@media (max-width: 650px) {
+  .in-room:has(.action-bar) {
+    padding-bottom: 0;
+  }
+  .room-controls {
+    overflow: visible;
+  }
+  .decision-zone .raise-controls {
+    gap: 8px;
+  }
+  .decision-zone .raise-controls input[type='range'] {
+    min-width: 0;
+  }
+  .decision-zone:has(.action-bar) .coach-tip {
+    display: none;
+  }
+}
+
+@media (min-width: 1101px) {
+  .game-stage .table-shell {
+    height: clamp(390px, 40vh, 440px);
+    margin-bottom: 16px;
+  }
+}
+/* Keep betting available in the actual phone viewport, including on tall tables. */
+.table-shell:is([data-seats='2'], [data-seats='3'], [data-seats='4'])
+  .seat:is([data-edge='top'], [data-edge='bottom'])
+  .seat-bet {
+  top: 50%;
+  left: calc(100% + 8px);
+  right: auto;
+  transform: translateY(-50%);
+}
+@media (max-width: 650px) {
+  .in-room:has(.action-bar) {
+    padding-bottom: 320px;
+  }
+  .decision-zone:has(.action-bar) {
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: 8px;
+    margin: 0;
+    max-height: 50dvh;
+    overflow-y: auto;
+    z-index: 20;
+  }
+  .decision-zone:has(.action-bar) .decision-dock {
+    padding: 10px;
+    gap: 10px;
+  }
+  .decision-zone:has(.action-bar) .decision-cards {
+    gap: 5px;
+  }
+  .decision-zone:has(.action-bar) .decision-cards .playing-card {
+    width: 35px;
+    height: 52px;
+  }
+  .decision-zone:has(.action-bar) .decision-summary {
+    min-width: 100px;
+  }
+  .decision-zone:has(.action-bar) .current-hand {
+    font-size: 10px;
+  }
+  .decision-zone:has(.action-bar) .coach-controls {
+    flex-basis: auto;
+    display: grid;
+    gap: 2px;
+    margin-left: auto;
+  }
+  .decision-zone:has(.action-bar) .coach-controls button {
+    font-size: 10px;
+    padding: 6px;
   }
 }
