@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import './i18n/index.ts';
 import './styles.css';
 import './club.css';
+import './premium.css';
 import { ClubArtwork, ClubFeatures } from './club-art.tsx';
 import { ProfileSchema, type Config, type Command } from '../../../packages/contracts/src/index.ts';
 import {
