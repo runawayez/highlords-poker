@@ -677,7 +677,7 @@ test('fresh browser receives a reusable guest identity and can edit it in room c
   await page.goto('/');
   await expect(page.getByRole('dialog')).not.toBeVisible();
   const label = await page.locator('.profile-trigger').innerText();
-  expect(label).toMatch(/Highlord-\\d{6}/);
+  expect(label).toMatch(/Highlord-\d{6}/);
   await page.getByRole('button', { name: /Criar uma mesa/ }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.locator('.quick-profile')).toContainText(label);
@@ -698,9 +698,9 @@ test('direct invite accepts an anonymous guest without a mandatory profile dialo
     await host.getByRole('button', { name: /Criar uma mesa/ }).click();
     await host.getByLabel('Nome da mesa').fill('Guest invite ' + Date.now());
     await host.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
-    await expect(host).toHaveURL(/\\/room\\//);
+    await expect(host).toHaveURL(/\/room\//);
     await guest.goto(host.url());
-    await expect(guest.locator('.quick-profile')).toContainText(/Highlord-\\d{6}/);
+    await expect(guest.locator('.quick-profile')).toContainText(/Highlord-\d{6}/);
     await guest.getByRole('button', { name: 'Confirmar', exact: true }).click();
     await expect(guest.getByRole('dialog')).not.toBeVisible();
     await expect(guest.locator('.seat.self')).toBeVisible();
