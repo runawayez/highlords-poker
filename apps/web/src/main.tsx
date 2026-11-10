@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
 import './i18n/index.ts';
 import './styles.css';
+import './club.css';
+import { ClubArtwork, ClubFeatures } from './club-art.tsx';
 import { ProfileSchema, type Config, type Command } from '../../../packages/contracts/src/index.ts';
 import {
   API,
@@ -46,6 +48,11 @@ function App() {
   const { t, i18n } = useTranslation();
   const [prefs, setPrefs] = useState(storedPreferences);
   const [railTab, setRailTab] = useState('players');
+  const [directorOpen, setDirectorOpen] = useState(false);
+  const closeDirector = useCallback(() => setDirectorOpen(false), []);
+  const [homeScreen, setHomeScreen] = useState(() =>
+    location.pathname === '/mesas' ? 'lobby' : 'home',
+  );
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [topUp, setTopUp] = useState<number | null>(null);
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -110,14 +117,26 @@ function App() {
   );
   const navigate = (id?: string) => {
     setPage('play');
+    setHomeScreen('home');
+    setDirectorOpen(false);
     setLesson(null);
     history.pushState({}, '', id ? `/room/${id}` : '/');
     setRoomId(id);
     setSnapshot(null);
     setTableIndex(0);
   };
+  const openLobby = () => {
+    history.pushState({}, '', '/mesas');
+    setPage('play');
+    setHomeScreen('lobby');
+    setRoomId(undefined);
+    setSnapshot(null);
+    setDirectorOpen(false);
+  };
   useEffect(() => {
     const fn = () => {
+      setHomeScreen(location.pathname === '/mesas' ? 'lobby' : 'home');
+      setDirectorOpen(false);
       setPage(learningRoute());
       setRoomId(roomPath());
       setSnapshot(null);
@@ -400,17 +419,6 @@ function App() {
       if (!seen.includes(hand.id)) write('highlords.wins', [...seen, hand.id].slice(-1000));
     }
   }, [table?.hand, snapshot?.me]);
-  useEffect(() => {
-    if (table?.hand?.actor !== snapshot?.me || snapshot?.status !== 'RUNNING') return;
-    const media = matchMedia('(max-width:650px)');
-    const focusTable = () => {
-      if (media.matches && !document.querySelector('dialog[open]'))
-        document.querySelector('.game-stage')?.scrollIntoView({ block: 'start', behavior: 'auto' });
-    };
-    focusTable();
-    media.addEventListener('change', focusTable);
-    return () => media.removeEventListener('change', focusTable);
-  }, [table?.hand?.actor, snapshot?.me, snapshot?.status]);
   const previousActor = useRef('');
   useEffect(() => {
     const actor = table?.hand?.actor ?? '';
@@ -435,105 +443,120 @@ function App() {
   return (
     <ErrorContext.Provider value={error}>
       <div
-        className={`app ${roomId ? 'in-room' : 'in-lobby'}`}
+        className={`app club-theme ${roomId ? 'in-room' : 'in-lobby'} view-${homeScreen}`}
         data-theme={prefs.theme}
         data-back={prefs.cardBack}
         style={{ '--chip': prefs.chipColor } as React.CSSProperties}
       >
-        <header className="header">
-          <a
-            className="brand"
-            href="/"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate();
-            }}
-          >
-            <span className="crest">♠</span>
-            <span>
-              HIGHLORDS<small>POKER CLUB</small>
-            </span>
-          </a>
-          <nav className="desktop-nav">
-            <button
-              className={!roomId && page === 'play' ? 'nav active' : 'nav'}
-              onClick={() => navigate()}
+        {!roomId && (
+          <header className="header">
+            <a
+              className="brand"
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate();
+              }}
             >
-              {t('lobby')}
-            </button>
-            {(['guide', 'hands', 'help'] as const).map((kind) => (
-              <a
-                className={`nav ${page === kind ? 'active' : ''}`}
-                href={learningPaths[kind]}
-                key={kind}
-                onClick={(e) => {
-                  e.preventDefault();
-                  openLearning(kind);
-                }}
-              >
-                {t(`learn:${kind}Nav`)}
-              </a>
-            ))}
-            <button className="nav" onClick={() => setRulesOpen(true)}>
-              {t('rules')}
-            </button>
-          </nav>
-          <details className="mobile-nav">
-            <summary aria-label={t('learn:menu')}>☰</summary>
-            <div>
+              <span className="crest">♠</span>
+              <span>
+                HIGHLORDS<small>POKER CLUB</small>
+              </span>
+            </a>
+            <nav className="desktop-nav">
               <button
-                onClick={(e) => {
-                  e.currentTarget.closest('details')!.open = false;
-                  navigate();
-                }}
+                className={
+                  !roomId && page === 'play' && homeScreen === 'home' ? 'nav active' : 'nav'
+                }
+                onClick={() => navigate()}
               >
-                {t('lobby')}
+                {t('club:home')}
+              </button>
+              <button className={homeScreen === 'lobby' ? 'nav active' : 'nav'} onClick={openLobby}>
+                {t('club:tables')}
               </button>
               {(['guide', 'hands', 'help'] as const).map((kind) => (
                 <a
+                  className={`nav ${page === kind ? 'active' : ''}`}
                   href={learningPaths[kind]}
                   key={kind}
                   onClick={(e) => {
                     e.preventDefault();
-                    e.currentTarget.closest('details')!.open = false;
                     openLearning(kind);
                   }}
                 >
                   {t(`learn:${kind}Nav`)}
                 </a>
               ))}
-              <button
-                onClick={(e) => {
-                  e.currentTarget.closest('details')!.open = false;
-                  setRulesOpen(true);
-                }}
-              >
+              <button className="nav" onClick={() => setRulesOpen(true)}>
                 {t('rules')}
               </button>
-            </div>
-          </details>
-          <div className="header-right">
-            <label className="language">
-              <span aria-hidden>🌐</span>
-              <select
-                aria-label={t('selectLanguage')}
-                value={i18n.language}
-                onChange={(e) => void i18n.changeLanguage(e.target.value)}
+            </nav>
+            <details className="mobile-nav">
+              <summary aria-label={t('learn:menu')}>☰</summary>
+              <div>
+                <button
+                  onClick={(e) => {
+                    e.currentTarget.closest('details')!.open = false;
+                    navigate();
+                  }}
+                >
+                  {t('club:home')}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.currentTarget.closest('details')!.open = false;
+                    openLobby();
+                  }}
+                >
+                  {t('club:tables')}
+                </button>
+                {(['guide', 'hands', 'help'] as const).map((kind) => (
+                  <a
+                    href={learningPaths[kind]}
+                    key={kind}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.closest('details')!.open = false;
+                      openLearning(kind);
+                    }}
+                  >
+                    {t(`learn:${kind}Nav`)}
+                  </a>
+                ))}
+                <button
+                  onClick={(e) => {
+                    e.currentTarget.closest('details')!.open = false;
+                    setRulesOpen(true);
+                  }}
+                >
+                  {t('rules')}
+                </button>
+              </div>
+            </details>
+            <div className="header-right">
+              <label className="language">
+                <span aria-hidden>🌐</span>
+                <select
+                  aria-label={t('selectLanguage')}
+                  value={i18n.language}
+                  onChange={(e) => void i18n.changeLanguage(e.target.value)}
+                >
+                  <option value="pt-BR">Português (Brasil)</option>
+                  <option value="en">English</option>
+                </select>
+              </label>
+              <button
+                className="profile-trigger"
+                aria-label={prefs.profile.nickname || t('profile')}
+                onClick={() => setProfileOpen(true)}
               >
-                <option value="pt-BR">Português (Brasil)</option>
-                <option value="en">English</option>
-              </select>
-            </label>
-            <button
-              className="profile-trigger"
-              aria-label={prefs.profile.nickname || t('profile')}
-              onClick={() => setProfileOpen(true)}
-            >
-              <span style={{ color: prefs.profile.accent }}>{prefs.profile.avatar}</span>
-              <span>{prefs.profile.nickname || t('profile')}</span>
-            </button>
-          </div>
-        </header>
+                <span style={{ color: prefs.profile.accent }}>{prefs.profile.avatar}</span>
+                <span>{prefs.profile.nickname || t('profile')}</span>
+              </button>
+            </div>
+          </header>
+        )}
         {(error || notice) && (
           <div className={`toast ${error ? 'error' : ''}`} role={error ? 'alert' : 'status'}>
             {error || notice}
@@ -554,64 +577,52 @@ function App() {
             <LearningPage kind={page} onPlay={() => navigate()} onSection={openLearning} />
           ) : !roomId ? (
             <>
-              <section className="hero">
-                <div>
-                  <p className="eyebrow">
-                    <span /> {t('lobby:eyebrow')}
-                  </p>
-                  <h1>{t('lobby:hero')}</h1>
-                  <p className="hero-intro">{t('lobby:intro')}</p>
+              {homeScreen === 'home' && (
+                <section className="hero">
+                  <div className="hero-copy">
+                    <p className="eyebrow">
+                      <span /> {t('lobby:eyebrow')}
+                    </p>
+                    <h1>
+                      {t('club:heroFirst')}
+                      <br />
+                      <em>{t('club:heroSecond')}</em>
+                    </h1>
+                    <p className="hero-intro">{t('lobby:intro')}</p>
+                    <button
+                      className="primary"
+                      disabled={busy}
+                      onClick={() =>
+                        prefs.profile.nickname ? setCreateOpen(true) : setProfileOpen(true)
+                      }
+                    >
+                      ＋ {t('lobby:createRoom')} <span>↗</span>
+                    </button>
+                    <button className="hero-find text-button" onClick={openLobby}>
+                      {t('club:findTable')} →
+                    </button>
+                    <p className="micro">{t('lobby:stats')}</p>
+                  </div>
+                  <ClubArtwork />
+                </section>
+              )}
+              {homeScreen === 'lobby' && (
+                <div className="club-lobby-heading">
+                  <div>
+                    <p className="eyebrow">{t('club:chooseSeat')}</p>
+                    <h1>{t('club:lobbyTitle')}</h1>
+                    <p>{t('club:lobbyIntro')}</p>
+                  </div>
                   <button
                     className="primary"
-                    disabled={busy}
                     onClick={() =>
                       prefs.profile.nickname ? setCreateOpen(true) : setProfileOpen(true)
                     }
                   >
-                    ＋ {t('lobby:createRoom')} <span>↗</span>
+                    {t('lobby:createRoom')}
                   </button>
-                  <p className="micro">{t('lobby:stats')}</p>
                 </div>
-                <div className="lobby-feature">
-                  <div className="feature-top">
-                    <span className="badge">TEXAS HOLD’EM · NO LIMIT</span>
-                    <span className={`connection ${connected ? 'live' : ''}`}>
-                      ● {t(connected ? 'online' : 'offline')}
-                    </span>
-                  </div>
-                  <div className="feature-table">
-                    <div className="feature-felt">
-                      <span>HIGHLORDS ♠</span>
-                      <div className="feature-cards">
-                        <b>
-                          A<small>♠</small>
-                        </b>
-                        <b>
-                          K<small>♥</small>
-                        </b>
-                        <b>
-                          Q<small>♣</small>
-                        </b>
-                      </div>
-                      <i className="feature-chip">H</i>
-                    </div>
-                  </div>
-                  <div className="feature-bottom">
-                    <div>
-                      <strong>{lobby.rooms.filter((r) => r.status === 'RUNNING').length}</strong>
-                      <small>{t('lobby:liveTables')}</small>
-                    </div>
-                    <div>
-                      <strong>{lobby.rooms.reduce((n, r) => n + (r.humansOnline ?? 0), 0)}</strong>
-                      <small>{t('lobby:onlinePeople')}</small>
-                    </div>
-                    <div>
-                      <strong>2—9</strong>
-                      <small>{t('lobby:seats')}</small>
-                    </div>
-                  </div>
-                </div>
-              </section>
+              )}
               <div className="lobby-layout">
                 <section className="rooms">
                   <div className="section-heading">
@@ -742,31 +753,61 @@ function App() {
                   </div>
                 </section>
               </div>
+              {homeScreen === 'home' && <ClubFeatures onLearn={() => openLearning('guide')} />}
             </>
           ) : (
             <>
               {snapshot ? (
-                <>
+                <div className="club-room">
                   <div className="room-heading">
-                    <div>
-                      <button className="text-button" onClick={() => navigate()}>
-                        ← {t('back')}
-                      </button>
-                      <p className="eyebrow">
-                        <span className={`status-dot status-${snapshot.status.toLowerCase()}`} />
-                        {t(`game:${snapshot.status}`)} <span className="heading-divider">/</span>{' '}
-                        {t(`game:${snapshot.config.mode}`)}
-                      </p>
+                    <button className="room-brand" aria-label={t('back')} onClick={openLobby}>
+                      <span>♠</span>
+                      <b>
+                        HIGHLORDS<small>POKER CLUB</small>
+                      </b>
+                    </button>
+                    <div className="room-name">
                       <h1>{snapshot.config.title}</h1>
+                      <p>
+                        {t(`game:${snapshot.config.mode}`)} · {num(snapshot.level.small)} /{' '}
+                        {num(snapshot.level.big)} · {t(`game:${snapshot.status}`)}
+                      </p>
                     </div>
                     <div className="room-controls">
-                      <span className={`connection ${connected ? 'live' : ''}`}>
-                        ● {t(connected ? 'online' : 'offline')}
-                      </span>
+                      <button
+                        className="panel-trigger"
+                        aria-label={t('game:manageRoom')}
+                        onClick={() => {
+                          setRailTab('players');
+                          setDirectorOpen(true);
+                        }}
+                      >
+                        <span className="button-label">{t('game:manageRoom')}</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M4 6h16M4 12h16M4 18h16" />
+                          <circle cx="9" cy="6" r="2" />
+                          <circle cx="15" cy="12" r="2" />
+                          <circle cx="9" cy="18" r="2" />
+                        </svg>
+                      </button>
+                      <button
+                        className="panel-trigger"
+                        aria-label={t('game:panelchat')}
+                        onClick={() => {
+                          setRailTab('chat');
+                          setDirectorOpen(true);
+                        }}
+                      >
+                        <span className="button-label">{t('game:panelchat')}</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M4 4h16v12H9l-5 4Z" />
+                          <path d="M8 8h8M8 12h5" />
+                        </svg>
+                      </button>
                       {snapshot.host && ['RUNNING', 'PAUSED'].includes(snapshot.status) && (
                         <button
                           className="pause-button"
-                          disabled={busy || !['RUNNING', 'PAUSED'].includes(snapshot.status)}
+                          disabled={busy}
                           onClick={() =>
                             void run(snapshot.status === 'PAUSED' ? 'RESUME' : 'PAUSE')
                           }
@@ -774,9 +815,22 @@ function App() {
                           {t(snapshot.status === 'PAUSED' ? 'game:resume' : 'game:pause')}
                         </button>
                       )}
+                      <label className="language">
+                        <select
+                          aria-label={t('selectLanguage')}
+                          value={i18n.language}
+                          onChange={(e) => void i18n.changeLanguage(e.target.value)}
+                        >
+                          <option value="pt-BR">PT-BR</option>
+                          <option value="en">EN</option>
+                        </select>
+                      </label>
                       <details className="room-options">
                         <summary>{t('learn:options')}</summary>
                         <div>
+                          <span className={`connection ${connected ? 'live' : ''}`}>
+                            ● {t(connected ? 'online' : 'offline')}
+                          </span>
                           <button
                             onClick={() => {
                               navigator.clipboard
@@ -787,17 +841,11 @@ function App() {
                           >
                             {t('copy')}
                           </button>
-                          <button
-                            className="mobile-director-trigger"
-                            onClick={() => {
-                              setRailTab('players');
-                              document
-                                .getElementById('room-director')
-                                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }}
-                          >
-                            {t('game:manageRoom')}
-                          </button>
+                          <button onClick={() => setProfileOpen(true)}>{t('profile')}</button>
+                          <button onClick={() => setLesson('guide')}>{t('learn:guideNav')}</button>
+                          <button onClick={() => setLesson('hands')}>{t('learn:handsNav')}</button>
+                          <button onClick={() => setLesson('help')}>{t('learn:helpNav')}</button>
+                          <button onClick={() => setRulesOpen(true)}>{t('rules')}</button>
                           {snapshot.host && (
                             <>
                               <button onClick={() => void run('EXPORT')}>{t('game:export')}</button>
@@ -812,12 +860,10 @@ function App() {
                               )}
                             </>
                           )}
-                          <button
-                            className="text-button leave-button"
-                            onClick={() => setLeaveOpen(true)}
-                          >
+                          <button className="leave-button" onClick={() => setLeaveOpen(true)}>
                             {t('leave')}
                           </button>
+                          <button onClick={openLobby}>{t('back')}</button>
                         </div>
                       </details>
                     </div>
@@ -837,7 +883,6 @@ function App() {
                   )}
                   {snapshot.status !== 'FINISHED' && (
                     <>
-                      <RoomStats snapshot={snapshot} num={num} />
                       <TournamentPresentation snapshot={snapshot} num={num} />
                     </>
                   )}
@@ -856,31 +901,37 @@ function App() {
                           ))}
                         </div>
                       )}
-                      {snapshot.status === 'FINISHED' && snapshot.config.mode !== 'CASH' ? (
-                        <TournamentPresentation snapshot={snapshot} num={num} finished />
-                      ) : (
-                        <PokerTable
-                          snapshot={snapshot}
-                          table={table}
-                          bestFive={
-                            coach && table?.hand
-                              ? visibleHand(
-                                  table.hand.players.find((p) => p.id === snapshot.me)?.cards ?? [],
-                                  table.hand.board,
-                                )?.bestFive
-                              : undefined
-                          }
-                          clock={clock}
-                          num={num}
-                          busy={busy || !connected}
-                          onSelect={(id) => {
-                            setSelectedPlayer(id);
-                            setRailTab('players');
-                          }}
-                          onAddBot={() => void run('ADD_BOTS', { difficulty: 'MEDIUM', count: 1 })}
-                          onStart={() => void run('START')}
-                        />
-                      )}
+                      <div className="scene-viewport">
+                        {snapshot.status === 'FINISHED' && snapshot.config.mode !== 'CASH' ? (
+                          <TournamentPresentation snapshot={snapshot} num={num} finished />
+                        ) : (
+                          <PokerTable
+                            snapshot={snapshot}
+                            table={table}
+                            bestFive={
+                              coach && table?.hand
+                                ? visibleHand(
+                                    table.hand.players.find((p) => p.id === snapshot.me)?.cards ??
+                                      [],
+                                    table.hand.board,
+                                  )?.bestFive
+                                : undefined
+                            }
+                            clock={clock}
+                            num={num}
+                            busy={busy || !connected}
+                            onSelect={(id) => {
+                              setSelectedPlayer(id);
+                              setRailTab('players');
+                              setDirectorOpen(true);
+                            }}
+                            onAddBot={() =>
+                              void run('ADD_BOTS', { difficulty: 'MEDIUM', count: 1 })
+                            }
+                            onStart={() => void run('START')}
+                          />
+                        )}
+                      </div>
                       {table?.hand && snapshot.status !== 'FINISHED' && (
                         <div className="decision-zone">
                           <DecisionDock
@@ -898,109 +949,9 @@ function App() {
                           />
                         </div>
                       )}
-                      {snapshot.status !== 'FINISHED' && (
-                        <div className="personal-controls">
-                          {me && !me.left ? (
-                            <>
-                              <span>
-                                {t('game:bank', { seconds: me.bank })}{' '}
-                                {me.sitOut && '· ' + t('game:sitOutStatus')}
-                              </span>
-                              {snapshot.config.mode === 'CASH' && (
-                                <button disabled={busy} onClick={() => void run('SIT_OUT')}>
-                                  {t(me.sitOut ? 'learn:sitIn' : 'learn:sitOut')}
-                                </button>
-                              )}
-                              <button
-                                disabled={busy || !canTopUp}
-                                title={t('game:topUpHint')}
-                                onClick={() =>
-                                  setTopUp(
-                                    snapshot.config.mode === 'CASH'
-                                      ? snapshot.config.minBuyIn
-                                      : snapshot.config.stack,
-                                  )
-                                }
-                              >
-                                {t('game:topUp')}
-                              </button>
-                              {snapshot.config.mode !== 'CASH' && (
-                                <button
-                                  disabled={busy || !canAddOn}
-                                  onClick={() => void run('ADD_ON')}
-                                >
-                                  {t('game:addOn')}
-                                </button>
-                              )}
-                              <button
-                                disabled={busy || !me.bank || table?.hand?.actor !== snapshot.me}
-                                onClick={() => void run('TIME_BANK')}
-                              >
-                                {t('game:timeBank')}
-                              </button>
-                            </>
-                          ) : (
-                            <p>{t('game:noSeat')}</p>
-                          )}
-                        </div>
-                      )}
-                      {table?.hand && (
-                        <details className="history">
-                          <summary>{t('game:actions')}</summary>
-                          {table.hand.log.map((event, i) => (
-                            <p key={i}>
-                              {
-                                snapshot.players.find((p) => p.id === event.player)?.profile
-                                  ?.nickname
-                              }{' '}
-                              · {t(`game:${event.action}`)}{' '}
-                              {event.amount > 0 ? num(event.amount) : ''}
-                            </p>
-                          ))}
-                        </details>
-                      )}
-                      <details className="history">
-                        <summary>
-                          {t('game:history')} ({snapshot.history.length})
-                        </summary>
-                        {snapshot.history
-                          .slice()
-                          .reverse()
-                          .map((h) => (
-                            <div className="history-hand" key={h.id}>
-                              <strong>
-                                {h.board.join(' ') || '—'} · {num(h.pot)}
-                              </strong>
-                              {Object.entries(h.awards).map(([id, amount]) => (
-                                <p key={id}>
-                                  {snapshot.players.find((p) => p.id === id)?.profile?.nickname}: +
-                                  {num(amount as number)}
-                                </p>
-                              ))}
-                            </div>
-                          ))}
-                      </details>
                     </section>
-                    <RoomDirector
-                      snapshot={snapshot}
-                      busy={busy || !connected}
-                      num={num}
-                      run={run}
-                      tab={railTab}
-                      onTab={setRailTab}
-                      selected={selectedPlayer}
-                      chat={
-                        <Chat
-                          messages={snapshot.chat as Messages}
-                          me={snapshot.me}
-                          disabled={busy || !connected}
-                          onSend={(text) => run('CHAT', { text })}
-                          onReact={(messageId, emoji) => run('REACT', { messageId, emoji })}
-                        />
-                      }
-                    />
                   </div>
-                </>
+                </div>
               ) : (
                 <div className="loading">
                   <p>{t('loading')}</p>
@@ -1013,11 +964,116 @@ function App() {
             </>
           )}
         </main>
-        <footer>
-          <span>♠ HIGHLORDS POKER</span>
-          <p>{t('virtual')}</p>
-          <span>{t('tagline')}</span>
-        </footer>
+        {!roomId && (
+          <footer>
+            <span>♠ HIGHLORDS POKER</span>
+            <p>{t('virtual')}</p>
+            <span>{t('tagline')}</span>
+          </footer>
+        )}
+        {snapshot && directorOpen && (
+          <Modal title={t('game:roomPanel')} onClose={closeDirector}>
+            <div className="director-dialog">
+              {' '}
+              <RoomDirector
+                snapshot={snapshot}
+                busy={busy || !connected}
+                num={num}
+                run={run}
+                tab={railTab}
+                onTab={setRailTab}
+                selected={selectedPlayer}
+                chat={
+                  <Chat
+                    messages={snapshot.chat as Messages}
+                    me={snapshot.me}
+                    disabled={busy || !connected}
+                    onSend={(text) => run('CHAT', { text })}
+                    onReact={(messageId, emoji) => run('REACT', { messageId, emoji })}
+                  />
+                }
+              />
+              <div className="room-extras">
+                {railTab === 'structure' && <RoomStats snapshot={snapshot} num={num} />}{' '}
+                {snapshot.status !== 'FINISHED' && (
+                  <div className="personal-controls">
+                    {me && !me.left ? (
+                      <>
+                        <span>
+                          {t('game:bank', { seconds: me.bank })}{' '}
+                          {me.sitOut && '· ' + t('game:sitOutStatus')}
+                        </span>
+                        {snapshot.config.mode === 'CASH' && (
+                          <button disabled={busy} onClick={() => void run('SIT_OUT')}>
+                            {t(me.sitOut ? 'learn:sitIn' : 'learn:sitOut')}
+                          </button>
+                        )}
+                        <button
+                          disabled={busy || !canTopUp}
+                          title={t('game:topUpHint')}
+                          onClick={() =>
+                            setTopUp(
+                              snapshot.config.mode === 'CASH'
+                                ? snapshot.config.minBuyIn
+                                : snapshot.config.stack,
+                            )
+                          }
+                        >
+                          {t('game:topUp')}
+                        </button>
+                        {snapshot.config.mode !== 'CASH' && (
+                          <button disabled={busy || !canAddOn} onClick={() => void run('ADD_ON')}>
+                            {t('game:addOn')}
+                          </button>
+                        )}
+                        <button
+                          disabled={busy || !me.bank || table?.hand?.actor !== snapshot.me}
+                          onClick={() => void run('TIME_BANK')}
+                        >
+                          {t('game:timeBank')}
+                        </button>
+                      </>
+                    ) : (
+                      <p>{t('game:noSeat')}</p>
+                    )}
+                  </div>
+                )}
+                {table?.hand && (
+                  <details className="history">
+                    <summary>{t('game:actions')}</summary>
+                    {table.hand.log.map((event, i) => (
+                      <p key={i}>
+                        {snapshot.players.find((p) => p.id === event.player)?.profile?.nickname} ·{' '}
+                        {t(`game:${event.action}`)} {event.amount > 0 ? num(event.amount) : ''}
+                      </p>
+                    ))}
+                  </details>
+                )}
+                <details className="history">
+                  <summary>
+                    {t('game:history')} ({snapshot.history.length})
+                  </summary>
+                  {snapshot.history
+                    .slice()
+                    .reverse()
+                    .map((h) => (
+                      <div className="history-hand" key={h.id}>
+                        <strong>
+                          {h.board.join(' ') || '—'} · {num(h.pot)}
+                        </strong>
+                        {Object.entries(h.awards).map(([id, amount]) => (
+                          <p key={id}>
+                            {snapshot.players.find((p) => p.id === id)?.profile?.nickname}: +
+                            {num(amount as number)}
+                          </p>
+                        ))}
+                      </div>
+                    ))}
+                </details>
+              </div>
+            </div>
+          </Modal>
+        )}
         {topUp !== null && snapshot && (
           <Modal title={t('game:topUp')} onClose={closeTopUp}>
             <form

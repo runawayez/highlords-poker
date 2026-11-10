@@ -11,6 +11,16 @@ async function enter(page: Page, nickname: string) {
   await page.getByRole('button', { name: 'Salvar', exact: true }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
 }
+async function openPlayers(page: Page) {
+  await page.getByRole('button', { name: /^(Gerenciar sala|Manage room)$/, exact: true }).click();
+}
+async function closePanel(page: Page) {
+  const close = page
+    .getByRole('dialog')
+    .getByRole('button', { name: /^(Fechar|Close)$/, exact: true });
+  await expect(close).toBeInViewport();
+  await close.click();
+}
 test('two independent guests play, chat, change language mid-hand and reconnect', async ({
   browser,
   baseURL,
@@ -30,7 +40,7 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await b.goto(roomUrl);
     await b.getByRole('button', { name: 'Confirmar', exact: true }).click();
     await expect(b.getByRole('dialog')).not.toBeVisible();
-    await expect(a.getByRole('cell', { name: /Beta/ })).toBeVisible();
+    await expect(a.locator('.seat-profile').filter({ hasText: 'Beta' })).toBeVisible();
     await a.getByRole('button', { name: 'Distribuir cartas', exact: true }).click();
     await expect(a.locator('.decision-cards .playing-card:not(.card-back)')).toHaveCount(2);
     await expect(b.locator('.decision-cards .playing-card:not(.card-back)')).toHaveCount(2);
@@ -45,14 +55,17 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await expect(a.locator('.coach-tip')).toHaveCount(0);
     await a.getByLabel('Selecionar idioma').selectOption('en');
     await expect(a.locator('html')).toHaveAttribute('lang', 'en');
+    await a.locator('.room-options summary').click();
     await expect(a.getByRole('button', { name: 'House rules', exact: true })).toBeVisible();
-    await expect(b.getByRole('button', { name: 'Regras da casa', exact: true })).toBeVisible();
-    await a.getByRole('tab', { name: 'Chat', exact: true }).click();
-    await b.getByRole('tab', { name: 'Chat', exact: true }).click();
+    await a.locator('.room-options summary').click();
+    await a.getByRole('button', { name: 'Chat', exact: true }).click();
+    await b.getByRole('button', { name: 'Chat', exact: true }).click();
     await a.getByPlaceholder('Type a message…').fill('<img src=x onerror=alert(1)>');
     await a.getByRole('button', { name: 'Send', exact: true }).click();
     await expect(b.getByText('<img src=x onerror=alert(1)>', { exact: true })).toBeVisible();
     await expect(b.locator('.messages img')).toHaveCount(0);
+    await closePanel(a);
+    await closePanel(b);
     // All-in is always available for the preflop heads-up actor. Locate it in either independent client.
     const actorA = await a.getByRole('button', { name: /^All-in/ }).isVisible();
     const actor = actorA ? a : b;
@@ -83,12 +96,12 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await expect(a.locator('.community .playing-card:not(.card-empty)')).toHaveCount(5);
     await expect(a.locator('.winner').first()).toBeVisible();
     await a.reload();
-    await expect(a.getByRole('button', { name: 'House rules', exact: true })).toBeVisible();
+    await expect(a.locator('html')).toHaveAttribute('lang', 'en');
     await expect(a.getByRole('button', { name: '? Table help', exact: true })).toHaveAttribute(
       'aria-pressed',
       'false',
     );
-    await expect(a.getByRole('cell', { name: /Alpha/ })).toBeVisible();
+    await expect(a.locator('.seat-profile').filter({ hasText: 'Alpha' })).toBeVisible();
     await expect(a.getByRole('dialog')).not.toBeVisible();
     await expect(a.locator('.community .playing-card:not(.card-empty)')).toHaveCount(5);
   } finally {
@@ -110,6 +123,8 @@ test('mobile profile, language menu and lobby fit without horizontal overflow', 
   const p = await context.newPage();
   try {
     await enter(p, 'Mobile');
+    await expect(p.locator('.mini-table')).toHaveCSS('transform', 'none');
+    await p.screenshot({ path: 'test-results/ui-mobile-home.png', fullPage: true });
     await p.getByLabel('Selecionar idioma').selectOption('en');
     await expect(p.getByRole('button', { name: /Create a table/ })).toBeVisible();
     expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
@@ -139,6 +154,7 @@ test('host adds and removes bots, plays a hand and reconnects', async ({ page })
   await page.getByLabel('Nome da mesa').fill('Bots ' + Date.now());
   await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
   await expect(page).toHaveURL(/\/room\//);
+  await openPlayers(page);
   await page.getByLabel('Dificuldade dos bots').selectOption('HARD');
   await page.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Remover bot', exact: true })).toHaveCount(1);
@@ -146,18 +162,20 @@ test('host adds and removes bots, plays a hand and reconnects', async ({ page })
   await expect(page.getByRole('button', { name: 'Remover bot', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
   await expect(page.getByRole('cell', { name: /Highlord Bot/ }).first()).toBeVisible();
+  await closePanel(page);
   await page.getByRole('button', { name: 'Distribuir cartas', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Adicionar bot', exact: true })).not.toBeVisible();
   await expect(page.getByRole('button', { name: /^All-in/ })).toBeVisible();
   await page.getByRole('button', { name: /^All-in/ }).click();
   await expect(page.locator('.winner').first()).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('cell', { name: /Highlord Bot/ }).first()).toBeVisible();
+  await expect(page.locator('.seat-profile[title^="Highlord Bot"]').first()).toBeVisible();
   await expect(page.locator('.winner').first()).toBeVisible();
 });
 
 for (const viewport of [
   { width: 1440, height: 1050 },
+  { width: 1366, height: 768 },
   { width: 390, height: 844 },
 ]) {
   test(`visual table setup and nine-player controls at ${viewport.width}px`, async ({
@@ -190,10 +208,12 @@ for (const viewport of [
       await expect(
         page.getByRole('button', { name: 'Distribuir cartas', exact: true }),
       ).toBeDisabled();
+      await openPlayers(page);
       await page.getByRole('button', { name: 'Completar com bots', exact: true }).click();
       await expect(page.locator('.roster tbody tr')).toHaveCount(9);
       await expect(page.locator('.empty-seat')).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Adicionar bot', exact: true })).toBeDisabled();
+      await closePanel(page);
       await page.screenshot({
         path: `test-results/ui-${viewport.width}-waiting.png`,
         fullPage: true,
@@ -221,18 +241,39 @@ for (const viewport of [
       ).toBe(true);
       await page.getByRole('button', { name: 'Pausar', exact: true }).click();
       await expect(page.getByRole('button', { name: 'Retomar', exact: true })).toBeVisible();
+      const felt = await page.locator('.poker-table').boundingBox();
+      expect(felt).not.toBeNull();
+      if (viewport.width > 600) expect(felt!.width / felt!.height).toBeGreaterThan(1.7);
+      const cardBoxes = await page
+        .locator('.community .playing-card, .own-hand .playing-card')
+        .evaluateAll((elements) =>
+          elements.map((e) => {
+            const r = e.getBoundingClientRect();
+            return { x: r.x, y: r.y, w: r.width, h: r.height };
+          }),
+        );
+      for (const card of cardBoxes) {
+        expect(card.x).toBeGreaterThanOrEqual(felt!.x);
+        expect(card.x + card.w).toBeLessThanOrEqual(felt!.x + felt!.width);
+        expect(card.y).toBeGreaterThanOrEqual(felt!.y);
+        expect(card.y + card.h).toBeLessThanOrEqual(felt!.y + felt!.height);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(
+        true,
+      );
       await page.screenshot({
         path: `test-results/ui-${viewport.width}-playing.png`,
         fullPage: true,
       });
       await page.getByRole('button', { name: 'Retomar', exact: true }).click();
-      await page.getByRole('tab', { name: 'Chat', exact: true }).click();
+      await page.getByRole('button', { name: 'Chat', exact: true }).click();
       await page.getByPlaceholder('Digite uma mensagem…').fill('Mesa pronta!');
       await page.getByRole('button', { name: 'Enviar', exact: true }).click();
       await expect(page.getByText('Mesa pronta!', { exact: true })).toBeVisible();
-      await page.getByRole('tab', { name: 'Jogadores', exact: false }).click();
+      await closePanel(page);
       await page.locator('.seat-profile').first().click();
       await expect(page.locator('.selected-player')).toHaveCount(1);
+      await closePanel(page);
       await page.locator('.room-options summary').click();
       await page.getByRole('button', { name: 'Sair da sala', exact: true }).click();
       await expect(page.getByRole('dialog', { name: 'Sair da sala' })).toBeVisible();
@@ -265,6 +306,7 @@ test('tournament builder edits levels, validates values and previews multiple ta
   await expect(page.getByText('Tudo pronto para receber a galera', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
   await expect(page).toHaveURL(/\/room\//);
+  await openPlayers(page);
   await page.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
   await page.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
   await page.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
@@ -294,7 +336,7 @@ test('real disconnect changes presence counts and host closure redirects everyon
     await host.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
     await expect(host).toHaveURL(/\/room\//);
     const roomUrl = host.url();
-    await host.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
+    await host.getByRole('button', { name: 'Adicionar bot médio', exact: true }).click();
     await enter(guest, 'Lifecycle guest');
     await guest.goto(roomUrl);
     await guest.getByRole('button', { name: 'Confirmar', exact: true }).click();
@@ -465,4 +507,19 @@ test('finished tournament presents podium and virtual prizes in both languages',
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/ui-mobile-podium.png', fullPage: true });
+});
+
+test('home artwork is horizontal and the tables page keeps real navigation', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.mini-table')).toHaveCSS('transform', 'none');
+  await page.getByRole('button', { name: /Encontrar uma mesa/ }).click();
+  await expect(page).toHaveURL(/\/mesas$/);
+  await expect(page.locator('.hero')).toHaveCount(0);
+  await expect(page.locator('.filters')).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Encontre sua próxima partida.' })).toBeVisible();
+  await page.getByLabel('Selecionar idioma').selectOption('en');
+  await expect(page.getByRole('heading', { name: 'Find your next game.' })).toBeVisible();
+  await page.getByRole('button', { name: 'Home', exact: true }).click();
+  await expect(page.locator('.hero')).toContainText('Our kind of night.');
 });

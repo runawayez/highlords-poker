@@ -31,14 +31,20 @@ Foram estudados padrões de hierarquia e controles, sem reutilizar imagens, marc
 
 ## Verificação
 
-`pnpm check` cobre tipos, lint, regras, integração, idiomas e build. `pnpm test:e2e` cobre partidas em sessões independentes, bots, criação e edição de torneio, validação de blinds, navegação do painel e telas de 1440 e 390 pixels. A suíte mede sobreposição dos nove cartões de jogador e overflow horizontal, além de salvar capturas no artefato `interface-previews` do GitHub Actions.
+`pnpm check` cobre tipos, lint, regras, integração, idiomas e build. `pnpm test:e2e` cobre partidas em sessões independentes, bots, criação e edição de torneio, validação de blinds, navegação do painel e telas de 1440, 1366 e 390 pixels. A suíte mede sobreposição dos nove cartões de jogador e overflow horizontal, além de salvar capturas no artefato `interface-previews` do GitHub Actions.
 
 ## Aprendizado e decisões
 
 Os menus Como jogar, Ranking de mãos e Ajuda abrem rotas próprias sem exigir perfil. O guia tem etapas interativas, exemplos das dez mãos e glossário pesquisável. Na sala, os mesmos guias abrem em diálogo, mantendo a conexão e a partida ativas: consultar ajuda não pausa o cronômetro.
 
-As duas cartas próprias ficam junto das ações; a ajuda opcional descreve a melhor combinação já formada e destaca as cinco cartas correspondentes. O cálculo recebe exclusivamente as cartas do próprio jogador e as comunitárias, sem estimativas de chances. A preferência é local. As apostas mostram os valores em fichas; “Aumentar para” é o total da rodada. Copiar convite, exportar, sair e encerrar ficam em Opções da sala; pausa/retomada permanecem visíveis.
+As duas cartas próprias ficam dentro do feltro, próximas do assento inferior; a ajuda opcional descreve a melhor combinação já formada e destaca as cinco cartas correspondentes. O cálculo recebe exclusivamente as cartas do próprio jogador e as comunitárias, sem estimativas de chances. A preferência é local. As apostas mostram os valores em fichas; “Aumentar para” é o total da rodada. Copiar convite, exportar, sair e encerrar ficam em Opções da sala; pausa/retomada permanecem visíveis.
 
 Torneios têm resumo de jogadores restantes, mesas e próximos blinds, além de pódio final. Animações respeitam movimento reduzido; o aviso sonoro de turno continua opcional no perfil. As duas línguas têm a mesma cobertura.
 
 Referência educativa: [PokerStars — Texas Hold’em](https://www.pokerstars.com/pt-BR/poker/games/texas-holdem/?no_redirect=1). Conteúdo e exemplos próprios, sem reprodução de imagens ou texto da referência.
+
+## Layout imersivo
+
+A home usa uma ilustração horizontal original, sem rotação da mesa. A rota `/mesas` oferece o lobby dedicado e preserva filtros e presença reais. A arena do jogo mantém proporção fixa e se dimensiona pelo espaço disponível, usando mesa mais vertical no celular. Ações ocupam uma região própria, sem encobrir cartas ou assentos. Os testes também verificam que as cartas comunitárias e privadas permanecem dentro do feltro e que a sala não ultrapassa a altura da tela.
+
+**Gerenciar sala** e **Chat** abrem um painel lateral com fechamento por botão ou Escape e foco contido. Participantes, bots, estrutura, histórico, banco de tempo, recargas e add-on continuam integrados ao servidor. Clicar em um assento abre o participante selecionado. A home e os guias ficam acessíveis pelo menu do clube; os guias também abrem sem sair da partida por Opções.

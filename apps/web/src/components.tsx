@@ -838,7 +838,7 @@ export function ActionBar({
           .map((a) => (
             <button
               disabled={busy}
-              className={a === 'FOLD' ? 'danger' : a === 'ALL_IN' ? '' : 'primary'}
+              className={a === 'FOLD' ? 'danger fold' : a === 'ALL_IN' ? 'all-in' : 'primary call'}
               key={a}
               onClick={() => void onAction(a)}
             >

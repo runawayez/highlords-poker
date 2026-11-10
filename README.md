@@ -21,6 +21,8 @@ A hospedagem e a operação do site ficam a cargo do criador do projeto. **Os jo
 
 ## A experiência
 
+A home apresenta o clube, as mesas abertas e os guias; **Mesas** abre a busca dedicada. A sala ocupa a tela com uma mesa proporcional, cartas dentro do feltro e controles na base. **Gerenciar sala** reúne participantes, estrutura, recargas e histórico; **Chat** abre somente a conversa daquela sala.
+
 - **Texas Hold'em No-Limit:** mesas de 2 a 9 jogadores, blinds, antes, all-in, side pots e divisão de potes.
 - **Diferentes formatos:** cash game com fichas virtuais, Sit & Go e torneios multimesa.
 - **Mesas do seu jeito:** senha opcional, stacks, buy-ins, rebuys, add-on, níveis de blinds e intervalos configuráveis.
@@ -39,7 +41,7 @@ A hospedagem e a operação do site ficam a cargo do criador do projeto. **Os jo
 - [Ranking de mãos](https://highlords-poker.vercel.app/ranking-de-maos): dez combinações ilustradas, empates e kickers.
 - [Ajuda](https://highlords-poker.vercel.app/ajuda): perguntas frequentes e glossário com busca.
 - Ajuda opcional na mesa: descreve sua melhor mão usando somente suas cartas e as comunitárias; preferência salva no navegador. Consulte o ranking sem sair da sala.
-- Cartas próprias junto das ações, valores de pagar/aumentar explícitos e opções da sala agrupadas. Menus disponíveis em desktop e celular.
+- Mesa imersiva adaptada à tela: cartas próprias dentro do feltro, assentos com avatares e ações de pagar/aumentar com valores explícitos. Gerenciamento e chat abrem em painel lateral; menus disponíveis em desktop e celular.
 - Torneios com acompanhamento de jogadores restantes, próximos blinds, janela de rebuy e pódio final com premiações virtuais.
 
 ## Sobre este repositório
@@ -64,7 +66,7 @@ Os guias técnicos abrem em português e incluem links para as referências deta
 
 ## Bots
 
-Na sala, antes de distribuir as cartas, escolha a dificuldade e use **Adicionar bot** ou **Completar com bots**. O anfitrião também pode remover bots antes do início. Eles seguem as mesmas regras e enxergam apenas suas próprias cartas e a mesa. As dificuldades usam estratégias e simulações locais no servidor, sem serviços de IA pagos; o nível difícil não é um jogador profissional.
+Na sala, abra **Gerenciar sala → Jogadores** antes de distribuir as cartas, escolha a dificuldade e use **Adicionar bot** ou **Completar com bots**. O anfitrião também pode remover bots antes do início. Eles seguem as mesmas regras e enxergam apenas suas próprias cartas e a mesa. As dificuldades usam estratégias e simulações locais no servidor, sem serviços de IA pagos; o nível difícil não é um jogador profissional.
 
 Bots usam fichas virtuais e podem participar dos três formatos. Não fazem rebuy ou add-on automaticamente. Quando todos os humanos ficam desconectados, a partida pausa; bots não mantêm salas jogando sozinhas. O recurso exige a atualização do Worker além do frontend.
 

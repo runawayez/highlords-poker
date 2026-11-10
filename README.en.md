@@ -38,7 +38,7 @@ The project's creator handles hosting and operation. **Players use the official 
 - [Hand rankings](https://highlords-poker.vercel.app/ranking-de-maos): ten illustrated combinations, ties and kickers.
 - [Help](https://highlords-poker.vercel.app/ajuda): frequently asked questions and a searchable glossary.
 - Optional table help describes your current hand using only your cards and the community board; your preference is saved locally. Consult rankings without leaving the room.
-- Your cards sit beside betting controls, call/raise amounts are explicit, and room utilities are grouped. Navigation works on desktop and mobile.
+- Your private cards sit inside the felt, call/raise amounts are explicit, and room utilities open in a side panel. Navigation works on desktop and mobile.
 - Tournament progress shows remaining players, next blinds and rebuy availability, followed by a final podium with virtual prizes.
 
 ## About this repository
@@ -63,7 +63,7 @@ The links above open the English technical references. The original product brie
 
 ## Bots
 
-Before dealing, the host can add up to eight bots, choose Easy, Medium or Hard, fill the table with bots, and remove them. Friends and bots can share a room in all three formats. Bots follow the same rules and only see their own cards and the public board. Strategies and bounded simulations run on the server without paid AI services; Hard is not a professional poker player.
+Before dealing, open **Manage room → Players**: the host can add up to eight bots, choose Easy, Medium or Hard, fill the table with bots, and remove them. Friends and bots can share a room in all three formats. Bots follow the same rules and only see their own cards and the public board. Strategies and bounded simulations run on the server without paid AI services; Hard is not a professional poker player.
 
 Bots use virtual chips and do not automatically rebuy or take add-ons. Games pause when all humans disconnect. This feature requires updating both the Worker and the frontend.
 
@@ -76,3 +76,7 @@ No account registration is required. The lobby separates **online people**, **aw
 After up to one minute without a connection signal from any human, a running game pauses. The room is reserved for **30 minutes of absence** so people can reconnect and the host can resume. Bots never keep rooms open. Waiting and manually paused rooms use the same expiry rule. A human returning before the deadline renews the reservation.
 
 Finished tournaments retain results for **1 hour**, unaffected by visits or chat. The host can also **Close room**, with confirmation, removing it from the lobby for everyone. Saved profiles and credentials for other rooms are kept. There is no global administration panel or mandatory login.
+
+## Immersive club interface
+
+Home introduces the club, open tables and learning guides; **Tables** opens the dedicated lobby. The room fills the viewport with a proportional felt, private cards inside the table and betting controls below. **Manage room** opens players, bot controls, structure, top-ups and history; **Chat** opens only that room’s conversation. All existing tournament, profile and language features remain available.

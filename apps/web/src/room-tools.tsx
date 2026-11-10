@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Command } from '../../../packages/contracts/src/index.ts';
 import type { Snapshot } from './api.ts';
+import { Knight } from './club-art.tsx';
+import { Card } from './card.tsx';
 
 export const difficultyLabels = {
   EASY: 'game:botEASY',
@@ -12,29 +14,29 @@ export const difficultyLabels = {
 export function seatPosition(index: number, count: number) {
   const positions: Record<number, number[][]> = {
     2: [
-      [50, 87],
+      [50, 90],
       [50, 13],
     ],
     3: [
-      [50, 87],
+      [50, 90],
       [17, 26],
       [83, 26],
     ],
     4: [
-      [50, 87],
+      [50, 90],
       [12, 50],
       [50, 13],
       [88, 50],
     ],
     5: [
-      [50, 87],
+      [50, 90],
       [12, 65],
       [26, 15],
       [74, 15],
       [88, 65],
     ],
     6: [
-      [50, 87],
+      [50, 90],
       [13, 69],
       [13, 27],
       [50, 13],
@@ -42,7 +44,7 @@ export function seatPosition(index: number, count: number) {
       [87, 69],
     ],
     7: [
-      [50, 87],
+      [50, 90],
       [15, 77],
       [12, 38],
       [35, 13],
@@ -51,7 +53,7 @@ export function seatPosition(index: number, count: number) {
       [85, 77],
     ],
     8: [
-      [50, 87],
+      [50, 90],
       [22, 83],
       [12, 51],
       [24, 17],
@@ -61,7 +63,7 @@ export function seatPosition(index: number, count: number) {
       [78, 83],
     ],
     9: [
-      [50, 87],
+      [50, 90],
       [22, 82],
       [12, 57],
       [17, 25],
@@ -75,39 +77,7 @@ export function seatPosition(index: number, count: number) {
   const [x, y] = (positions[count] ?? positions[6])[index % count];
   return { left: `${x}%`, top: `${y}%` };
 }
-export function Card({
-  card,
-  hidden = false,
-  highlighted = false,
-}: {
-  card?: string;
-  hidden?: boolean;
-  highlighted?: boolean;
-}) {
-  const suits: Record<string, string> = { s: '♠', h: '♥', d: '♦', c: '♣' };
-  const rank = card?.[0] === 'T' ? '10' : card?.[0];
-  return (
-    <div
-      className={`playing-card ${highlighted ? 'best-card' : ''} ${hidden ? 'card-back' : !card ? 'card-empty' : ['h', 'd'].includes(card[1]) ? 'red-card' : ''}`}
-      aria-label={hidden ? undefined : card ? `${rank} ${suits[card[1]]}` : undefined}
-    >
-      {hidden ? (
-        <span>♠</span>
-      ) : card ? (
-        <>
-          <b>
-            {rank}
-            <i>{suits[card[1]]}</i>
-          </b>
-          <span>{suits[card[1]]}</span>
-          <b className="card-corner">{rank}</b>
-        </>
-      ) : (
-        <span className="empty-suit">♠</span>
-      )}
-    </div>
-  );
-}
+export { Card } from './card.tsx';
 export function TablePreview({
   seats,
   stack,
@@ -162,61 +132,78 @@ export function PokerTable({
   onStart: () => void;
   busy: boolean;
 }) {
-  const { t } = useTranslation();
-  const h = table?.hand;
-  const waiting = snapshot.status === 'WAITING';
+  const { t } = useTranslation(),
+    h = table?.hand,
+    waiting = snapshot.status === 'WAITING';
   const players = h
     ? h.players.map((hp) => ({ ...snapshot.players.find((p) => p.id === hp.id)!, ...hp }))
     : snapshot.players
         .filter((p) => !p.left && (!table || table.ids.includes(p.id)))
         .slice(0, snapshot.config.seats)
         .map((p) => ({ ...p, cards: [] as string[], folded: false, bet: 0 }));
-  const self = players.findIndex((p) => p.id === snapshot.me);
-  const rotated = self > 0 ? [...players.slice(self), ...players.slice(0, self)] : players;
-  const seats = waiting ? snapshot.config.seats : Math.max(2, players.length);
-  const active = snapshot.players.filter((p) => !p.left);
-  const canAdd =
-    waiting && snapshot.host && snapshot.botsSupported && active.filter((p) => p.bot).length < 8;
-  const actor = snapshot.players.find((p) => p.id === h?.actor);
-  const seconds = Math.max(0, Math.ceil(((table?.deadline ?? clock) - clock) / 1000));
+  const self = players.findIndex((p) => p.id === snapshot.me),
+    rotated = self > 0 ? [...players.slice(self), ...players.slice(0, self)] : players;
+  const seats = waiting ? snapshot.config.seats : Math.max(2, players.length),
+    active = snapshot.players.filter((p) => !p.left),
+    canAdd =
+      waiting &&
+      snapshot.host &&
+      snapshot.botsSupported &&
+      active.length <
+        (snapshot.config.mode === 'TOURNAMENT'
+          ? snapshot.config.capacity
+          : snapshot.config.seats) &&
+      active.filter((p) => p.bot).length < 8;
+  const actor = snapshot.players.find((p) => p.id === h?.actor),
+    own = h?.players.find((p) => p.id === snapshot.me),
+    seconds = Math.max(0, Math.ceil(((table?.deadline ?? clock) - clock) / 1000));
+  const won = !!h?.done && Object.values(h.awards).some((n) => n > 0);
   return (
-    <div className={`table-shell ${waiting ? 'table-waiting' : ''}`} data-seats={seats}>
+    <div
+      className={`table-shell ${waiting ? 'table-waiting' : ''} ${won ? 'hand-won' : ''}`}
+      data-seats={seats}
+    >
       <div className="poker-table">
         <div className="felt-border" />
-        <div className="table-center">
-          <span className="table-watermark">
-            HIGHLORDS <b>♠</b>
-            <small>NO LIMIT TEXAS HOLD’EM</small>
-          </span>
-          {h ? (
-            <>
-              <p className="street">
-                {h.done
-                  ? t('game:nextHand')
-                  : t(`game:${['preflop', 'flop', 'turnStreet', 'river'][h.street]}`)}
-              </p>
-              <div className="community">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Card key={i} card={h.board[i]} highlighted={bestFive?.includes(h.board[i])} />
-                ))}
-              </div>
-              <div className="pot">
-                <span className="chip-stack" aria-hidden>
-                  <i />
-                  <i />
-                  <i />
-                </span>
-                <span>
-                  {t('game:pot')}
-                  <strong>{num(h.pot)}</strong>
-                </span>
-              </div>
-            </>
-          ) : (
-            <div className="table-waiting-center">
-              <h2>{t(waiting ? 'game:readyTable' : 'game:waitingRebuy')}</h2>
-              <p>{t(waiting ? 'game:waitingHint' : 'game:noSeat')}</p>
-              {waiting && snapshot.host && (
+      </div>
+      <span className="table-watermark">
+        HIGHLORDS <b>♠</b>
+        <small>POKER CLUB · NO LIMIT HOLD’EM</small>
+      </span>
+      <div className="table-center">
+        {h ? (
+          <>
+            <div className="pot">
+              <span className="chip-stack" aria-hidden>
+                <i />
+                <i />
+                <i />
+              </span>
+              <span>
+                {t('game:pot')} <strong>{num(h.pot)}</strong>
+              </span>
+            </div>
+            <div className="community">
+              {Array.from({ length: 5 }, (_, i) => (
+                <Card
+                  key={h.id + '-' + i}
+                  card={h.board[i]}
+                  highlighted={bestFive?.includes(h.board[i])}
+                />
+              ))}
+            </div>
+            <p className="street">
+              {h.done
+                ? t('club:handComplete')
+                : t(`game:${['preflop', 'flop', 'turnStreet', 'river'][h.street]}`)}
+            </p>
+          </>
+        ) : (
+          <div className="table-waiting-center">
+            <h2>{t(waiting ? 'game:readyTable' : 'game:waitingRebuy')}</h2>
+            <p>{t(waiting ? 'game:waitingHint' : 'game:noSeat')}</p>
+            {waiting && snapshot.host && (
+              <>
                 <button
                   className="primary start-game"
                   aria-label={t('game:start')}
@@ -225,18 +212,38 @@ export function PokerTable({
                 >
                   ▶ {t('game:start')}
                 </button>
-              )}
-              {waiting && snapshot.host && active.length < 2 && <small>{t('game:needTwo')}</small>}
-              {waiting && !snapshot.host && <small>{t('game:hostStarts')}</small>}
-            </div>
-          )}
-        </div>
+                <button
+                  className="text-button quick-bot"
+                  disabled={busy || !canAdd}
+                  onClick={onAddBot}
+                >
+                  {t('club:quickBot')}
+                </button>
+              </>
+            )}
+            {waiting && snapshot.host && active.length < 2 && <small>{t('game:needTwo')}</small>}
+            {waiting && !snapshot.host && <small>{t('game:hostStarts')}</small>}
+          </div>
+        )}
       </div>
+      {own && own.cards.length === 2 && (
+        <div className={`own-hand ${own.folded ? 'folded' : ''}`} aria-label={t('learn:yourCards')}>
+          <div className="decision-cards">
+            {own.cards.map((card) => (
+              <Card key={h!.id + card} card={card} highlighted={bestFive?.includes(card)} />
+            ))}
+          </div>
+          <small>{own.folded ? t('game:folded') : t('game:you')}</small>
+        </div>
+      )}
       {Array.from({ length: seats }, (_, i) => {
-        const p = rotated[i];
+        const p = rotated[i],
+          position = seatPosition(i, seats),
+          x = parseFloat(position.left),
+          y = parseFloat(position.top);
         if (!p)
           return (
-            <div key={`empty-${i}`} className="seat empty-seat" style={seatPosition(i, seats)}>
+            <div className="seat empty-seat" key={'empty-' + i} style={position}>
               <button
                 disabled={!canAdd || busy}
                 onClick={onAddBot}
@@ -247,89 +254,88 @@ export function PokerTable({
               </button>
             </div>
           );
-        const acting = snapshot.status === 'RUNNING' && !h?.done && h?.actor === p.id;
-        const last = h?.log.filter((e) => e.player === p.id).at(-1);
+        const acting = snapshot.status === 'RUNNING' && !h?.done && h?.actor === p.id,
+          last = h?.log.filter((e) => e.player === p.id).at(-1),
+          isSelf = p.id === snapshot.me;
+        const cardPosition = {
+          left: (y > 35 && y < 65 ? (x < 50 ? 18 : 82) : x * 0.65 + 17.5) + '%',
+          top: (y > 35 && y < 65 ? y + 12 : y * 0.65 + 15.75) + '%',
+        };
+        const betPosition = {
+          left: (isSelf ? 50 : x < 35 ? 27 : x > 65 ? 77 : 62) + '%',
+          top: (isSelf ? 57 : y < 35 ? 36 : y > 65 ? 74 : 55) + '%',
+        };
         return (
-          <div
-            key={p.id}
-            data-edge={
-              parseFloat(seatPosition(i, seats).top) > 70
-                ? 'bottom'
-                : parseFloat(seatPosition(i, seats).top) < 30
-                  ? 'top'
-                  : parseFloat(seatPosition(i, seats).left) < 50
-                    ? 'left'
-                    : 'right'
-            }
-            className={`seat ${acting ? 'acting' : ''} ${p.folded ? 'folded' : ''} ${p.id === snapshot.me ? 'self' : ''}`}
-            style={
-              { ...seatPosition(i, seats), '--accent': p.profile?.accent } as React.CSSProperties
-            }
-          >
-            {h && p.id !== snapshot.me && (
-              <div className="hole-cards">
+          <React.Fragment key={p.id}>
+            <div
+              data-edge={y > 70 ? 'bottom' : y < 30 ? 'top' : x < 50 ? 'left' : 'right'}
+              className={`seat ${acting ? 'acting' : ''} ${p.folded ? 'folded' : ''} ${isSelf ? 'self' : ''}`}
+              style={{ ...position, '--accent': p.profile?.accent } as React.CSSProperties}
+            >
+              <button
+                className={`seat-profile ${p.profile?.frame ?? ''}`}
+                title={p.profile?.nickname}
+                onClick={() => onSelect(p.id)}
+              >
+                <span className="seat-avatar">
+                  {p.bot ? <Knight color={p.profile?.accent} /> : (p.profile?.avatar ?? '♠')}
+                </span>
+                <span className="seat-identity">
+                  <strong>
+                    {p.bot ? p.profile?.nickname.replace(/^Highlord /, '') : p.profile?.nickname}
+                  </strong>
+                  <small>{num(p.stack)}</small>
+                </span>
+                {h && p.seat === h.button && (
+                  <span className="dealer" aria-label={t('game:dealer')}>
+                    D
+                  </span>
+                )}
+                {p.bot && <span className="bot-tag">BOT</span>}
+              </button>
+              {acting && (
+                <div className="seat-timer">
+                  <i
+                    style={{
+                      width: Math.min(100, (seconds / snapshot.config.turnSeconds) * 100) + '%',
+                    }}
+                  />
+                </div>
+              )}
+              {h?.done && h.awards[p.id] ? (
+                <span className="winner">{t('game:won', { amount: num(h.awards[p.id]) })}</span>
+              ) : (
+                <span className="seat-status">
+                  {p.folded
+                    ? t('game:folded')
+                    : h && p.stack === 0
+                      ? t('game:allIn')
+                      : p.sitOut
+                        ? t('game:sitOutStatus')
+                        : last
+                          ? t(`game:${last.action}`)
+                          : isSelf
+                            ? t('game:you')
+                            : p.bot
+                              ? t(difficultyLabels[p.bot.difficulty])
+                              : t('game:ready')}
+                </span>
+              )}
+            </div>
+            {h && !isSelf && !p.folded && (
+              <div className="hole-cards" style={cardPosition}>
                 {p.cards.length
                   ? p.cards.map((c) => <Card key={c} card={c} />)
                   : [0, 1].map((n) => <Card key={n} hidden />)}
               </div>
             )}
-            <button
-              className={`seat-profile ${p.profile?.frame ?? ''}`}
-              title={p.profile?.nickname}
-              onClick={() => onSelect(p.id)}
-            >
-              <span className="seat-avatar">{p.profile?.avatar ?? '♠'}</span>
-              <span className="seat-identity">
-                <strong>
-                  {p.bot ? p.profile?.nickname.replace(/^Highlord /, '') : p.profile?.nickname}
-                </strong>
-                <small>
-                  <span className="tiny-chip" />
-                  {num(p.stack)}
-                </small>
-              </span>
-              {h && p.seat === h.button && (
-                <span className="dealer" aria-label={t('game:dealer')}>
-                  D
-                </span>
-              )}
-              {p.bot && <span className="bot-tag">BOT</span>}
-            </button>
-            {acting && (
-              <div className="seat-timer">
-                <i
-                  style={{
-                    width: `${Math.min(100, (seconds / snapshot.config.turnSeconds) * 100)}%`,
-                  }}
-                />
-              </div>
-            )}
-            {h?.done && h.awards[p.id] ? (
-              <span className="winner">{t('game:won', { amount: num(h.awards[p.id]) })}</span>
-            ) : (
-              <span className="seat-status">
-                {p.folded
-                  ? t('game:folded')
-                  : h && p.stack === 0
-                    ? t('game:allIn')
-                    : p.sitOut
-                      ? t('game:sitOutStatus')
-                      : last
-                        ? t(`game:${last.action}`)
-                        : p.id === snapshot.me
-                          ? t('game:you')
-                          : p.bot
-                            ? t(difficultyLabels[p.bot.difficulty])
-                            : t('game:ready')}
-              </span>
-            )}
             {p.bet > 0 && (
-              <span className="seat-bet">
+              <span className="seat-bet" style={betPosition}>
                 <i className="tiny-chip" />
                 {num(p.bet)}
               </span>
             )}
-          </div>
+          </React.Fragment>
         );
       })}
       <div

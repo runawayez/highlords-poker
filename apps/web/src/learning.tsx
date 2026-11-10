@@ -220,11 +220,6 @@ export function DecisionDock({
   const num = (n: number) => new Intl.NumberFormat(i18n.language).format(n);
   return (
     <section className="decision-dock" aria-label={t('learn:yourCards')}>
-      <div className="decision-cards">
-        {own.cards.map((card) => (
-          <Card key={card} card={card} highlighted={coach && !!hand?.bestFive.includes(card)} />
-        ))}
-      </div>
       <div className="decision-summary">
         <span className="badge">{t('learn:yourCards')}</span>
         <strong>
@@ -254,17 +249,20 @@ export function DecisionDock({
         </button>
       </div>
       {coach && (
-        <p className="coach-tip">
-          {own.folded
-            ? t('learn:foldedTip')
-            : h.done
-              ? t('learn:handOverTip')
-              : h.actor === snapshot.me
-                ? h.legal.call
-                  ? t('learn:callTip', { amount: num(h.legal.call) })
-                  : t('learn:checkTip')
-                : t('learn:watchTip')}
-        </p>
+        <details className="coach-explanation">
+          <summary>{t('club:tip')}</summary>
+          <p className="coach-tip">
+            {own.folded
+              ? t('learn:foldedTip')
+              : h.done
+                ? t('learn:handOverTip')
+                : h.actor === snapshot.me
+                  ? h.legal.call
+                    ? t('learn:callTip', { amount: num(h.legal.call) })
+                    : t('learn:checkTip')
+                  : t('learn:watchTip')}
+          </p>
+        </details>
       )}
     </section>
   );
