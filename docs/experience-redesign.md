@@ -8,4 +8,5 @@ This revision introduces a deliberately structured poker client rather than a re
 - **Compatibility:** existing anonymous nickname, room permissions, real-time protocol, translations and backend kept unchanged.
 
 ## Verification checklist
+
 Run `pnpm check` and `pnpm test:e2e`. Inspect populated 2/6/9-seat rooms at desktop and portrait viewports, under both languages. Check interaction with lobby filters, Join/Watch, room drawer and Raise controls. The commit does not claim that browser validation was executed by the author.
