@@ -185,7 +185,8 @@ function App() {
     }
   }
   useEffect(() => {
-    if (prefs.profile.nickname) void connectProfile(prefs);
+    // Public pages need no session. Direct room links still authenticate immediately.
+    if (roomId && prefs.profile.nickname) void connectProfile(prefs);
   }, []);
   useEffect(() => {
     if (ready || roomId || page !== 'play') return;

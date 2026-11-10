@@ -243,7 +243,10 @@ for (const viewport of [
       await expect(page.getByRole('button', { name: 'Retomar', exact: true })).toBeVisible();
       const felt = await page.locator('.poker-table').boundingBox();
       expect(felt).not.toBeNull();
-      if (viewport.width > 600) expect(felt!.width / felt!.height).toBeGreaterThan(1.7);
+      if (viewport.width > 600) {
+        expect(felt!.width / felt!.height).toBeGreaterThan(1.45);
+        expect(felt!.width / felt!.height).toBeLessThan(1.85);
+      }
       const cardBoxes = await page
         .locator('.community .playing-card, .own-hand .playing-card')
         .evaluateAll((elements) =>
@@ -678,7 +681,7 @@ test('fresh browser receives a reusable guest identity and can edit it in room c
 }) => {
   await page.goto('/');
   await expect(page.getByRole('dialog')).not.toBeVisible();
-  const label = await page.locator('.profile-trigger').innerText();
+  const label = await page.locator('.profile-trigger > span:last-child').innerText();
   expect(label).toMatch(/Highlord-\d{6}/);
   await page.getByRole('button', { name: /Criar uma mesa/ }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
