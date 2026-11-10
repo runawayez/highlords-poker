@@ -523,3 +523,152 @@ test('home artwork is horizontal and the tables page keeps real navigation', asy
   await page.getByRole('button', { name: 'Home', exact: true }).click();
   await expect(page.locator('.hero')).toContainText('Our kind of night.');
 });
+
+test('home illustration keeps the badge and caption outside the felt without overflow', async ({
+  page,
+}) => {
+  await page.goto('/');
+  for (const width of [360, 390, 768, 1024, 1366, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const language of ['pt-BR', 'en']) {
+      await page.locator('.language select').selectOption(language);
+      const art = await page.locator('.club-art').boundingBox();
+      const table = await page.locator('.mini-table').boundingBox();
+      const badge = await page.locator('.art-badge').boundingBox();
+      const caption = await page.locator('.art-caption').boundingBox();
+      expect(badge!.y).toBeGreaterThanOrEqual(table!.y + table!.height + 12);
+      expect(caption!.y).toBeGreaterThanOrEqual(badge!.y + badge!.height + 12);
+      for (const box of [table!, badge!, caption!]) {
+        expect(box.x).toBeGreaterThanOrEqual(art!.x - 1);
+        expect(box.x + box.width).toBeLessThanOrEqual(art!.x + art!.width + 1);
+        expect(box.y + box.height).toBeLessThanOrEqual(art!.y + art!.height + 1);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      if ([390, 1366].includes(width) && language === 'pt-BR')
+        await page.screenshot({ path: `test-results/ui-fixed-home-${width}.png`, fullPage: true });
+    }
+  }
+});
+
+test('bet and raise labels, inputs, slider and shortcuts never collide in either language', async ({
+  page,
+}) => {
+  const service = new PokerService({
+    async load() {
+      return null;
+    },
+    async save() {},
+  });
+  await service.init();
+  const people = await Promise.all(
+    ['Visual host', 'Visual guest'].map((nickname) => service.openSession({ nickname })),
+  );
+  const host = people[0];
+  const { roomId } = (await service.command(host.token, {
+    id: crypto.randomUUID(),
+    type: 'CREATE',
+    payload: {
+      config: ConfigSchema.parse({
+        title: 'Visual betting controls',
+        maxBuyIn: 500000,
+        levels: [{ small: 25, big: 50, ante: 0, minutes: 10 }],
+        mode: 'CASH',
+        seats: 2,
+        stack: 500000,
+        small: 25,
+        big: 50,
+      }),
+    },
+  })) as { roomId: string };
+  await service.command(people[1].token, {
+    id: crypto.randomUUID(),
+    type: 'JOIN',
+    roomId,
+    payload: {},
+  });
+  await service.command(host.token, {
+    id: crypto.randomUUID(),
+    type: 'START',
+    version: (await service.snapshot(roomId, host.token)).version,
+    roomId,
+    payload: {},
+  });
+  let current = await service.snapshot(roomId, host.token);
+  let selected = host;
+  await page.routeWebSocket('**/api/ws', (socket) => socket.close());
+  await page.route('**/api/session', (route) => route.fulfill({ json: { token: selected.token } }));
+  await page.route('**/api/rooms/*', (route) => route.fulfill({ json: current }));
+  for (const state of ['raise', 'bet']) {
+    if (state === 'bet') {
+      for (const action of ['CALL', 'CHECK']) {
+        const view = await service.snapshot(roomId, host.token);
+        const actor = people.find((p) => p.playerId === view.tables[0].hand!.actor)!;
+        await service.command(actor.token, {
+          id: crypto.randomUUID(),
+          type: 'ACT',
+          roomId,
+          version: view.version,
+          payload: { action },
+        });
+      }
+    }
+    const publicView = await service.snapshot(roomId, host.token);
+    selected = people.find((p) => p.playerId === publicView.tables[0].hand!.actor)!;
+    current = await service.snapshot(roomId, selected.token);
+    expect(current.tables[0].hand!.legal.actions).toContain(state === 'bet' ? 'BET' : 'RAISE');
+    await page.addInitScript(
+      ({ token }) => {
+        localStorage.setItem('highlords.session', JSON.stringify(token));
+        localStorage.setItem(
+          'highlords.preferences',
+          JSON.stringify({
+            schema: 1,
+            profile: {
+              nickname: 'Visual host',
+              avatar: '♠',
+              frame: 'plain',
+              accent: '#df3449',
+              tagline: '',
+            },
+            sound: false,
+          }),
+        );
+      },
+      { token: selected.token },
+    );
+    await page.goto(`/room/${roomId}`);
+    await expect(page.locator('.raise-controls')).toBeVisible();
+    for (const width of [360, 390, 768, 1366]) {
+      await page.setViewportSize({ width, height: 844 });
+      for (const language of ['pt-BR', 'en']) {
+        await page.locator('.language select').selectOption(language);
+        const label = await page.locator('.raise-label').boundingBox();
+        const number = await page.locator('.raise-controls input[type=number]').boundingBox();
+        const slider = await page.locator('.raise-controls input[type=range]').boundingBox();
+        const shortcuts = await page.locator('.raise-controls .bet-shortcuts').boundingBox();
+        expect(label!.y + label!.height).toBeLessThanOrEqual(number!.y);
+        expect(number!.y + number!.height).toBeLessThanOrEqual(slider!.y);
+        expect(slider!.y + slider!.height).toBeLessThanOrEqual(shortcuts!.y);
+        const text = await page.locator('.raise-label').evaluate((el) => {
+          const r = document.createRange();
+          r.selectNodeContents(el);
+          return {
+            lines: r.getClientRects().length,
+            width: r.getBoundingClientRect().width,
+            available: el.clientWidth,
+          };
+        });
+        expect(text.lines).toBe(1);
+        expect(text.width).toBeLessThanOrEqual(text.available);
+        const controls = await page.locator('.raise-controls').boundingBox();
+        expect(controls!.x).toBeGreaterThanOrEqual(0);
+        expect(controls!.x + controls!.width).toBeLessThanOrEqual(width);
+        expect(controls!.y + controls!.height).toBeLessThanOrEqual(844);
+        if ([390, 1366].includes(width) && language === 'pt-BR')
+          await page.screenshot({ path: `test-results/ui-fixed-${state}-${width}.png` });
+      }
+    }
+  }
+});

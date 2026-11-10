@@ -21,7 +21,6 @@ export function ClubArtwork() {
   const { t } = useTranslation();
   return (
     <div className="club-art" aria-hidden="true">
-      <div className="art-orbit" />
       <div className="mini-table">
         <div className="hero-hand">
           <Card card="As" />
@@ -30,7 +29,6 @@ export function ClubArtwork() {
         </div>
         <span className="mini-mark">HIGHLORDS ♠</span>
       </div>
-      <span className="art-chip" />
       <div className="art-badge">
         <span className="art-chip gold" />
         <div>

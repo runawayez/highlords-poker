@@ -863,7 +863,7 @@ export function ActionBar({
           }}
         >
           <label>
-            {t('game:raiseTo')}
+            <span className="raise-label">{t('game:raiseTo')}</span>
             <input
               type="number"
               min={Math.min(opts.min, opts.max)}
