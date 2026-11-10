@@ -730,7 +730,10 @@ function App() {
                                   <> · {t('lobby:humansOffline', { count: r.humansOffline })}</>
                                 )}
                                 {r.spectatorsOnline > 0 && (
-                                  <> · {t('lobby:spectatorsOnline', { count: r.spectatorsOnline })}</>
+                                  <>
+                                    {' '}
+                                    · {t('lobby:spectatorsOnline', { count: r.spectatorsOnline })}
+                                  </>
                                 )}
                               </p>
                             </div>
