@@ -32,6 +32,15 @@ The project's creator handles hosting and operation. **Players use the official 
 
 **All chips and prizes are fictional.** There are no deposits, withdrawals, monetary wagers or real prizes.
 
+## Learn and follow the game
+
+- [How to play](https://highlords-poker.vercel.app/como-jogar): a visual guide to hand stages and decisions.
+- [Hand rankings](https://highlords-poker.vercel.app/ranking-de-maos): ten illustrated combinations, ties and kickers.
+- [Help](https://highlords-poker.vercel.app/ajuda): frequently asked questions and a searchable glossary.
+- Optional table help describes your current hand using only your cards and the community board; your preference is saved locally. Consult rankings without leaving the room.
+- Your cards sit beside betting controls, call/raise amounts are explicit, and room utilities are grouped. Navigation works on desktop and mobile.
+- Tournament progress shows remaining players, next blinds and rebuy availability, followed by a final podium with virtual prizes.
+
 ## About this repository
 
 This is the **public source code of the Highlords Poker website**, maintained here for reference, transparency and development tracking. Players use the official website to play.

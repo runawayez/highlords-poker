@@ -75,12 +75,20 @@ export function seatPosition(index: number, count: number) {
   const [x, y] = (positions[count] ?? positions[6])[index % count];
   return { left: `${x}%`, top: `${y}%` };
 }
-export function Card({ card, hidden = false }: { card?: string; hidden?: boolean }) {
+export function Card({
+  card,
+  hidden = false,
+  highlighted = false,
+}: {
+  card?: string;
+  hidden?: boolean;
+  highlighted?: boolean;
+}) {
   const suits: Record<string, string> = { s: '♠', h: '♥', d: '♦', c: '♣' };
   const rank = card?.[0] === 'T' ? '10' : card?.[0];
   return (
     <div
-      className={`playing-card ${hidden ? 'card-back' : !card ? 'card-empty' : ['h', 'd'].includes(card[1]) ? 'red-card' : ''}`}
+      className={`playing-card ${highlighted ? 'best-card' : ''} ${hidden ? 'card-back' : !card ? 'card-empty' : ['h', 'd'].includes(card[1]) ? 'red-card' : ''}`}
       aria-label={hidden ? undefined : card ? `${rank} ${suits[card[1]]}` : undefined}
     >
       {hidden ? (
@@ -136,6 +144,7 @@ export function TablePreview({
 export function PokerTable({
   snapshot,
   table,
+  bestFive,
   clock,
   num,
   onSelect,
@@ -145,6 +154,7 @@ export function PokerTable({
 }: {
   snapshot: Snapshot;
   table?: Snapshot['tables'][number];
+  bestFive?: string[];
   clock: number;
   num: (n: number) => string;
   onSelect: (id: string) => void;
@@ -187,7 +197,7 @@ export function PokerTable({
               </p>
               <div className="community">
                 {Array.from({ length: 5 }, (_, i) => (
-                  <Card key={i} card={h.board[i]} />
+                  <Card key={i} card={h.board[i]} highlighted={bestFive?.includes(h.board[i])} />
                 ))}
               </div>
               <div className="pot">
@@ -256,7 +266,7 @@ export function PokerTable({
               { ...seatPosition(i, seats), '--accent': p.profile?.accent } as React.CSSProperties
             }
           >
-            {h && (
+            {h && p.id !== snapshot.me && (
               <div className="hole-cards">
                 {p.cards.length
                   ? p.cards.map((c) => <Card key={c} card={c} />)

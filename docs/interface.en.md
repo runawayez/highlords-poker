@@ -11,3 +11,13 @@ The room has Players, Chat and Structure panels, a prominent Deal cards control,
 Design references: [247 Free Poker](https://www.247freepoker.com/), [Poker Now Club Tournaments](https://www.pokernow.com/blog/club-tournaments) and [Replay Poker lobby](https://replayhelp.casino.org/hc/en-us/articles/360001875053-Understanding-the-lobby). No third-party branding, images or code is reused.
 
 Validation: `pnpm check` and `pnpm test:e2e`, including two independent sessions, bots, tournament editing, blind validation, room panels, 1440px/390px layouts, nine-seat overlap and horizontal overflow checks. Browser screenshots are available in the GitHub Actions `interface-previews` artifact.
+
+## Learning and decisions
+
+How to play, Hand rankings and Help are standalone routes requiring no profile. They include an interactive walkthrough, ten illustrated hand examples and a searchable glossary. Inside a room, guides open in a dialog while the connection and game remain active; viewing help does not pause your turn timer.
+
+Your two private cards appear beside the action controls. Optional help names the best combination already available and highlights its five cards. Its only inputs are your own cards and the public board; it does not estimate odds. The preference is local. Call and raise buttons show chip amounts; “Raise to” is the total round bet. Invitation, export, leave and close actions live under Room options; pause/resume stays visible.
+
+Tournaments show remaining players, tables, next blinds and a final podium. Animation respects reduced motion; the turn sound remains optional in the profile. Both languages cover the same features.
+
+Teaching reference: [PokerStars — Texas Hold’em](https://www.pokerstars.com/pt-BR/poker/games/texas-holdem/?no_redirect=1). Original content and examples; no reference imagery or text is reused.

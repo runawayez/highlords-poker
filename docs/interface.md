@@ -32,3 +32,13 @@ Foram estudados padrões de hierarquia e controles, sem reutilizar imagens, marc
 ## Verificação
 
 `pnpm check` cobre tipos, lint, regras, integração, idiomas e build. `pnpm test:e2e` cobre partidas em sessões independentes, bots, criação e edição de torneio, validação de blinds, navegação do painel e telas de 1440 e 390 pixels. A suíte mede sobreposição dos nove cartões de jogador e overflow horizontal, além de salvar capturas no artefato `interface-previews` do GitHub Actions.
+
+## Aprendizado e decisões
+
+Os menus Como jogar, Ranking de mãos e Ajuda abrem rotas próprias sem exigir perfil. O guia tem etapas interativas, exemplos das dez mãos e glossário pesquisável. Na sala, os mesmos guias abrem em diálogo, mantendo a conexão e a partida ativas: consultar ajuda não pausa o cronômetro.
+
+As duas cartas próprias ficam junto das ações; a ajuda opcional descreve a melhor combinação já formada e destaca as cinco cartas correspondentes. O cálculo recebe exclusivamente as cartas do próprio jogador e as comunitárias, sem estimativas de chances. A preferência é local. As apostas mostram os valores em fichas; “Aumentar para” é o total da rodada. Copiar convite, exportar, sair e encerrar ficam em Opções da sala; pausa/retomada permanecem visíveis.
+
+Torneios têm resumo de jogadores restantes, mesas e próximos blinds, além de pódio final. Animações respeitam movimento reduzido; o aviso sonoro de turno continua opcional no perfil. As duas línguas têm a mesma cobertura.
+
+Referência educativa: [PokerStars — Texas Hold’em](https://www.pokerstars.com/pt-BR/poker/games/texas-holdem/?no_redirect=1). Conteúdo e exemplos próprios, sem reprodução de imagens ou texto da referência.

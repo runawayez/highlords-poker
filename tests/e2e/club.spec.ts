@@ -1,3 +1,5 @@
+import { PokerService } from '../../packages/server/src/service.ts';
+import { ConfigSchema } from '../../packages/contracts/src/index.ts';
 import { test, expect, type Page } from '@playwright/test';
 async function enter(page: Page, nickname: string) {
   await page.goto('/');
@@ -30,8 +32,17 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await expect(b.getByRole('dialog')).not.toBeVisible();
     await expect(a.getByRole('cell', { name: /Beta/ })).toBeVisible();
     await a.getByRole('button', { name: 'Distribuir cartas', exact: true }).click();
-    await expect(a.locator('.hole-cards .playing-card:not(.card-back)')).toHaveCount(2);
-    await expect(b.locator('.hole-cards .playing-card:not(.card-back)')).toHaveCount(2);
+    await expect(a.locator('.decision-cards .playing-card:not(.card-back)')).toHaveCount(2);
+    await expect(b.locator('.decision-cards .playing-card:not(.card-back)')).toHaveCount(2);
+    await a
+      .locator('.coach-controls')
+      .getByRole('button', { name: 'Ranking de mãos', exact: true })
+      .click();
+    await expect(a.getByRole('dialog')).toContainText('Royal flush');
+    await a.getByRole('button', { name: 'Fechar', exact: true }).click();
+    await expect(a.locator('.decision-cards .playing-card')).toHaveCount(2);
+    await a.getByRole('button', { name: '? Ajuda na mesa', exact: true }).click();
+    await expect(a.locator('.coach-tip')).toHaveCount(0);
     await a.getByLabel('Selecionar idioma').selectOption('en');
     await expect(a.locator('html')).toHaveAttribute('lang', 'en');
     await expect(a.getByRole('button', { name: 'House rules', exact: true })).toBeVisible();
@@ -43,16 +54,40 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await expect(b.getByText('<img src=x onerror=alert(1)>', { exact: true })).toBeVisible();
     await expect(b.locator('.messages img')).toHaveCount(0);
     // All-in is always available for the preflop heads-up actor. Locate it in either independent client.
-    const actorA = await a.getByRole('button', { name: 'All-in', exact: true }).isVisible();
+    const actorA = await a.getByRole('button', { name: /^All-in/ }).isVisible();
     const actor = actorA ? a : b;
-    await actor.getByRole('button', { name: 'All-in', exact: true }).click();
+    await actor.screenshot({ path: 'test-results/ui-decision-desktop.png', fullPage: true });
+    const originalViewport = actor.viewportSize()!;
+    await actor.setViewportSize({ width: 390, height: 844 });
+    await expect(actor.getByRole('button', { name: /^All-in/ })).toBeVisible();
+    expect(await actor.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    const actionBox = await actor.getByRole('button', { name: /^All-in/ }).boundingBox();
+    expect(actionBox!.y).toBeGreaterThanOrEqual(0);
+    expect(actionBox!.y + actionBox!.height).toBeLessThanOrEqual(844);
+    await expect
+      .poll(async () => {
+        const board = await actor.locator('.community').boundingBox(),
+          dock = await actor.locator('.decision-zone').boundingBox();
+        return board!.y >= 0 && board!.y + board!.height <= dock!.y;
+      })
+      .toBe(true);
+    await actor.screenshot({ path: 'test-results/ui-decision-mobile.png' });
+    await actor.setViewportSize(originalViewport);
+
+    await actor.getByRole('button', { name: /^All-in/ }).click();
     const other = actorA ? b : a;
-    await expect(other.getByRole('button', { name: 'All-in', exact: true })).toBeVisible();
-    await other.getByRole('button', { name: 'All-in', exact: true }).click();
+    await expect(other.getByRole('button', { name: /^All-in/ })).toBeVisible();
+    await other.getByRole('button', { name: /^All-in/ }).click();
     await expect(a.locator('.community .playing-card:not(.card-empty)')).toHaveCount(5);
     await expect(a.locator('.winner').first()).toBeVisible();
     await a.reload();
     await expect(a.getByRole('button', { name: 'House rules', exact: true })).toBeVisible();
+    await expect(a.getByRole('button', { name: '? Table help', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
     await expect(a.getByRole('cell', { name: /Alpha/ })).toBeVisible();
     await expect(a.getByRole('dialog')).not.toBeVisible();
     await expect(a.locator('.community .playing-card:not(.card-empty)')).toHaveCount(5);
@@ -113,8 +148,8 @@ test('host adds and removes bots, plays a hand and reconnects', async ({ page })
   await expect(page.getByRole('cell', { name: /Highlord Bot/ }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Distribuir cartas', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Adicionar bot', exact: true })).not.toBeVisible();
-  await expect(page.getByRole('button', { name: 'All-in', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'All-in', exact: true }).click();
+  await expect(page.getByRole('button', { name: /^All-in/ })).toBeVisible();
+  await page.getByRole('button', { name: /^All-in/ }).click();
   await expect(page.locator('.winner').first()).toBeVisible();
   await page.reload();
   await expect(page.getByRole('cell', { name: /Highlord Bot/ }).first()).toBeVisible();
@@ -165,7 +200,7 @@ for (const viewport of [
       });
       await page.getByRole('button', { name: 'Distribuir cartas', exact: true }).click();
       await expect(page.locator('.seat-profile')).toHaveCount(9);
-      await expect(page.locator('.self .hole-cards .playing-card:not(.card-back)')).toHaveCount(2);
+      await expect(page.locator('.decision-cards .playing-card:not(.card-back)')).toHaveCount(2);
       await expect(page.locator('.self .seat-status')).toBeVisible();
       const boxes = await page.locator('.seat-profile').evaluateAll((elements) =>
         elements.map((e) => {
@@ -198,6 +233,7 @@ for (const viewport of [
       await page.getByRole('tab', { name: 'Jogadores', exact: false }).click();
       await page.locator('.seat-profile').first().click();
       await expect(page.locator('.selected-player')).toHaveCount(1);
+      await page.locator('.room-options summary').click();
       await page.getByRole('button', { name: 'Sair da sala', exact: true }).click();
       await expect(page.getByRole('dialog', { name: 'Sair da sala' })).toBeVisible();
       await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
@@ -277,10 +313,14 @@ test('real disconnect changes presence counts and host closure redirects everyon
     await guest.goto(roomUrl);
     await expect(guest.getByRole('heading', { name: title, exact: true })).toBeVisible();
     await expect(card).toContainText('2 pessoas online');
+    if (!(await host.locator('.room-options').evaluate((e) => (e as HTMLDetailsElement).open)))
+      await host.locator('.room-options summary').click();
     await host.getByRole('button', { name: 'Encerrar sala', exact: true }).click();
     const dialog = host.getByRole('dialog', { name: 'Encerrar sala', exact: true });
     await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
     await expect(host).toHaveURL(roomUrl);
+    if (!(await host.locator('.room-options').evaluate((e) => (e as HTMLDetailsElement).open)))
+      await host.locator('.room-options summary').click();
     await host.getByRole('button', { name: 'Encerrar sala', exact: true }).click();
     await dialog.getByRole('button', { name: 'Sim, encerrar sala', exact: true }).click();
     await expect(host).toHaveURL(baseURL! + '/');
@@ -293,4 +333,136 @@ test('real disconnect changes presence counts and host closure redirects everyon
     await guestContext.close();
     await publicContext.close();
   }
+});
+
+for (const width of [1440, 390])
+  test(`learning routes, hand examples and glossary work without a profile at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto('/como-jogar');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(
+      page.getByRole('heading', { name: 'Texas Hold’em, da primeira carta ao pote.' }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Próxima etapa', exact: true }).click();
+    await expect(page.locator('.walkthrough-scene h2')).toHaveText('Pré-flop');
+    await page.getByRole('button', { name: /^3 Flop$/ }).click();
+    await expect(page.locator('.walkthrough-scene .playing-card')).toHaveCount(5);
+    await page.screenshot({ path: `test-results/ui-${width}-learning.png`, fullPage: true });
+    await page
+      .locator('.learning-heading')
+      .getByRole('link', { name: 'Ranking de mãos', exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/ranking-de-maos$/);
+    await expect(page.locator('.rank-card')).toHaveCount(10);
+    await expect(page.locator('.rank-card .playing-card')).toHaveCount(50);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.getByLabel('Selecionar idioma').selectOption('en');
+    await expect(
+      page.getByRole('heading', { name: 'Which hand wins?', exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await page
+      .locator('.learning-heading')
+      .getByRole('link', { name: 'Help', exact: true })
+      .click();
+    await page.getByPlaceholder('Search terms').fill('kicker');
+    await expect(page.locator('.glossary-list>div')).toHaveCount(1);
+    await expect(page.locator('.glossary-list dt')).toHaveText('Kicker');
+    await page.getByRole('button', { name: 'Go to the lobby', exact: true }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    if (width === 390) {
+      await page.getByLabel('Menu', { exact: true }).click();
+      await page
+        .locator('.mobile-nav')
+        .getByRole('link', { name: 'How to play', exact: true })
+        .click();
+      await expect(page).toHaveURL(/\/como-jogar$/);
+    }
+    expect(errors).toEqual([]);
+  });
+
+test('finished tournament presents podium and virtual prizes in both languages', async ({
+  page,
+}) => {
+  const service = new PokerService({
+    async load() {
+      return null;
+    },
+    async save() {},
+  });
+  await service.init();
+  const players = await Promise.all(
+    ['Campeão', 'Vice', 'Terceiro'].map((nickname) => service.openSession({ nickname })),
+  );
+  const host = players[0];
+  const { roomId } = (await service.command(host.token, {
+    id: crypto.randomUUID(),
+    type: 'CREATE',
+    payload: {
+      config: ConfigSchema.parse({
+        title: 'Final Highlords',
+        mode: 'SIT_AND_GO',
+        seats: 3,
+        capacity: 3,
+        stack: 1000,
+        small: 25,
+        big: 50,
+        levels: [{ small: 25, big: 50, ante: 0, minutes: 10, breakMinutes: 0 }],
+      }),
+    },
+  })) as { roomId: string };
+  for (const player of players.slice(1))
+    await service.command(player.token, {
+      id: crypto.randomUUID(),
+      type: 'JOIN',
+      roomId,
+      payload: {},
+    });
+  // Public-view fixture: game/award correctness is covered by the real tournament integration suite.
+  const room = service.state.rooms[0];
+  room.status = 'FINISHED';
+  room.finishedAt = Date.now();
+  room.players.forEach((p, i) => {
+    p.rank = i + 1;
+    p.stack = i === 0 ? 3000 : 0;
+  });
+  room.payouts = { [host.playerId]: 2000, [players[1].playerId]: 1000 };
+  const snapshot = await service.snapshot(roomId, host.token);
+  await page.addInitScript(
+    ({ profile, token }) => {
+      localStorage.setItem(
+        'highlords.preferences',
+        JSON.stringify({ schema: 1, profile, sound: false }),
+      );
+      localStorage.setItem('highlords.session', JSON.stringify(token));
+    },
+    {
+      profile: { nickname: 'Campeão', avatar: '♠', frame: 'plain', accent: '#df3449', tagline: '' },
+      token: host.token,
+    },
+  );
+  await page.routeWebSocket('**/api/ws', (socket) => socket.close());
+  await page.route('**/api/session', (route) => route.fulfill({ json: { token: host.token } }));
+  await page.route('**/api/rooms/*', (route) => route.fulfill({ json: snapshot }));
+  await page.goto(`/room/${roomId}`);
+  await expect(page.locator('.tournament-finish h3')).toHaveText('Campeão');
+  await expect(page.locator('.podium article')).toHaveCount(3);
+  await expect(page.locator('.podium [data-rank="1"]')).toContainText('2.000');
+  await expect(page.locator('.action-bar')).toHaveCount(0);
+  await expect(page.locator('.personal-controls')).toHaveCount(0);
+  await expect(page.locator('.tournament-overview')).toHaveCount(0);
+  await page.screenshot({ path: 'test-results/ui-tournament-podium.png', fullPage: true });
+  await page.getByLabel('Selecionar idioma').selectOption('en');
+  await expect(page.locator('.tournament-finish')).toContainText('TOURNAMENT COMPLETE');
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/ui-mobile-podium.png', fullPage: true });
 });
