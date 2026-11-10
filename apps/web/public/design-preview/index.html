@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Highlords — Preview de design</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="previewbar">
+      <b>HIGHLORDS · DIREÇÃO VISUAL 02</b
+      ><span>Preview interativo · dados e partidas demonstrativos</span
+      ><button onclick="show('home')">Explorar telas ↗</button>
+    </div>
+    <header class="site-header" id="header">
+      <button class="brand" onclick="show('home')">
+        <span class="brand-spade">♠</span><span>HIGHLORDS<small>POKER CLUB</small></span>
+      </button>
+      <nav>
+        <button onclick="show('home')" data-nav="home">Início</button
+        ><button onclick="show('lobby')" data-nav="lobby">Mesas</button
+        ><button onclick="show('game')" data-nav="game">Ver mesa</button
+        ><button onclick="openGuide()">Como jogar</button>
+      </nav>
+      <div class="header-right">
+        <span class="lang">PT-BR</span
+        ><button class="profile" onclick="toast('Perfil ilustrativo · Berkas')">
+          <span class="avatar" data-avatar="0"></span><span>Berkas</span>
+        </button>
+      </div>
+    </header>
+    <main id="home" class="screen active page">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">UM CLUBE. A SUA GALERA.</div>
+          <h1>A noite é nossa.<br />A mesa <em>também.</em></h1>
+          <p>
+            O poker é só o começo. Reúna seus amigos, prepare as fichas e transforme qualquer noite
+            em uma boa história.
+          </p>
+          <div class="hero-buttons">
+            <button class="btn primary" onclick="openBuilder()">
+              Criar uma mesa <span>↗</span></button
+            ><button class="btn ghost" onclick="show('lobby')">Encontrar uma mesa →</button>
+          </div>
+          <div class="hero-foot">
+            <span>Sem cadastro</span><span>Fichas virtuais</span><span>Feito para amigos</span>
+          </div>
+        </div>
+        <div class="hero-art">
+          <div class="orbit"></div>
+          <div class="mini-table">
+            <div class="hero-hand" id="heroHand"></div>
+            <div class="mini-mark">HIGHLORDS ♠</div>
+          </div>
+          <span class="art-chip chip"></span>
+          <div class="art-badge">
+            <span class="chip gold"></span>
+            <div>
+              <small>SEU CLUBE PARTICULAR</small><b>Bom jogo. Boa companhia.</b
+              ><span>Highlords Poker Club</span>
+            </div>
+          </div>
+          <span class="art-caption">TEXAS HOLD’EM · NO LIMIT · HIGHLORDS</span>
+        </div>
+      </section>
+      <section>
+        <div class="section-head">
+          <div>
+            <h2>A noite já começou.</h2>
+            <p>Uma amostra das mesas no novo lobby.</p>
+          </div>
+          <button onclick="show('lobby')">Ver todas →</button>
+        </div>
+        <div class="room-grid" id="homeRooms"></div>
+      </section>
+      <section class="home-strip">
+        <div>
+          <span class="feature-icon">⌑</span>
+          <h3>Sua mesa, suas regras.</h3>
+          <p>Uma partida casual ou um campeonato completo. Prepare tudo antes da primeira carta.</p>
+        </div>
+        <div>
+          <span class="feature-icon">♛</span>
+          <h3>A próxima noite tem campeão.</h3>
+          <p>
+            Blinds progressivos, classificação e mesa final. Disputa de verdade, fichas virtuais.
+          </p>
+        </div>
+        <div>
+          <span class="feature-icon">♧</span>
+          <h3>Primeira vez no feltro?</h3>
+          <p>
+            Aprenda as regras e descubra qual mão ganha.
+            <button onclick="openGuide()">Comece aqui →</button>
+          </p>
+        </div>
+      </section>
+    </main>
+    <main id="lobby" class="screen page">
+      <div class="lobby-heading">
+        <div>
+          <div class="eyebrow">ESCOLHA SEU LUGAR</div>
+          <h1>Tem lugar para você.</h1>
+          <p>Entre na mesa dos amigos ou comece a sua própria noite.</p>
+        </div>
+        <button class="btn primary" onclick="openBuilder()">＋ Criar uma mesa</button>
+      </div>
+      <div class="filters">
+        <input
+          id="search"
+          aria-label="Buscar mesa"
+          placeholder="Buscar mesa ou anfitrião…"
+          oninput="renderRooms()"
+        /><select id="access" aria-label="Acesso" onchange="renderRooms()">
+          <option value="all">Qualquer acesso</option>
+          <option value="public">Pública</option>
+          <option value="private">Privada</option></select
+        ><span class="online">Mesas demonstrativas</span>
+      </div>
+      <div class="tabs">
+        <button class="active" data-mode="all" onclick="setMode(this)">Todas as mesas</button
+        ><button data-mode="cash" onclick="setMode(this)">Cash game</button
+        ><button data-mode="sng" onclick="setMode(this)">Sit & Go</button
+        ><button data-mode="tournament" onclick="setMode(this)">Campeonatos</button>
+      </div>
+      <table class="rooms-table">
+        <thead>
+          <tr>
+            <th>MESA</th>
+            <th>BLINDS</th>
+            <th>JOGADORES</th>
+            <th>STATUS</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="lobbyRooms"></tbody>
+      </table>
+      <div class="lobby-tip">
+        <div>
+          <h3>Antes dos amigos, um aquecimento.</h3>
+          <p>Monte uma mesa com bots e entre no clima da noite.</p>
+        </div>
+        <button class="btn" onclick="show('game')">Experimentar mesa →</button>
+      </div>
+    </main>
+    <main id="game" class="screen game-screen">
+      <div class="game-header">
+        <button class="brand" onclick="show('lobby')">
+          <span class="brand-spade">♠</span><span>HIGHLORDS<small>POKER CLUB</small></span>
+        </button>
+        <div class="room-name">
+          <h1 id="gameTitle">Noite dos Highlords</h1>
+          <p>NO LIMIT HOLD’EM · 25 / 50 · FICHAS VIRTUAIS</p>
+        </div>
+        <div class="game-tools">
+          <button onclick="openDrawer('players')" aria-label="Gerenciar mesa">
+            <span>Gerenciar mesa</span><i>☷</i></button
+          ><button onclick="openDrawer('chat')" aria-label="Chat da mesa">
+            <span>Chat da mesa</span><i>☏</i></button
+          ><button onclick="show('lobby')" aria-label="Voltar ao lobby">↗</button>
+        </div>
+      </div>
+      <div class="game-topline">
+        <span>HIGHLORDS POKER CLUB <b>/ CASH GAME</b></span
+        ><span
+          ><b id="seatedCount">6 jogadores à mesa</b> <span>· Mão #028</span>
+          <span class="online">Demonstração</span></span
+        >
+      </div>
+      <div class="gamezone">
+        <div class="arena" id="arena">
+          <div class="felt"></div>
+          <div class="felt-logo">HIGHLORDS<small>POKER CLUB · EST. 2026</small></div>
+          <div class="community-area">
+            <div class="pot-label">
+              <span class="chip gold"></span><span>Pote total</span><strong id="pot">1.250</strong>
+            </div>
+            <div class="board" id="board"></div>
+            <div class="street" id="street">FLOP</div>
+          </div>
+          <div id="seats"></div>
+          <div class="hole-pair" id="ownCards"></div>
+          <div class="hole-caption" id="ownCaption">UM PAR · ASES</div>
+          <div class="bet" style="left: 28%; top: 39%"><span class="chip"></span>250</div>
+          <div class="bet" style="left: 74%; top: 44%"><span class="chip gold"></span>500</div>
+          <div class="bet" style="left: 52%; top: 57%"><span class="chip"></span>250</div>
+          <div class="table-cards" style="left: 29%; top: 29%" id="back1"></div>
+          <div class="table-cards" style="left: 73%; top: 30%" id="back2"></div>
+          <div class="table-cards" style="left: 75%; top: 65%" id="back3"></div>
+          <div class="win-banner">
+            <strong>BOA MÃO.</strong><small>Você ganhou 2.750 fichas</small>
+          </div>
+          <div class="waiting-panel">
+            <h2>A mesa está pronta.</h2>
+            <p>Os amigos chegaram. Vamos distribuir?</p>
+            <button class="btn primary" onclick="setState('playing')">Distribuir cartas</button>
+          </div>
+        </div>
+      </div>
+      <div class="action-area">
+        <div class="hand-info">
+          <div class="eyebrow" id="turn">SUA VEZ · 18s</div>
+          <b id="handDescription">Um par de ases</b><small>Ajuda de mão ativada</small>
+        </div>
+        <div class="betting">
+          <div class="amount">
+            <label
+              >Aumentar para
+              <input
+                id="betNumber"
+                type="number"
+                min="500"
+                max="4850"
+                step="50"
+                value="750"
+                aria-label="Valor da aposta"
+                oninput="syncBet(this.value)" /></label
+            ><input
+              id="betSlider"
+              type="range"
+              min="500"
+              max="4850"
+              step="50"
+              value="750"
+              aria-label="Ajustar aposta"
+              oninput="syncBet(this.value)"
+            />
+            <div class="presets">
+              <button onclick="syncBet(625)">½ pote</button
+              ><button onclick="syncBet(1250)">Pote</button
+              ><button onclick="syncBet(4850)">All-in</button>
+            </div>
+          </div>
+          <div class="decisions">
+            <button class="decision" onclick="act('fold')">Desistir<small>Fold</small></button
+            ><button class="decision call" onclick="act('call')">
+              Pagar 250<small>Continuar na mão</small></button
+            ><button class="decision raise" onclick="act('raise')">
+              <span id="raiseLabel">Aumentar para 750</span><small>Aposta total</small>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="game-bottom">
+        <span>Preview visual. Ações simuladas; não é uma partida real.</span>
+        <div class="states">
+          <span>VISUALIZAR:</span
+          ><button class="selected" data-state="playing" onclick="setState('playing')">
+            Em jogo</button
+          ><button data-state="victory" onclick="setState('victory')">Vitória</button
+          ><button data-state="waiting" onclick="setState('waiting')">Espera</button>
+        </div>
+        <span><button onclick="openGuide()">Mãos e regras</button> · Som desligado</span>
+      </div>
+    </main>
+    <footer id="footer">
+      <span>HIGHLORDS POKER CLUB © 2026</span><span>Entre amigos. Sem dinheiro real.</span>
+    </footer>
+    <aside class="drawer" id="drawer" aria-label="Painel da mesa">
+      <div class="drawer-head">
+        <h2 id="drawerTitle"></h2>
+        <button onclick="closeDrawer()" aria-label="Fechar painel">×</button>
+      </div>
+      <div id="drawerContent"></div>
+    </aside>
+    <dialog id="builder">
+      <div class="modal-head">
+        <div>
+          <small>PREPARE A NOITE</small>
+          <h2>Uma mesa com a sua cara.</h2>
+        </div>
+        <button onclick="closeBuilder()" aria-label="Fechar criação">×</button>
+      </div>
+      <div class="builder-body">
+        <div>
+          <label
+            >Nome da mesa<input
+              id="newTitle"
+              value="Noite dos Highlords"
+              maxlength="40"
+              oninput="updateBuilder()"
+          /></label>
+          <div class="format-options">
+            <button class="selected" onclick="setFormat(this)">Cash game</button
+            ><button onclick="setFormat(this)">Sit & Go</button
+            ><button onclick="setFormat(this)">Campeonato</button>
+          </div>
+          <div class="builder-split">
+            <label
+              >Assentos<select aria-label="Assentos" id="newSeats" onchange="updateBuilder()">
+                <option>2</option>
+                <option selected>6</option>
+                <option>9</option>
+              </select></label
+            ><label
+              >Fichas iniciais<select
+                aria-label="Fichas iniciais"
+                id="newStack"
+                onchange="updateBuilder()"
+              >
+                <option>2.500</option>
+                <option selected>5.000</option>
+                <option>10.000</option>
+              </select></label
+            >
+          </div>
+          <div class="builder-split">
+            <label
+              >Feltro da mesa<select
+                aria-label="Feltro da mesa"
+                id="newTheme"
+                onchange="updateBuilder()"
+              >
+                <option value="green">Verde clássico</option>
+                <option value="wine">Vinho imperial</option>
+                <option value="blue">Azul meia-noite</option>
+              </select></label
+            ><label
+              >Acesso<select>
+                <option>Só convidados</option>
+                <option>Pública</option>
+              </select></label
+            >
+          </div>
+          <label
+            >Preparar com bots<select>
+              <option>2 bots · dificuldade média</option>
+              <option>Sem bots · esperar amigos</option>
+            </select></label
+          >
+        </div>
+        <div class="builder-summary">
+          <div class="preview-felt" id="previewFelt"><span>HIGHLORDS</span></div>
+          <h3 id="previewTitle">Noite dos Highlords</h3>
+          <p>Veja sua mesa antes de criá-la.<br />Configurações demonstrativas.</p>
+          <div class="builder-stats">
+            <div><b id="previewSeats">6</b><small>ASSENTOS</small></div>
+            <div><b id="previewStack">5.000</b><small>FICHAS</small></div>
+            <div><b>25 / 50</b><small>BLINDS</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <small>Esta é uma demonstração.<br />Nenhuma sala real será criada.</small
+        ><button class="btn primary" onclick="previewCreated()">Ver minha mesa →</button>
+      </div>
+    </dialog>
+    <dialog id="guide">
+      <div class="modal-head">
+        <div>
+          <small>HIGHLORDS ACADEMY</small>
+          <h2>O básico, bem explicado.</h2>
+        </div>
+        <button onclick="closeGuide()" aria-label="Fechar guia">×</button>
+      </div>
+      <div class="guide-body">
+        <p>
+          Combine suas duas cartas com as cinco comunitárias para formar a melhor mão de cinco
+          cartas. Você também ganha quando todos os outros desistem.
+        </p>
+        <div class="board" id="guideCards"></div>
+        <h3>Da mais forte à mais simples</h3>
+        <ol>
+          <li>Royal flush · A K Q J 10 do mesmo naipe</li>
+          <li>Straight flush</li>
+          <li>Quadra</li>
+          <li>Full house</li>
+          <li>Flush</li>
+          <li>Sequência</li>
+          <li>Trinca</li>
+          <li>Dois pares</li>
+          <li>Um par</li>
+          <li>Carta alta</li>
+        </ol>
+        <p>
+          O projeto final preservará os guias completos de regras, jogadas e campeonatos, com
+          consulta rápida dentro da mesa.
+        </p>
+      </div>
+    </dialog>
+    <div id="toast" class="toast" role="status"></div>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
