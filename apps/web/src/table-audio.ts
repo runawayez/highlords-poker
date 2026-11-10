@@ -15,7 +15,13 @@ export function playTableSound(kind: TableSound) {
   const time = performance.now();
   if (time - lastSound < 80) return;
   lastSound = time;
-  const voice = (frequency: number, offset: number, duration: number, volume: number, type: OscillatorType) => {
+  const voice = (
+    frequency: number,
+    offset: number,
+    duration: number,
+    volume: number,
+    type: OscillatorType,
+  ) => {
     if (!context) return;
     const osc = context.createOscillator();
     const gain = context.createGain();

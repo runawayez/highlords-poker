@@ -444,7 +444,15 @@ function App() {
       if (!seen.includes(hand.id)) write('highlords.wins', [...seen, hand.id].slice(-1000));
     }
   }, [table?.hand, snapshot?.me]);
-  const soundState = useRef<{ room: string; actor: string; board: number; actions: number; chatId: string; handId: string; done: boolean } | null>(null);
+  const soundState = useRef<{
+    room: string;
+    actor: string;
+    board: number;
+    actions: number;
+    chatId: string;
+    handId: string;
+    done: boolean;
+  } | null>(null);
   useEffect(() => {
     if (!snapshot || !roomId) {
       soundState.current = null;
@@ -637,7 +645,9 @@ function App() {
                     <button className="hero-find text-button" onClick={openLobby}>
                       {t('club:findTable')} <span aria-hidden="true">→</span>
                     </button>
-                    <div className="hero-trust"><span>♠</span> {t('lobby:stats')}</div>
+                    <div className="hero-trust">
+                      <span>♠</span> {t('lobby:stats')}
+                    </div>
                   </div>
                   <ClubArtwork />
                 </section>
@@ -655,186 +665,186 @@ function App() {
                 </div>
               )}
               {homeScreen === 'lobby' && (
-              <div className="lobby-layout lobby-layout-premium">
-                <section className="rooms">
-                  <div className="section-heading">
-                    <div>
-                      <h2>
-                        {t('lobby:rooms')} <span className="count">{lobby.rooms.length}</span>
-                      </h2>
-                      <p>{t('lobby:subtitle')}</p>
-                      <p className="lobby-retention">{t('lobby:retentionHint')}</p>
+                <div className="lobby-layout lobby-layout-premium">
+                  <section className="rooms">
+                    <div className="section-heading">
+                      <div>
+                        <h2>
+                          {t('lobby:rooms')} <span className="count">{lobby.rooms.length}</span>
+                        </h2>
+                        <p>{t('lobby:subtitle')}</p>
+                        <p className="lobby-retention">{t('lobby:retentionHint')}</p>
+                      </div>
+                      <span className={`connection ${connected ? 'live' : ''}`}>
+                        ● {t(connected ? 'online' : 'offline')}
+                      </span>
                     </div>
-                    <span className={`connection ${connected ? 'live' : ''}`}>
-                      ● {t(connected ? 'online' : 'offline')}
-                    </span>
-                  </div>
-                  <div className="filters">
-                    <input
-                      aria-label={t('lobby:search')}
-                      placeholder={'⌕ ' + t('lobby:search')}
-                      value={filter}
-                      onChange={(e) => setFilter(e.target.value)}
-                    />
-                    <select
-                      aria-label={t('lobby:mode')}
-                      value={mode}
-                      onChange={(e) => setMode(e.target.value)}
-                    >
-                      <option value="">{t('lobby:all')}</option>
-                      {['CASH', 'SIT_AND_GO', 'TOURNAMENT'].map((m) => (
-                        <option key={m} value={m}>
-                          {t(`game:${m}`)}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      aria-label={t('lobby:status')}
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                    >
-                      <option value="">{t('lobby:status')}</option>
-                      {['WAITING', 'RUNNING', 'PAUSED', 'FINISHED'].map((s) => (
-                        <option key={s} value={s}>
-                          {t(`game:${s}`)}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      aria-label={t('lobby:protection')}
-                      value={protection}
-                      onChange={(e) => setProtection(e.target.value)}
-                    >
-                      <option value="">{t('lobby:protection')}</option>
-                      <option value="yes">{t('lobby:protected')}</option>
-                      <option value="no">{t('lobby:public')}</option>
-                    </select>
-                    <label className="check">
+                    <div className="filters">
                       <input
-                        type="checkbox"
-                        checked={vacancies}
-                        onChange={(e) => setVacancies(e.target.checked)}
+                        aria-label={t('lobby:search')}
+                        placeholder={'⌕ ' + t('lobby:search')}
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
                       />
-                      {t('lobby:vacancies')}
-                    </label>
-                  </div>
-                  <div className="lobby-table" role="region" aria-label={t('lobby:rooms')}>
-                    <div className="lobby-table-head" aria-hidden="true">
-                      <span>{t('lobby:rooms')}</span>
-                      <span>{t('lobby:mode')}</span>
-                      <span>Blinds</span>
-                      <span>{t('lobby:occupiedSeats')}</span>
-                      <span>{t('lobby:status')}</span>
-                      <span />
+                      <select
+                        aria-label={t('lobby:mode')}
+                        value={mode}
+                        onChange={(e) => setMode(e.target.value)}
+                      >
+                        <option value="">{t('lobby:all')}</option>
+                        {['CASH', 'SIT_AND_GO', 'TOURNAMENT'].map((m) => (
+                          <option key={m} value={m}>
+                            {t(`game:${m}`)}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        aria-label={t('lobby:status')}
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                      >
+                        <option value="">{t('lobby:status')}</option>
+                        {['WAITING', 'RUNNING', 'PAUSED', 'FINISHED'].map((s) => (
+                          <option key={s} value={s}>
+                            {t(`game:${s}`)}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        aria-label={t('lobby:protection')}
+                        value={protection}
+                        onChange={(e) => setProtection(e.target.value)}
+                      >
+                        <option value="">{t('lobby:protection')}</option>
+                        <option value="yes">{t('lobby:protected')}</option>
+                        <option value="no">{t('lobby:public')}</option>
+                      </select>
+                      <label className="check">
+                        <input
+                          type="checkbox"
+                          checked={vacancies}
+                          onChange={(e) => setVacancies(e.target.checked)}
+                        />
+                        {t('lobby:vacancies')}
+                      </label>
                     </div>
-                    <div className="room-list">
-                      {filteredRooms.map((r) => (
-                        <article className={`room-card room-${r.mode.toLowerCase()}`} key={r.id}>
-                          <div className="room-title-cell">
-                            <span className="room-symbol" aria-hidden="true">
-                              {r.mode === 'CASH' ? '♠' : r.mode === 'SIT_AND_GO' ? '♜' : '♛'}
-                            </span>
-                            <div className="room-info">
-                              <h3>
-                                {r.title}
-                                {r.protected && (
-                                  <span className="room-lock" title={t('lobby:protected')}>
-                                    ⌑
-                                  </span>
-                                )}
-                              </h3>
-                              <p className="room-presence">
-                                <span className={r.humansOnline ? 'online-dot' : ''}>●</span>{' '}
-                                {t('lobby:humansOnline', { count: r.humansOnline ?? 0 })} ·{' '}
-                                {t('lobby:botsCount', { count: r.bots ?? 0 })}
-                                {r.humansOffline > 0 && (
-                                  <> · {t('lobby:humansOffline', { count: r.humansOffline })}</>
-                                )}
-                                {r.spectatorsOnline > 0 && (
-                                  <>
-                                    {' '}
-                                    · {t('lobby:spectatorsOnline', { count: r.spectatorsOnline })}
-                                  </>
-                                )}
-                              </p>
+                    <div className="lobby-table" role="region" aria-label={t('lobby:rooms')}>
+                      <div className="lobby-table-head" aria-hidden="true">
+                        <span>{t('lobby:rooms')}</span>
+                        <span>{t('lobby:mode')}</span>
+                        <span>Blinds</span>
+                        <span>{t('lobby:occupiedSeats')}</span>
+                        <span>{t('lobby:status')}</span>
+                        <span />
+                      </div>
+                      <div className="room-list">
+                        {filteredRooms.map((r) => (
+                          <article className={`room-card room-${r.mode.toLowerCase()}`} key={r.id}>
+                            <div className="room-title-cell">
+                              <span className="room-symbol" aria-hidden="true">
+                                {r.mode === 'CASH' ? '♠' : r.mode === 'SIT_AND_GO' ? '♜' : '♛'}
+                              </span>
+                              <div className="room-info">
+                                <h3>
+                                  {r.title}
+                                  {r.protected && (
+                                    <span className="room-lock" title={t('lobby:protected')}>
+                                      ⌑
+                                    </span>
+                                  )}
+                                </h3>
+                                <p className="room-presence">
+                                  <span className={r.humansOnline ? 'online-dot' : ''}>●</span>{' '}
+                                  {t('lobby:humansOnline', { count: r.humansOnline ?? 0 })} ·{' '}
+                                  {t('lobby:botsCount', { count: r.bots ?? 0 })}
+                                  {r.humansOffline > 0 && (
+                                    <> · {t('lobby:humansOffline', { count: r.humansOffline })}</>
+                                  )}
+                                  {r.spectatorsOnline > 0 && (
+                                    <>
+                                      {' '}
+                                      · {t('lobby:spectatorsOnline', { count: r.spectatorsOnline })}
+                                    </>
+                                  )}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                          <span className="room-mode-cell">{t(`game:${r.mode}`)}</span>
-                          <strong className="room-blinds-cell">
-                            {num(r.small)} / {num(r.big)}
-                          </strong>
-                          <div className="room-players-cell">
-                            <strong>
-                              {r.players}/{r.capacity} {t('lobby:occupiedSeats')}
+                            <span className="room-mode-cell">{t(`game:${r.mode}`)}</span>
+                            <strong className="room-blinds-cell">
+                              {num(r.small)} / {num(r.big)}
                             </strong>
-                            <div
-                              className="room-occupancy"
-                              aria-label={`${r.players}/${r.capacity}`}
-                            >
-                              {Array.from({ length: Math.min(r.capacity, 9) }, (_, i) => (
-                                <i className={i < r.players ? 'occupied' : ''} key={i} />
-                              ))}
+                            <div className="room-players-cell">
+                              <strong>
+                                {r.players}/{r.capacity} {t('lobby:occupiedSeats')}
+                              </strong>
+                              <div
+                                className="room-occupancy"
+                                aria-label={`${r.players}/${r.capacity}`}
+                              >
+                                {Array.from({ length: Math.min(r.capacity, 9) }, (_, i) => (
+                                  <i className={i < r.players ? 'occupied' : ''} key={i} />
+                                ))}
+                              </div>
                             </div>
+                            <span className={`room-status-cell status-${r.status.toLowerCase()}`}>
+                              <i aria-hidden="true" /> {t(`game:${r.status}`)}
+                            </span>
+                            <div className="room-buttons">
+                              <button
+                                disabled={
+                                  busy ||
+                                  r.players >= r.capacity ||
+                                  ['FINISHED', 'EXPIRED'].includes(r.status)
+                                }
+                                className="primary small"
+                                onClick={() => setJoinDialog({ id: r.id, watch: false })}
+                              >
+                                {t('lobby:join')}
+                              </button>
+                              <button
+                                disabled={busy}
+                                className="text-button"
+                                onClick={() => setJoinDialog({ id: r.id, watch: true })}
+                              >
+                                {t('watch')}
+                              </button>
+                            </div>
+                          </article>
+                        ))}
+                        {filteredRooms.length === 0 && (
+                          <div className="empty-state">
+                            <span>♠</span>
+                            <h3>{t(lobby.rooms.length ? 'lobby:noResults' : 'lobby:noRooms')}</h3>
+                            <p>
+                              {t(lobby.rooms.length ? 'lobby:changeFilters' : 'lobby:noRoomsText')}
+                            </p>
                           </div>
-                          <span className={`room-status-cell status-${r.status.toLowerCase()}`}>
-                            <i aria-hidden="true" /> {t(`game:${r.status}`)}
-                          </span>
-                          <div className="room-buttons">
-                            <button
-                              disabled={
-                                busy ||
-                                r.players >= r.capacity ||
-                                ['FINISHED', 'EXPIRED'].includes(r.status)
-                              }
-                              className="primary small"
-                              onClick={() => setJoinDialog({ id: r.id, watch: false })}
-                            >
-                              {t('lobby:join')}
-                            </button>
-                            <button
-                              disabled={busy}
-                              className="text-button"
-                              onClick={() => setJoinDialog({ id: r.id, watch: true })}
-                            >
-                              {t('watch')}
-                            </button>
-                          </div>
-                        </article>
-                      ))}
-                      {filteredRooms.length === 0 && (
-                        <div className="empty-state">
-                          <span>♠</span>
-                          <h3>{t(lobby.rooms.length ? 'lobby:noResults' : 'lobby:noRooms')}</h3>
-                          <p>
-                            {t(lobby.rooms.length ? 'lobby:changeFilters' : 'lobby:noRoomsText')}
-                          </p>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </section>
-                {homeScreen === 'lobby' && (
-                  <aside className="lobby-aside">
-                    <div className="lobby-aside-crest" aria-hidden="true">
-                      ♠
-                    </div>
-                    <p className="eyebrow">HIGHLORDS POKER CLUB</p>
-                    <h2>{t('club:goodCompany')}</h2>
-                    <p>{t('club:lobbyIntro')}</p>
-                    <div className="lobby-aside-divider" />
-                    <strong>{t('learn:guideNav')}</strong>
-                    <button onClick={() => openLearning('guide')}>
-                      {t('learn:guideNav')} <span>↗</span>
-                    </button>
-                    <button onClick={() => openLearning('hands')}>
-                      {t('learn:handsNav')} <span>↗</span>
-                    </button>
-                    <button onClick={() => openLearning('help')}>
-                      {t('learn:helpNav')} <span>↗</span>
-                    </button>
-                  </aside>
-                )}
-              </div>
+                  </section>
+                  {homeScreen === 'lobby' && (
+                    <aside className="lobby-aside">
+                      <div className="lobby-aside-crest" aria-hidden="true">
+                        ♠
+                      </div>
+                      <p className="eyebrow">HIGHLORDS POKER CLUB</p>
+                      <h2>{t('club:goodCompany')}</h2>
+                      <p>{t('club:lobbyIntro')}</p>
+                      <div className="lobby-aside-divider" />
+                      <strong>{t('learn:guideNav')}</strong>
+                      <button onClick={() => openLearning('guide')}>
+                        {t('learn:guideNav')} <span>↗</span>
+                      </button>
+                      <button onClick={() => openLearning('hands')}>
+                        {t('learn:handsNav')} <span>↗</span>
+                      </button>
+                      <button onClick={() => openLearning('help')}>
+                        {t('learn:helpNav')} <span>↗</span>
+                      </button>
+                    </aside>
+                  )}
+                </div>
               )}
               {homeScreen === 'home' && <ClubFeatures onLearn={() => openLearning('guide')} />}
             </>
@@ -878,7 +888,9 @@ function App() {
                         aria-label={t('game:panelchat')}
                         onClick={() => {
                           setMobileChatOpen(true);
-                          document.getElementById('table-live-chat')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                          document
+                            .getElementById('table-live-chat')
+                            ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         }}
                       >
                         <span className="button-label">{t('game:panelchat')}</span>
@@ -912,7 +924,9 @@ function App() {
                         }}
                       >
                         <span aria-hidden="true">{prefs.sound ? '♪' : '♪̸'}</span>
-                        <span className="sound-text">{t(prefs.sound ? 'club:soundOn' : 'club:soundOff')}</span>
+                        <span className="sound-text">
+                          {t(prefs.sound ? 'club:soundOn' : 'club:soundOff')}
+                        </span>
                       </button>
                       <label className="language">
                         <select
@@ -1049,7 +1063,11 @@ function App() {
                         </div>
                       )}
                     </section>
-                    <aside className={`table-chat-dock ${mobileChatOpen ? 'chat-expanded' : ''}`} id="table-live-chat" aria-label={t('game:panelchat')}>
+                    <aside
+                      className={`table-chat-dock ${mobileChatOpen ? 'chat-expanded' : ''}`}
+                      id="table-live-chat"
+                      aria-label={t('game:panelchat')}
+                    >
                       <div className="table-chat-topline">
                         <div>
                           <span className="live-indicator" />

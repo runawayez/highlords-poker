@@ -68,8 +68,13 @@
   font-size: 13px;
   color: #f3dfe2;
 }
-.club-theme.view-home .hero-find:hover { color: #fff; }
-.club-theme.view-home .hero-find span { color: #db8c9d; font-size: 19px; }
+.club-theme.view-home .hero-find:hover {
+  color: #fff;
+}
+.club-theme.view-home .hero-find span {
+  color: #db8c9d;
+  font-size: 19px;
+}
 .club-theme.view-home .hero-trust {
   display: flex;
   align-items: center;
@@ -79,7 +84,10 @@
   letter-spacing: 0.135em;
   color: #ac9ba2;
 }
-.club-theme.view-home .hero-trust span { color: #d7a3ae; font-size: 17px; }
+.club-theme.view-home .hero-trust span {
+  color: #d7a3ae;
+  font-size: 17px;
+}
 .club-theme.view-home .club-art {
   max-width: 100%;
   min-width: 0;
@@ -90,7 +98,11 @@
   width: min(94%, 640px);
   aspect-ratio: 1.54;
   border: clamp(15px, 2.2vw, 26px) solid #2d252d;
-  box-shadow: 0 0 0 1px #9d757b88, inset 0 0 0 2px #c28d9955, inset 0 -35px 65px #12070d99, 0 38px 80px #040307bd;
+  box-shadow:
+    0 0 0 1px #9d757b88,
+    inset 0 0 0 2px #c28d9955,
+    inset 0 -35px 65px #12070d99,
+    0 38px 80px #040307bd;
 }
 .club-theme.view-home .club-features {
   max-width: 1450px;
@@ -108,9 +120,15 @@
   font-family: Georgia, serif;
   color: #f0ddd7;
 }
-.club-theme.view-home .club-features p { color: #b9a9b1; }
-.club-theme.view-lobby .lobby-table-head { background: #211c23; }
-.club-theme.view-lobby .lobby-table .room-card { min-height: 76px; }
+.club-theme.view-home .club-features p {
+  color: #b9a9b1;
+}
+.club-theme.view-lobby .lobby-table-head {
+  background: #211c23;
+}
+.club-theme.view-lobby .lobby-table .room-card {
+  min-height: 76px;
+}
 .club-theme.view-lobby .room-status-cell {
   display: inline-flex;
   gap: 7px;
@@ -124,15 +142,21 @@
   height: 7px;
   background: #b8a3aa;
 }
-.club-theme.view-lobby .room-status-cell.status-running i { background: #86cba9; }
-.club-theme.view-lobby .room-status-cell.status-waiting i { background: #d9b16d; }
+.club-theme.view-lobby .room-status-cell.status-running i {
+  background: #86cba9;
+}
+.club-theme.view-lobby .room-status-cell.status-waiting i {
+  background: #d9b16d;
+}
 .club-theme.view-lobby .room-buttons .primary {
   min-width: 105px;
   white-space: normal;
   line-height: 1.25;
   padding: 10px 13px;
 }
-.club-theme.view-lobby .lobby-aside { border-color: #5a414d; }
+.club-theme.view-lobby .lobby-aside {
+  border-color: #5a414d;
+}
 .club-theme.in-room .game-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) clamp(260px, 23vw, 340px);
@@ -176,7 +200,9 @@
 }
 .club-theme.in-room .table-chat-topline strong {
   color: #f1e6e0;
-  font: 18px/1.25 Georgia, serif;
+  font:
+    18px/1.25 Georgia,
+    serif;
 }
 .club-theme.in-room .table-chat-topline small {
   grid-column: 2;
@@ -200,7 +226,10 @@
   padding: 10px 17px;
   border-bottom: 1px solid #342a32;
 }
-.club-theme.in-room .table-chat-dock .chat-heading h2 { font-size: 11px; color: #bda9b3; }
+.club-theme.in-room .table-chat-dock .chat-heading h2 {
+  font-size: 11px;
+  color: #bda9b3;
+}
 .club-theme.in-room .table-chat-dock .messages {
   flex: 1;
   height: auto;
@@ -219,7 +248,10 @@
   border-color: #724757;
   background: #3a2432;
 }
-.club-theme.in-room .table-chat-dock .message p { font-size: 11px; line-height: 1.5; }
+.club-theme.in-room .table-chat-dock .message p {
+  font-size: 11px;
+  line-height: 1.5;
+}
 .club-theme.in-room .table-chat-dock .system-message {
   margin: 10px 0;
   text-align: center;
@@ -242,7 +274,9 @@
   border-radius: 6px;
   background: #a52d43;
 }
-.club-theme.in-room .mobile-chat-toggle { display: none; }
+.club-theme.in-room .mobile-chat-toggle {
+  display: none;
+}
 .club-theme.in-room .sound-toggle {
   display: inline-flex;
   gap: 7px;
@@ -254,11 +288,19 @@
   background: #251d26;
   padding: 9px 10px;
 }
-.club-theme.in-room .sound-toggle[aria-pressed='false'] { color: #a29399; }
-.club-theme.in-room .sound-toggle > span:first-child { font-size: 16px; }
+.club-theme.in-room .sound-toggle[aria-pressed='false'] {
+  color: #a29399;
+}
+.club-theme.in-room .sound-toggle > span:first-child {
+  font-size: 16px;
+}
 @media (max-width: 1120px) {
-  .club-theme.in-room .game-layout { grid-template-columns: minmax(0, 1fr) 260px; }
-  .club-theme.in-room .sound-text { display: none; }
+  .club-theme.in-room .game-layout {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+  .club-theme.in-room .sound-text {
+    display: none;
+  }
 }
 @media (max-width: 800px) {
   .club-theme.view-home .hero {
@@ -267,15 +309,24 @@
     text-align: left;
     padding: 38px 0 18px;
   }
-  .club-theme.view-home .hero h1 { font-size: clamp(49px, 10vw, 73px); }
-  .club-theme.view-home .club-art { width: min(540px, 100%); margin: 0 auto; }
+  .club-theme.view-home .hero h1 {
+    font-size: clamp(49px, 10vw, 73px);
+  }
+  .club-theme.view-home .club-art {
+    width: min(540px, 100%);
+    margin: 0 auto;
+  }
   .club-theme.in-room .game-layout {
     display: flex;
     flex-direction: column;
     min-height: 0;
     overflow: auto;
   }
-  .club-theme.in-room .game-stage { flex: none; height: min(69dvh, 650px); border-right: 0; }
+  .club-theme.in-room .game-stage {
+    flex: none;
+    height: min(69dvh, 650px);
+    border-right: 0;
+  }
   .club-theme.in-room .table-chat-dock {
     flex: none;
     min-height: 0;
@@ -283,10 +334,18 @@
     border-left: 0;
     border-top: 1px solid #65434e;
   }
-  .club-theme.in-room .table-chat-dock:not(.chat-expanded) { height: 49px; }
-  .club-theme.in-room .table-chat-dock:not(.chat-expanded) .chat { display: none; }
-  .club-theme.in-room .table-chat-topline { padding: 10px 14px; }
-  .club-theme.in-room .table-chat-topline small { display: none; }
+  .club-theme.in-room .table-chat-dock:not(.chat-expanded) {
+    height: 49px;
+  }
+  .club-theme.in-room .table-chat-dock:not(.chat-expanded) .chat {
+    display: none;
+  }
+  .club-theme.in-room .table-chat-topline {
+    padding: 10px 14px;
+  }
+  .club-theme.in-room .table-chat-topline small {
+    display: none;
+  }
   .club-theme.in-room .mobile-chat-toggle {
     display: grid;
     place-items: center;
@@ -299,20 +358,42 @@
   }
 }
 @media (max-width: 600px) {
-  .club-theme.view-home .hero { gap: 10px; }
-  .club-theme.view-home .hero h1 { font-size: clamp(43px, 11vw, 58px); }
-  .club-theme.view-home .hero-copy > .primary { width: 100%; margin-right: 0; }
-  .club-theme.view-home .hero-find { margin-top: 7px; }
-  .club-theme.view-home .mini-table { width: min(100%, 420px); }
-  .club-theme.view-home .club-features > div { padding: 17px; }
-  .club-theme.in-room .game-stage { height: min(67dvh, 620px); }
-  .club-theme.in-room .table-chat-dock { height: 220px; }
-  .club-theme.in-room .table-chat-dock:not(.chat-expanded) { height: 48px; }
+  .club-theme.view-home .hero {
+    gap: 10px;
+  }
+  .club-theme.view-home .hero h1 {
+    font-size: clamp(43px, 11vw, 58px);
+  }
+  .club-theme.view-home .hero-copy > .primary {
+    width: 100%;
+    margin-right: 0;
+  }
+  .club-theme.view-home .hero-find {
+    margin-top: 7px;
+  }
+  .club-theme.view-home .mini-table {
+    width: min(100%, 420px);
+  }
+  .club-theme.view-home .club-features > div {
+    padding: 17px;
+  }
+  .club-theme.in-room .game-stage {
+    height: min(67dvh, 620px);
+  }
+  .club-theme.in-room .table-chat-dock {
+    height: 220px;
+  }
+  .club-theme.in-room .table-chat-dock:not(.chat-expanded) {
+    height: 48px;
+  }
   .club-theme.in-room .scene-viewport .table-shell {
-    width: min(96cqw, calc(100cqh * .68));
-    aspect-ratio: .68;
+    width: min(96cqw, calc(100cqh * 0.68));
+    aspect-ratio: 0.68;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .club-theme.view-home *, .club-theme.in-room .table-chat-dock * { transition-duration: 0.01ms !important; }
+  .club-theme.view-home *,
+  .club-theme.in-room .table-chat-dock * {
+    transition-duration: 0.01ms !important;
+  }
 }
