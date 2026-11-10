@@ -83,14 +83,12 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await a.locator('.room-options summary').click();
     await expect(a.getByRole('button', { name: 'House rules', exact: true })).toBeVisible();
     await a.locator('.room-options summary').click();
-    await a.getByRole('button', { name: 'Chat', exact: true }).click();
-    await b.getByRole('button', { name: 'Chat', exact: true }).click();
-    await a.getByPlaceholder('Type a message…').fill('<img src=x onerror=alert(1)>');
-    await a.getByRole('button', { name: 'Send', exact: true }).click();
-    await expect(b.getByText('<img src=x onerror=alert(1)>', { exact: true })).toBeVisible();
-    await expect(b.locator('.messages img')).toHaveCount(0);
-    await closePanel(a);
-    await closePanel(b);
+    await expect(a.locator('.table-chat-dock .chat-form')).toBeVisible();
+    await expect(b.locator('.table-chat-dock .chat-form')).toBeVisible();
+    await a.locator('.table-chat-dock').getByPlaceholder('Type a message…').fill('<img src=x onerror=alert(1)>');
+    await a.locator('.table-chat-dock').getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(b.locator('.table-chat-dock').getByText('<img src=x onerror=alert(1)>', { exact: true })).toBeVisible();
+    await expect(b.locator('.table-chat-dock .messages img')).toHaveCount(0);
     // All-in is always available for the preflop heads-up actor. Locate it in either independent client.
     const actorA = await a.getByRole('button', { name: /^All-in/ }).isVisible();
     const actor = actorA ? a : b;
@@ -294,11 +292,10 @@ for (const viewport of [
         fullPage: true,
       });
       await page.getByRole('button', { name: 'Retomar', exact: true }).click();
-      await page.getByRole('button', { name: 'Chat', exact: true }).click();
-      await page.getByPlaceholder('Digite uma mensagem…').fill('Mesa pronta!');
-      await page.getByRole('button', { name: 'Enviar', exact: true }).click();
-      await expect(page.getByText('Mesa pronta!', { exact: true })).toBeVisible();
-      await closePanel(page);
+      await expect(page.locator('.table-chat-dock .chat-form')).toBeVisible();
+      await page.locator('.table-chat-dock').getByPlaceholder('Digite uma mensagem…').fill('Mesa pronta!');
+      await page.locator('.table-chat-dock').getByRole('button', { name: 'Enviar', exact: true }).click();
+      await expect(page.locator('.table-chat-dock').getByText('Mesa pronta!', { exact: true })).toBeVisible();
       await page.locator('.seat-profile').first().click();
       await expect(page.locator('.selected-player')).toHaveCount(1);
       await closePanel(page);

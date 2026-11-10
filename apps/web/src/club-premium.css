@@ -20,7 +20,7 @@
   position: absolute;
   z-index: -1;
   width: 66%;
-  right: -13%;
+  right: 0;
   top: 0;
   bottom: 0;
   background: radial-gradient(ellipse at 65% 45%, #782e4440 0%, #40222d20 42%, transparent 72%);
@@ -397,3 +397,6 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Keep decorative gradients from increasing the document's scrollable width. */
+.club-theme.view-home { overflow-x: clip; }
