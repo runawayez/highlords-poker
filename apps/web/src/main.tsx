@@ -508,7 +508,7 @@ function App() {
                 navigate();
               }}
             >
-              <span className="crest">♠</span>
+              <img className="brand-mark" src="/highlords-torch.png" alt="" />
               <span>
                 HIGHLORDS<small>POKER CLUB</small>
               </span>
@@ -586,7 +586,12 @@ function App() {
             </details>
             <div className="header-right">
               <label className="language">
-                <span aria-hidden>🌐</span>
+                <span className="language-globe" aria-hidden>
+                  🌐
+                </span>
+                <span className="language-code" aria-hidden>
+                  {i18n.language === 'en' ? 'EN' : 'PT'}
+                </span>
                 <select
                   aria-label={t('selectLanguage')}
                   value={i18n.language}

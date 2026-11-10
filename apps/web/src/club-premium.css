@@ -402,3 +402,128 @@
 .club-theme.view-home {
   overflow-x: clip;
 }
+
+/* Brand and navigation are sized for real phone widths, including 320px screens. */
+.club-theme:not(.in-room) .brand {
+  flex: none;
+  gap: 10px;
+  min-width: 0;
+}
+.club-theme:not(.in-room) .brand-mark {
+  display: block;
+  width: 38px;
+  height: 48px;
+  flex: none;
+  object-fit: contain;
+}
+.club-theme:not(.in-room) .mobile-nav > div {
+  width: min(280px, calc(100vw - 24px));
+  max-height: calc(100dvh - 92px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #19171c;
+  border-color: #514047;
+}
+.club-theme:not(.in-room) .mobile-nav > div :is(button, a) {
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #eee7e8;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+}
+.club-theme:not(.in-room) .mobile-nav > div :is(button, a):hover,
+.club-theme:not(.in-room) .mobile-nav > div :is(button, a):focus-visible {
+  background: #252128;
+  border-color: #483a43;
+}
+.club-theme:not(.in-room) .language-code {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .club-theme:not(.in-room) > .header {
+    gap: 8px;
+    padding-inline: 10px;
+  }
+  .club-theme:not(.in-room) .brand {
+    gap: 7px;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .club-theme:not(.in-room) .brand small {
+    margin-top: 3px;
+    font-size: 6px;
+    letter-spacing: 2.7px;
+  }
+  .club-theme:not(.in-room) .brand-mark {
+    width: 27px;
+    height: 38px;
+  }
+  .club-theme:not(.in-room) .mobile-nav {
+    flex: none;
+  }
+  .club-theme:not(.in-room) .mobile-nav summary {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-color: #514047;
+    color: #f4e8e5;
+    font-size: 18px;
+  }
+  .club-theme:not(.in-room) .mobile-nav > div {
+    top: calc(100% + 10px);
+  }
+  .club-theme:not(.in-room) .header-right {
+    flex: none;
+    gap: 6px;
+  }
+  .club-theme:not(.in-room) .language {
+    position: relative;
+    justify-content: center;
+    gap: 4px;
+    width: 62px;
+    height: 40px;
+    padding: 0 3px;
+    border: 1px solid #40363d;
+    border-radius: 7px;
+    color: #eee1e2;
+    font-size: 12px;
+  }
+  .club-theme:not(.in-room) .language-globe {
+    font-size: 13px;
+  }
+  .club-theme:not(.in-room) .language-code {
+    display: inline;
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+  }
+  .club-theme:not(.in-room) .language select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .club-theme:not(.in-room) .profile-trigger {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+  .club-theme:not(.in-room) .profile-trigger > span:first-child {
+    font-size: 20px;
+  }
+}
