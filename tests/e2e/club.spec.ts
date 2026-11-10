@@ -673,7 +673,9 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
   }
 });
 
-test('fresh browser receives a reusable guest identity and can edit it in room creation', async ({ page }) => {
+test('fresh browser receives a reusable guest identity and can edit it in room creation', async ({
+  page,
+}) => {
   await page.goto('/');
   await expect(page.getByRole('dialog')).not.toBeVisible();
   const label = await page.locator('.profile-trigger').innerText();
@@ -688,7 +690,10 @@ test('fresh browser receives a reusable guest identity and can edit it in room c
   await expect(page.locator('.profile-trigger')).toContainText('Guest Alfa');
 });
 
-test('direct invite accepts an anonymous guest without a mandatory profile dialog', async ({ browser, baseURL }) => {
+test('direct invite accepts an anonymous guest without a mandatory profile dialog', async ({
+  browser,
+  baseURL,
+}) => {
   const a = await browser.newContext({ baseURL });
   const b = await browser.newContext({ baseURL });
   try {

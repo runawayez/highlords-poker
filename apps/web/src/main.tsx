@@ -8,7 +8,12 @@ import './premium.css';
 import './experience.css';
 import './quick-profile.css';
 import { ClubArtwork, ClubFeatures } from './club-art.tsx';
-import { ProfileSchema, type Profile, type Config, type Command } from '../../../packages/contracts/src/index.ts';
+import {
+  ProfileSchema,
+  type Profile,
+  type Config,
+  type Command,
+} from '../../../packages/contracts/src/index.ts';
 import {
   API,
   request,
@@ -330,8 +335,11 @@ function App() {
     setBusy(true);
     try {
       if (!ProfileSchema.safeParse(prefs.profile).success) throw new Error('VALIDATION');
-      if ((!ready || lastSessionProfile.current !== JSON.stringify(prefs.profile)) &&
-          !(await connectProfile(prefs))) throw new Error('NETWORK');
+      if (
+        (!ready || lastSessionProfile.current !== JSON.stringify(prefs.profile)) &&
+        !(await connectProfile(prefs))
+      )
+        throw new Error('NETWORK');
       await command({
         type: watch ? 'SPECTATE' : 'JOIN',
         roomId: id,
@@ -349,8 +357,11 @@ function App() {
     setBusy(true);
     try {
       if (!ProfileSchema.safeParse(prefs.profile).success) throw new Error('VALIDATION');
-      if ((!ready || lastSessionProfile.current !== JSON.stringify(prefs.profile)) &&
-          !(await connectProfile(prefs))) throw new Error('NETWORK');
+      if (
+        (!ready || lastSessionProfile.current !== JSON.stringify(prefs.profile)) &&
+        !(await connectProfile(prefs))
+      )
+        throw new Error('NETWORK');
       const result = await command({ type: 'CREATE', payload: { config } });
       setCreateOpen(false);
       navigate(result.roomId);
@@ -599,13 +610,7 @@ function App() {
                       <em>{t('club:heroSecond')}</em>
                     </h1>
                     <p className="hero-intro">{t('lobby:intro')}</p>
-                    <button
-                      className="primary"
-                      disabled={busy}
-                      onClick={() =>
-                        setCreateOpen(true)
-                      }
-                    >
+                    <button className="primary" disabled={busy} onClick={() => setCreateOpen(true)}>
                       ＋ {t('lobby:createRoom')} <span>↗</span>
                     </button>
                     <button className="hero-find text-button" onClick={openLobby}>
@@ -623,12 +628,7 @@ function App() {
                     <h1>{t('club:lobbyTitle')}</h1>
                     <p>{t('club:lobbyIntro')}</p>
                   </div>
-                  <button
-                    className="primary"
-                    onClick={() =>
-                      setCreateOpen(true)
-                    }
-                  >
+                  <button className="primary" onClick={() => setCreateOpen(true)}>
                     {t('lobby:createRoom')}
                   </button>
                 </div>
@@ -715,7 +715,11 @@ function App() {
                             <div className="room-info">
                               <h3>
                                 {r.title}
-                                {r.protected && <span className="room-lock" title={t('lobby:protected')}>⌑</span>}
+                                {r.protected && (
+                                  <span className="room-lock" title={t('lobby:protected')}>
+                                    ⌑
+                                  </span>
+                                )}
                               </h3>
                               <p className="room-presence">
                                 <span className={r.humansOnline ? 'online-dot' : ''}>●</span>{' '}
@@ -725,10 +729,17 @@ function App() {
                             </div>
                           </div>
                           <span className="room-mode-cell">{t(`game:${r.mode}`)}</span>
-                          <strong className="room-blinds-cell">{num(r.small)} / {num(r.big)}</strong>
+                          <strong className="room-blinds-cell">
+                            {num(r.small)} / {num(r.big)}
+                          </strong>
                           <div className="room-players-cell">
-                            <strong>{r.players} / {r.capacity}</strong>
-                            <div className="room-occupancy" aria-label={`${r.players}/${r.capacity}`}>
+                            <strong>
+                              {r.players} / {r.capacity}
+                            </strong>
+                            <div
+                              className="room-occupancy"
+                              aria-label={`${r.players}/${r.capacity}`}
+                            >
                               {Array.from({ length: Math.min(r.capacity, 9) }, (_, i) => (
                                 <i className={i < r.players ? 'occupied' : ''} key={i} />
                               ))}
@@ -763,7 +774,9 @@ function App() {
                         <div className="empty-state">
                           <span>♠</span>
                           <h3>{t(lobby.rooms.length ? 'lobby:noResults' : 'lobby:noRooms')}</h3>
-                          <p>{t(lobby.rooms.length ? 'lobby:changeFilters' : 'lobby:noRoomsText')}</p>
+                          <p>
+                            {t(lobby.rooms.length ? 'lobby:changeFilters' : 'lobby:noRoomsText')}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -771,15 +784,23 @@ function App() {
                 </section>
                 {homeScreen === 'lobby' && (
                   <aside className="lobby-aside">
-                    <div className="lobby-aside-crest" aria-hidden="true">♠</div>
+                    <div className="lobby-aside-crest" aria-hidden="true">
+                      ♠
+                    </div>
                     <p className="eyebrow">HIGHLORDS POKER CLUB</p>
                     <h2>{t('club:goodCompany')}</h2>
                     <p>{t('club:lobbyIntro')}</p>
                     <div className="lobby-aside-divider" />
                     <strong>{t('learn:guideNav')}</strong>
-                    <button onClick={() => openLearning('guide')}>{t('learn:guideNav')} <span>↗</span></button>
-                    <button onClick={() => openLearning('hands')}>{t('learn:handsNav')} <span>↗</span></button>
-                    <button onClick={() => openLearning('help')}>{t('learn:helpNav')} <span>↗</span></button>
+                    <button onClick={() => openLearning('guide')}>
+                      {t('learn:guideNav')} <span>↗</span>
+                    </button>
+                    <button onClick={() => openLearning('hands')}>
+                      {t('learn:handsNav')} <span>↗</span>
+                    </button>
+                    <button onClick={() => openLearning('help')}>
+                      {t('learn:helpNav')} <span>↗</span>
+                    </button>
                   </aside>
                 )}
               </div>
@@ -1179,8 +1200,14 @@ function App() {
           />
         )}
         {createOpen && (
-          <CreateRoom busy={busy} onClose={closeCreate} onCreate={create} onError={fail}
-            profile={prefs.profile} onProfileChange={changeQuickProfile} />
+          <CreateRoom
+            busy={busy}
+            onClose={closeCreate}
+            onCreate={create}
+            onError={fail}
+            profile={prefs.profile}
+            onProfileChange={changeQuickProfile}
+          />
         )}
         {lesson && (
           <Modal title={t('learn:learningModal')} onClose={closeLesson}>

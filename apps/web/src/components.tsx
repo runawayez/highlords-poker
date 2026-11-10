@@ -88,42 +88,67 @@ export function Modal({
   );
 }
 export function QuickProfile({
-  value, onChange,
-}: { value: Profile; onChange: (profile: Profile) => void }) {
+  value,
+  onChange,
+}: {
+  value: Profile;
+  onChange: (profile: Profile) => void;
+}) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   return (
     <section className="quick-profile">
       <div className="quick-profile-heading">{t('profile:playingAs')}</div>
       <div className="quick-profile-summary">
-        <span className="quick-profile-avatar" style={{ color: value.accent }}>{value.avatar}</span>
+        <span className="quick-profile-avatar" style={{ color: value.accent }}>
+          {value.avatar}
+        </span>
         <div className="quick-profile-name">
           <strong>{value.nickname}</strong>
           <small>{t('profile:guestHint')}</small>
         </div>
-        <button type="button" className="quick-profile-edit" aria-expanded={editing}
-          onClick={() => setEditing((current) => !current)}>
+        <button
+          type="button"
+          className="quick-profile-edit"
+          aria-expanded={editing}
+          onClick={() => setEditing((current) => !current)}
+        >
           {editing ? t('profile:done') : t('profile:editQuick')}
         </button>
       </div>
       {editing && (
         <div className="quick-profile-fields">
-          <label>{t('profile:nickname')}
-            <input aria-label={t('profile:nickname')} minLength={2} maxLength={24}
+          <label>
+            {t('profile:nickname')}
+            <input
+              aria-label={t('profile:nickname')}
+              minLength={2}
+              maxLength={24}
               value={value.nickname}
-              onChange={(e) => onChange({ ...value, nickname: e.target.value })} />
+              onChange={(e) => onChange({ ...value, nickname: e.target.value })}
+            />
           </label>
-          <label>{t('profile:accent')}
-            <input type="color" value={value.accent}
-              onChange={(e) => onChange({ ...value, accent: e.target.value })} />
+          <label>
+            {t('profile:accent')}
+            <input
+              type="color"
+              value={value.accent}
+              onChange={(e) => onChange({ ...value, accent: e.target.value })}
+            />
           </label>
           <fieldset>
             <legend>{t('profile:avatar')}</legend>
             <div className="quick-profile-symbols">
               {(['♠', '♣', '♦', '♥', '☠', '♜', '⚔', '☾'] as const).map((avatar) => (
-                <button key={avatar} type="button" aria-label={avatar}
+                <button
+                  key={avatar}
+                  type="button"
+                  aria-label={avatar}
                   aria-pressed={value.avatar === avatar}
-                  onClick={() => onChange({ ...value, avatar })}>{avatar}</button>
+                  onClick={() => onChange({ ...value, avatar })}
+                >
+                  {avatar}
+                </button>
               ))}
             </div>
           </fieldset>
