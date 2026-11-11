@@ -37,6 +37,7 @@ import {
   Modal,
   JoinDialog,
   ProfileEditor,
+  AppearanceEditor,
   CreateRoom,
   Chat,
   PokerTable,
@@ -76,6 +77,7 @@ function App() {
   const closeLeave = useCallback(() => setLeaveOpen(false), []);
   const [ready, setReady] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [roomId, setRoomId] = useState(roomPath);
@@ -116,6 +118,7 @@ function App() {
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
   const closeProfile = useCallback(() => setProfileOpen(false), []),
+    closeAppearance = useCallback(() => setAppearanceOpen(false), []),
     closeCreate = useCallback(() => setCreateOpen(false), []),
     closeRules = useCallback(() => setRulesOpen(false), []),
     closeJoin = useCallback(() => setJoinDialog(null), []);
@@ -165,6 +168,10 @@ function App() {
     setPrefs(updated);
     write('highlords.preferences', updated);
     setError('');
+  };
+  const changeAppearance = (next: Preferences) => {
+    setPrefs(next);
+    write('highlords.preferences', next);
   };
   const saveProfile = async (p: Preferences) => {
     const valid = ProfileSchema.safeParse(p.profile);
@@ -953,6 +960,9 @@ function App() {
                           >
                             {t('copy')}
                           </button>
+                          <button onClick={() => setAppearanceOpen(true)}>
+                            {t('profile:appearanceShort')}
+                          </button>
                           <button onClick={() => setProfileOpen(true)}>{t('profile')}</button>
                           <button onClick={() => setLesson('guide')}>{t('learn:guideNav')}</button>
                           <button onClick={() => setLesson('hands')}>{t('learn:handsNav')}</button>
@@ -1280,13 +1290,10 @@ function App() {
           </Modal>
         )}
         {profileOpen && (
-          <ProfileEditor
-            value={prefs}
-            busy={busy}
-            onClose={closeProfile}
-            onSave={saveProfile}
-            onError={fail}
-          />
+          <ProfileEditor value={prefs} busy={busy} onClose={closeProfile} onSave={saveProfile} />
+        )}
+        {appearanceOpen && (
+          <AppearanceEditor value={prefs} onChange={changeAppearance} onClose={closeAppearance} />
         )}
         {createOpen && (
           <CreateRoom

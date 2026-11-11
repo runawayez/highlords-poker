@@ -751,6 +751,31 @@ test('fresh browser receives a reusable guest identity and can edit it in room c
   await expect(page.locator('.profile-trigger')).toContainText('Guest Alfa');
 });
 
+test('profile stays simple and table appearance updates live from inside a room', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Criar uma mesa/ }).click();
+  await page.getByLabel('Nome da mesa').fill('Appearance ' + Date.now());
+  await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+  await expect(page).toHaveURL(/\/room\//);
+
+  await page.locator('.room-options summary').click();
+  await page.getByRole('button', { name: 'Aparência da mesa', exact: true }).click();
+  await page.getByLabel('Tema da mesa').selectOption('crimson');
+  await expect(page.locator('.app')).toHaveAttribute('data-theme', 'crimson');
+  await page.getByLabel('Verso das cartas').selectOption('geometric');
+  await expect(page.locator('.app')).toHaveAttribute('data-back', 'geometric');
+  await page.getByRole('button', { name: 'Fechar', exact: true }).click();
+
+  await page.getByRole('button', { name: 'Perfil', exact: true }).click();
+  await expect(page.getByLabel('Como te chamamos?')).toBeVisible();
+  await expect(page.getByLabel('Sua cor')).toBeVisible();
+  await expect(page.getByText(/Importar preferências|Exportar preferências/)).toHaveCount(0);
+  await expect(page.getByLabel('Moldura')).toHaveCount(0);
+  await expect(page.getByLabel('Tema da mesa')).toHaveCount(0);
+});
+
 test('home is an invitation, not a duplicate lobby', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('.hero')).toBeVisible();

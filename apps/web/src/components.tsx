@@ -6,7 +6,7 @@ import {
   type Profile,
   type Config,
 } from '../../../packages/contracts/src/index.ts';
-import { read, download, type Snapshot, type Messages } from './api.ts';
+import { type Snapshot, type Messages } from './api.ts';
 import type { Preferences } from './preferences.ts';
 import { TablePreview } from './room-tools.tsx';
 export { PokerTable } from './room-tools.tsx';
@@ -45,11 +45,13 @@ export function Modal({
   onClose,
   children,
   wide = false,
+  className = '',
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   wide?: boolean;
+  className?: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const { t } = useTranslation();
@@ -71,7 +73,11 @@ export function Modal({
     };
   }, [onClose]);
   return (
-    <dialog ref={dialog} className={`modal ${wide ? 'modal-wide' : ''}`} aria-label={title}>
+    <dialog
+      ref={dialog}
+      className={`modal ${wide ? 'modal-wide' : ''} ${className}`.trim()}
+      aria-label={title}
+    >
       <div className="modal-heading">
         <h2>{title}</h2>
         <button type="button" className="icon" onClick={onClose} aria-label={t('close')}>
@@ -210,53 +216,26 @@ export function ProfileEditor({
   onClose,
   onSave,
   busy,
-  onError,
 }: {
   value: Preferences;
   onClose: () => void;
   onSave: (p: Preferences) => void;
   busy: boolean;
-  onError: (e: unknown) => void;
 }) {
   const { t } = useTranslation();
-  const [p, setP] = useState(value);
-  const set = (key: keyof Profile, value: string) =>
-    setP((p) => ({ ...p, profile: { ...p.profile, [key]: value } }));
-  const importFile = async (file?: File) => {
-    if (!file) return;
-    try {
-      if (file.size > 10000) throw Error('VALIDATION');
-      const v = JSON.parse(await file.text());
-      const profile = ProfileSchema.parse(v.profile);
-      if (
-        v.schema !== 1 ||
-        !['felt', 'midnight', 'crimson'].includes(v.theme) ||
-        !['classic', 'geometric'].includes(v.cardBack) ||
-        !/^#[0-9a-f]{6}$/i.test(v.chipColor)
-      )
-        throw Error('VALIDATION');
-      setP({
-        schema: 1,
-        profile,
-        theme: v.theme,
-        cardBack: v.cardBack,
-        chipColor: v.chipColor,
-        sound: v.sound === true,
-      });
-    } catch {
-      onError(Error('VALIDATION'));
-    }
-  };
+  const [profile, setProfile] = useState(value.profile);
+  const set = (key: keyof Profile, next: string) =>
+    setProfile((current) => ({ ...current, [key]: next }));
   return (
     <Modal title={t('profile:title')} onClose={onClose}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onSave(p);
+          onSave({ ...value, profile: ProfileSchema.parse(profile) });
         }}
       >
-        <div className={`avatar-preview ${p.profile.frame}`} style={{ color: p.profile.accent }}>
-          {p.profile.avatar}
+        <div className="avatar-preview" style={{ color: profile.accent }}>
+          {profile.avatar}
         </div>
         <label>
           {t('profile:nickname')}
@@ -265,7 +244,7 @@ export function ProfileEditor({
             required
             minLength={2}
             maxLength={24}
-            value={p.profile.nickname}
+            value={profile.nickname}
             onChange={(e) => set('nickname', e.target.value)}
           />
         </label>
@@ -275,7 +254,7 @@ export function ProfileEditor({
             {['♠', '♣', '♦', '♥', '☠', '♜', '⚔', '☾'].map((a) => (
               <button
                 type="button"
-                aria-pressed={p.profile.avatar === a}
+                aria-pressed={profile.avatar === a}
                 key={a}
                 onClick={() => set('avatar', a)}
               >
@@ -284,97 +263,82 @@ export function ProfileEditor({
             ))}
           </div>
         </fieldset>
-        <div className="form-grid">
-          <label>
-            {t('profile:frame')}
-            <select value={p.profile.frame} onChange={(e) => set('frame', e.target.value)}>
-              {['plain', 'red', 'gold'].map((f) => (
-                <option key={f} value={f}>
-                  {t(`profile:${f}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t('profile:accent')}
-            <input
-              type="color"
-              value={p.profile.accent}
-              onChange={(e) => set('accent', e.target.value)}
-            />
-          </label>
-        </div>
-        <label>
-          {t('profile:tagline')}
+        <label className="profile-color-field">
+          {t('profile:accent')}
           <input
-            maxLength={80}
-            value={p.profile.tagline}
-            onChange={(e) => set('tagline', e.target.value)}
+            type="color"
+            value={profile.accent}
+            onChange={(e) => set('accent', e.target.value)}
           />
         </label>
-        <div className="form-grid">
-          <label>
-            {t('profile:theme')}
-            <select
-              value={p.theme}
-              onChange={(e) => setP({ ...p, theme: e.target.value as Preferences['theme'] })}
-            >
-              {['felt', 'midnight', 'crimson'].map((x) => (
-                <option key={x} value={x}>
-                  {t(`profile:${x}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t('profile:cardBack')}
-            <select
-              value={p.cardBack}
-              onChange={(e) => setP({ ...p, cardBack: e.target.value as Preferences['cardBack'] })}
-            >
-              {['classic', 'geometric'].map((x) => (
-                <option key={x} value={x}>
-                  {t(`profile:${x}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t('profile:chipColor')}
-            <input
-              type="color"
-              value={p.chipColor}
-              onChange={(e) => setP({ ...p, chipColor: e.target.value })}
-            />
-          </label>
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={p.sound}
-              onChange={(e) => setP({ ...p, sound: e.target.checked })}
-            />
-            {t('profile:sound')}
-          </label>
-        </div>
-        <p>{t('profile:handsWon', { count: read<string[]>('highlords.wins', []).length })}</p>
-        <div className="profile-tools">
-          <button type="button" onClick={() => download('highlords-profile.json', p)}>
-            {t('profile:export')}
-          </button>
-          <label className="file-button">
-            {t('profile:import')}
-            <input
-              type="file"
-              accept="application/json"
-              onChange={(e) => void importFile(e.target.files?.[0])}
-            />
-          </label>
-        </div>
-        <p className="muted">{t('profile:local')}</p>
         <button disabled={busy} className="primary">
           {t('save')}
         </button>
       </form>
+    </Modal>
+  );
+}
+
+export function AppearanceEditor({
+  value,
+  onChange,
+  onClose,
+}: {
+  value: Preferences;
+  onChange: (next: Preferences) => void;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const update = (next: Partial<Preferences>) => onChange({ ...value, ...next });
+  return (
+    <Modal title={t('profile:appearanceTitle')} onClose={onClose} className="appearance-modal">
+      <p className="appearance-hint">{t('profile:appearanceHint')}</p>
+      <div className="appearance-preview" data-theme={value.theme} data-back={value.cardBack}>
+        <div className="appearance-preview-felt">
+          <span>HIGHLORDS</span>
+          <div className="appearance-preview-cards">
+            <i className="appearance-preview-card" />
+            <i className="appearance-preview-card" />
+          </div>
+          <i className="appearance-preview-chip" style={{ background: value.chipColor }} />
+        </div>
+      </div>
+      <div className="appearance-fields">
+        <label>
+          {t('profile:theme')}
+          <select
+            value={value.theme}
+            onChange={(e) => update({ theme: e.target.value as Preferences['theme'] })}
+          >
+            {(['felt', 'midnight', 'crimson'] as const).map((theme) => (
+              <option key={theme} value={theme}>
+                {t(`profile:${theme}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {t('profile:cardBack')}
+          <select
+            value={value.cardBack}
+            onChange={(e) => update({ cardBack: e.target.value as Preferences['cardBack'] })}
+          >
+            {(['classic', 'geometric'] as const).map((back) => (
+              <option key={back} value={back}>
+                {t(`profile:${back}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="appearance-chip-color">
+          {t('profile:chipColor')}
+          <input
+            type="color"
+            value={value.chipColor}
+            onChange={(e) => update({ chipColor: e.target.value })}
+          />
+        </label>
+      </div>
     </Modal>
   );
 }
