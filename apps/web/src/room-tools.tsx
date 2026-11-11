@@ -250,7 +250,7 @@ export function PokerTable({
                 aria-label={t('game:addAtSeat', { number: i + 1 })}
               >
                 <b>＋</b>
-                <small>{t('game:seat')}</small>
+                <small>{t('game:sit')}</small>
               </button>
             </div>
           );
@@ -270,7 +270,7 @@ export function PokerTable({
             <div
               data-edge={y > 70 ? 'bottom' : y < 30 ? 'top' : x < 50 ? 'left' : 'right'}
               className={`seat ${acting ? 'acting' : ''} ${p.folded ? 'folded' : ''} ${isSelf ? 'self' : ''}`}
-              style={{ ...position, '--accent': p.profile?.accent } as React.CSSProperties}
+              style={{ ...position, '--accent': '#DC2626' } as React.CSSProperties}
             >
               <button
                 className={`seat-profile ${p.profile?.frame ?? ''}`}
@@ -278,7 +278,7 @@ export function PokerTable({
                 onClick={() => onSelect(p.id)}
               >
                 <span className="seat-avatar">
-                  {p.bot ? <Knight color={p.profile?.accent} /> : (p.profile?.avatar ?? '♠')}
+                  {p.bot ? <Knight color="#DC2626" /> : (p.profile?.avatar ?? '♠')}
                 </span>
                 <span className="seat-identity">
                   <strong>

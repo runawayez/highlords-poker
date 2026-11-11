@@ -8,6 +8,7 @@ import './premium.css';
 import './experience.css';
 import './quick-profile.css';
 import './club-premium.css';
+import './ui-refactor.css';
 import { playTableSound, primeTableAudio } from './table-audio.ts';
 import { ClubArtwork, ClubFeatures } from './club-art.tsx';
 import {
@@ -80,6 +81,11 @@ function App() {
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
+  const [rulesTab, setRulesTab] = useState<'guide' | 'hands' | 'rules'>('guide');
+  const openRules = (tab: 'guide' | 'hands' | 'rules' = 'guide') => {
+    setRulesTab(tab);
+    setRulesOpen(true);
+  };
   const [roomId, setRoomId] = useState(roomPath);
   const [page, setPage] = useState(learningRoute);
   const visiblePage = homeScreen === 'lobby' ? 'play' : page;
@@ -507,7 +513,6 @@ function App() {
         className={`app club-theme ${roomId ? 'in-room' : 'in-lobby'} view-${homeScreen}`}
         data-theme={prefs.theme}
         data-back={prefs.cardBack}
-        style={{ '--chip': prefs.chipColor } as React.CSSProperties}
       >
         {!roomId && (
           <header className="header">
@@ -525,32 +530,14 @@ function App() {
               </span>
             </a>
             <nav className="desktop-nav">
-              <button
-                className={
-                  !roomId && visiblePage === 'play' && homeScreen === 'home' ? 'nav active' : 'nav'
-                }
-                onClick={() => navigate()}
-              >
-                {t('club:home')}
-              </button>
               <button className={homeScreen === 'lobby' ? 'nav active' : 'nav'} onClick={openLobby}>
-                {t('club:tables')}
+                {t('lobby:lobbyNav')}
               </button>
-              {(['guide', 'hands', 'help'] as const).map((kind) => (
-                <a
-                  className={`nav ${homeScreen === 'home' && visiblePage === kind ? 'active' : ''}`}
-                  href={learningPaths[kind]}
-                  key={kind}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    openLearning(kind);
-                  }}
-                >
-                  {t(`learn:${kind}Nav`)}
-                </a>
-              ))}
-              <button className="nav" onClick={() => setRulesOpen(true)}>
-                {t('rules')}
+              <button className="nav" onClick={() => setCreateOpen(true)}>
+                {t('lobby:createRoom')}
+              </button>
+              <button className="nav" onClick={() => openRules()}>
+                {t('learn:guideNav')} &amp; {t('rules')}
               </button>
             </nav>
             <details className="mobile-nav">
@@ -559,39 +546,26 @@ function App() {
                 <button
                   onClick={(e) => {
                     e.currentTarget.closest('details')!.open = false;
-                    navigate();
-                  }}
-                >
-                  {t('club:home')}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.currentTarget.closest('details')!.open = false;
                     openLobby();
                   }}
                 >
-                  {t('club:tables')}
+                  {t('lobby:lobbyNav')}
                 </button>
-                {(['guide', 'hands', 'help'] as const).map((kind) => (
-                  <a
-                    href={learningPaths[kind]}
-                    key={kind}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.currentTarget.closest('details')!.open = false;
-                      openLearning(kind);
-                    }}
-                  >
-                    {t(`learn:${kind}Nav`)}
-                  </a>
-                ))}
                 <button
                   onClick={(e) => {
                     e.currentTarget.closest('details')!.open = false;
-                    setRulesOpen(true);
+                    setCreateOpen(true);
                   }}
                 >
-                  {t('rules')}
+                  {t('lobby:createRoom')}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.currentTarget.closest('details')!.open = false;
+                    openRules();
+                  }}
+                >
+                  {t('learn:guideNav')} &amp; {t('rules')}
                 </button>
               </div>
             </details>
@@ -859,11 +833,9 @@ function App() {
               {snapshot ? (
                 <div className="club-room">
                   <div className="room-heading">
-                    <button className="room-brand" aria-label={t('back')} onClick={openLobby}>
-                      <span>♠</span>
-                      <b>
-                        HIGHLORDS<small>POKER CLUB</small>
-                      </b>
+                    <button className="room-brand" onClick={openLobby}>
+                      <span aria-hidden="true">←</span>
+                      <b>{t('leave')}</b>
                     </button>
                     <div className="room-name">
                       <h1>{snapshot.config.title}</h1>
@@ -892,11 +864,9 @@ function App() {
                       <button
                         className="panel-trigger chat-shortcut"
                         aria-label={t('game:panelchat')}
+                        aria-pressed={mobileChatOpen}
                         onClick={() => {
-                          setMobileChatOpen(true);
-                          document
-                            .getElementById('table-live-chat')
-                            ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                          setMobileChatOpen((value) => !value);
                         }}
                       >
                         <span className="button-label">{t('game:panelchat')}</span>
@@ -905,51 +875,47 @@ function App() {
                           <path d="M8 8h8M8 12h5" />
                         </svg>
                       </button>
-                      {snapshot.host && ['RUNNING', 'PAUSED'].includes(snapshot.status) && (
-                        <button
-                          className="pause-button"
-                          disabled={busy}
-                          onClick={() =>
-                            void run(snapshot.status === 'PAUSED' ? 'RESUME' : 'PAUSE')
-                          }
-                        >
-                          {t(snapshot.status === 'PAUSED' ? 'game:resume' : 'game:pause')}
-                        </button>
-                      )}
-                      <button
-                        className="sound-toggle"
-                        aria-label={t(prefs.sound ? 'club:muteSound' : 'club:enableSound')}
-                        title={t(prefs.sound ? 'club:muteSound' : 'club:enableSound')}
-                        aria-pressed={prefs.sound}
-                        onClick={() => {
-                          const next = { ...prefs, sound: !prefs.sound };
-                          setPrefs(next);
-                          write('highlords.preferences', next);
-                          primeTableAudio();
-                          if (next.sound) playTableSound('enable');
-                        }}
-                      >
-                        <span aria-hidden="true">{prefs.sound ? '♪' : '♪̸'}</span>
-                        <span className="sound-text">
-                          {t(prefs.sound ? 'club:soundOn' : 'club:soundOff')}
-                        </span>
-                      </button>
-                      <label className="language">
-                        <select
-                          aria-label={t('selectLanguage')}
-                          value={i18n.language}
-                          onChange={(e) => void i18n.changeLanguage(e.target.value)}
-                        >
-                          <option value="pt-BR">PT-BR</option>
-                          <option value="en">EN</option>
-                        </select>
-                      </label>
                       <details className="room-options">
-                        <summary>{t('learn:options')}</summary>
+                        <summary>⚙ {t('game:tableMenu')}</summary>
                         <div>
                           <span className={`connection ${connected ? 'live' : ''}`}>
                             ● {t(connected ? 'online' : 'offline')}
                           </span>
+                          <button
+                            className="sound-toggle"
+                            aria-pressed={prefs.sound}
+                            onClick={() => {
+                              const next = { ...prefs, sound: !prefs.sound };
+                              setPrefs(next);
+                              write('highlords.preferences', next);
+                              primeTableAudio();
+                              if (next.sound) playTableSound('enable');
+                            }}
+                          >
+                            {t(prefs.sound ? 'club:soundOn' : 'club:soundOff')}
+                          </button>
+                          <label className="room-language">
+                            {t('selectLanguage')}
+                            <select
+                              aria-label={t('selectLanguage')}
+                              value={i18n.language}
+                              onChange={(e) => void i18n.changeLanguage(e.target.value)}
+                            >
+                              <option value="pt-BR">Português (Brasil)</option>
+                              <option value="en">English</option>
+                            </select>
+                          </label>
+                          {snapshot.host && ['RUNNING', 'PAUSED'].includes(snapshot.status) && (
+                            <button
+                              className="pause-button"
+                              disabled={busy}
+                              onClick={() =>
+                                void run(snapshot.status === 'PAUSED' ? 'RESUME' : 'PAUSE')
+                              }
+                            >
+                              {t(snapshot.status === 'PAUSED' ? 'game:resume' : 'game:pause')}
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               navigator.clipboard
@@ -964,10 +930,9 @@ function App() {
                             {t('profile:appearanceShort')}
                           </button>
                           <button onClick={() => setProfileOpen(true)}>{t('profile')}</button>
-                          <button onClick={() => setLesson('guide')}>{t('learn:guideNav')}</button>
-                          <button onClick={() => setLesson('hands')}>{t('learn:handsNav')}</button>
-                          <button onClick={() => setLesson('help')}>{t('learn:helpNav')}</button>
-                          <button onClick={() => setRulesOpen(true)}>{t('rules')}</button>
+                          <button onClick={() => openRules('guide')}>{t('learn:guideNav')}</button>
+                          <button onClick={() => openRules('hands')}>{t('learn:handsNav')}</button>
+                          <button onClick={() => openRules('rules')}>{t('rules')}</button>
                           {snapshot.host && (
                             <>
                               <button onClick={() => void run('EXPORT')}>{t('game:export')}</button>
@@ -1008,7 +973,7 @@ function App() {
                       <TournamentPresentation snapshot={snapshot} num={num} />
                     </>
                   )}
-                  <div className="game-layout">
+                  <div className={`game-layout ${mobileChatOpen ? 'chat-visible' : ''}`}>
                     <section className="game-stage">
                       {snapshot.status !== 'FINISHED' && (
                         <div className="table-tabs">
@@ -1312,8 +1277,37 @@ function App() {
           </Modal>
         )}
         {rulesOpen && (
-          <Modal title={t('rules')} onClose={closeRules}>
-            <p className="rules-text">{t('rulesText')}</p>
+          <Modal
+            title={`${t('learn:guideNav')} & ${t('rules')}`}
+            onClose={closeRules}
+            wide
+            className="rules-drawer"
+          >
+            <div className="rules-tabs" role="tablist" aria-label={t('learn:learningModal')}>
+              {(['guide', 'hands', 'rules'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={rulesTab === tab}
+                  onClick={() => setRulesTab(tab)}
+                >
+                  {tab === 'guide'
+                    ? t('learn:guideNav')
+                    : tab === 'hands'
+                      ? t('learn:handsNav')
+                      : t('rules')}
+                </button>
+              ))}
+            </div>
+            {rulesTab === 'rules' ? (
+              <p className="rules-text">{t('rulesText')}</p>
+            ) : (
+              <LearningPage
+                kind={rulesTab}
+                onSection={(section) => setRulesTab(section === 'hands' ? 'hands' : 'guide')}
+              />
+            )}
           </Modal>
         )}
         {joinDialog && (

@@ -106,9 +106,7 @@ export function QuickProfile({
     <section className="quick-profile">
       <div className="quick-profile-heading">{t('profile:playingAs')}</div>
       <div className="quick-profile-summary">
-        <span className="quick-profile-avatar" style={{ color: value.accent }}>
-          {value.avatar}
-        </span>
+        <span className="quick-profile-avatar">{value.avatar}</span>
         <div className="quick-profile-name">
           <strong>{value.nickname}</strong>
           <small>{t('profile:guestHint')}</small>
@@ -132,14 +130,6 @@ export function QuickProfile({
               maxLength={24}
               value={value.nickname}
               onChange={(e) => onChange({ ...value, nickname: e.target.value })}
-            />
-          </label>
-          <label>
-            {t('profile:accent')}
-            <input
-              type="color"
-              value={value.accent}
-              onChange={(e) => onChange({ ...value, accent: e.target.value })}
             />
           </label>
           <fieldset>
@@ -234,9 +224,7 @@ export function ProfileEditor({
           onSave({ ...value, profile: ProfileSchema.parse(profile) });
         }}
       >
-        <div className="avatar-preview" style={{ color: profile.accent }}>
-          {profile.avatar}
-        </div>
+        <div className="avatar-preview">{profile.avatar}</div>
         <label>
           {t('profile:nickname')}
           <input
@@ -263,14 +251,6 @@ export function ProfileEditor({
             ))}
           </div>
         </fieldset>
-        <label className="profile-color-field">
-          {t('profile:accent')}
-          <input
-            type="color"
-            value={profile.accent}
-            onChange={(e) => set('accent', e.target.value)}
-          />
-        </label>
         <button disabled={busy} className="primary">
           {t('save')}
         </button>
@@ -300,7 +280,7 @@ export function AppearanceEditor({
             <i className="appearance-preview-card" />
             <i className="appearance-preview-card" />
           </div>
-          <i className="appearance-preview-chip" style={{ background: value.chipColor }} />
+          <i className="appearance-preview-chip" />
         </div>
       </div>
       <div className="appearance-fields">
@@ -329,14 +309,6 @@ export function AppearanceEditor({
               </option>
             ))}
           </select>
-        </label>
-        <label className="appearance-chip-color">
-          {t('profile:chipColor')}
-          <input
-            type="color"
-            value={value.chipColor}
-            onChange={(e) => update({ chipColor: e.target.value })}
-          />
         </label>
       </div>
     </Modal>
@@ -703,21 +675,25 @@ export function CreateRoom({
             </p>
           )}
           <div className="builder-footer">
-            <button
-              type="button"
-              className="text-button"
-              onClick={() => (step > 0 ? setStep(step - 1) : onClose())}
-            >
-              {step > 0 ? '← ' + t('lobby:previous') : t('cancel')}
+            <button type="button" className="text-button" onClick={onClose}>
+              {t('cancel')}
             </button>
-            {step < 2 && (
-              <button type="button" onClick={() => setStep(step + 1)}>
-                {t('lobby:next')} →
-              </button>
-            )}
-            <button className="primary" disabled={busy} aria-label={t('lobby:createRoom')}>
-              {t('lobby:createRoom')} ↗
-            </button>
+            <div className="builder-footer-actions">
+              {step > 0 && (
+                <button type="button" onClick={() => setStep(step - 1)}>
+                  ← {t('lobby:previous')}
+                </button>
+              )}
+              {step < 2 ? (
+                <button type="button" className="primary" onClick={() => setStep(step + 1)}>
+                  {t('lobby:next')} →
+                </button>
+              ) : (
+                <button className="primary" disabled={busy} aria-label={t('lobby:createRoom')}>
+                  {t('lobby:createRoom')} ↗
+                </button>
+              )}
+            </div>
           </div>
         </div>
         <aside className="builder-preview">
@@ -883,7 +859,13 @@ export function ActionBar({
       </div>
       <div className="action-buttons">
         {opts.actions
-          .filter((a) => a !== 'RAISE' && a !== 'BET')
+          .filter(
+            (a) =>
+              a !== 'RAISE' &&
+              a !== 'BET' &&
+              (a !== 'ALL_IN' ||
+                (!opts.actions.includes('RAISE') && !opts.actions.includes('BET'))),
+          )
           .map((a) => (
             <button
               disabled={busy}
@@ -943,9 +925,19 @@ export function ActionBar({
                   )
                 }
               >
-                {factor === 0.5 ? '½' : factor === 1 ? '1×' : '2×'} {t('game:pot')}
+                {factor === 0.5 ? '½' : t('game:pot')}
               </button>
             ))}
+            {opts.actions.includes('ALL_IN') && (
+              <button
+                type="button"
+                disabled={busy}
+                className="all-in-shortcut"
+                onClick={() => void onAction('ALL_IN')}
+              >
+                {t('game:ALL_IN')}
+              </button>
+            )}
           </div>
           <input
             aria-label={t('game:raiseTo')}
