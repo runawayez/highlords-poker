@@ -543,9 +543,6 @@ function App() {
               <button className={homeScreen === 'lobby' ? 'nav active' : 'nav'} onClick={openLobby}>
                 {t('lobby:lobbyNav')}
               </button>
-              <button className="nav" onClick={() => setCreateOpen(true)}>
-                {t('lobby:createRoom')}
-              </button>
               <button className="nav" onClick={() => openRules()}>
                 {t('learn:guideNav')}
               </button>
@@ -556,18 +553,18 @@ function App() {
                 <button
                   onClick={(e) => {
                     e.currentTarget.closest('details')!.open = false;
-                    openLobby();
+                    navigate();
                   }}
                 >
-                  {t('lobby:lobbyNav')}
+                  {t('club:home')}
                 </button>
                 <button
                   onClick={(e) => {
                     e.currentTarget.closest('details')!.open = false;
-                    setCreateOpen(true);
+                    openLobby();
                   }}
                 >
-                  {t('lobby:createRoom')}
+                  {t('lobby:lobbyNav')}
                 </button>
                 <button
                   onClick={(e) => {

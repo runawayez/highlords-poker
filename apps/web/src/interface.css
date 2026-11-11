@@ -215,7 +215,6 @@ small,
   width: 38px;
   height: 45px;
   object-fit: contain;
-  filter: grayscale(1) brightness(1.8);
 }
 .brand small {
   display: block;
