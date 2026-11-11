@@ -467,8 +467,8 @@ for (const width of [1440, 390])
     await expect(page.locator('.walkthrough-scene .playing-card')).toHaveCount(5);
     await page.screenshot({ path: `test-results/ui-${width}-learning.png`, fullPage: true });
     await page
-      .locator('.learning-heading')
-      .getByRole('link', { name: 'Ranking de mãos', exact: true })
+      .locator('.learning-tabs')
+      .getByRole('tab', { name: 'Ranking de mãos', exact: true })
       .click();
     await expect(page).toHaveURL(/\/ranking-de-maos$/);
     await expect(page.locator('.rank-card')).toHaveCount(10);
@@ -482,10 +482,7 @@ for (const width of [1440, 390])
     ).toBeVisible();
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-    await page
-      .locator('.learning-heading')
-      .getByRole('link', { name: 'Help', exact: true })
-      .click();
+    await page.locator('.learning-tabs').getByRole('tab', { name: 'Help', exact: true }).click();
     await page.getByPlaceholder('Search terms').fill('kicker');
     await expect(page.locator('.glossary-list>div')).toHaveCount(1);
     await expect(page.locator('.glossary-list dt')).toHaveText('Kicker');
@@ -498,7 +495,8 @@ for (const width of [1440, 390])
         .locator('.mobile-nav')
         .getByRole('button', { name: /How to play/ })
         .click();
-      await expect(page.getByRole('dialog')).toContainText('Texas Hold');
+      await expect(page).toHaveURL(/\/como-jogar$/);
+      await expect(page.locator('.learning-hub')).toContainText('Texas Hold');
     }
     expect(errors).toEqual([]);
   });
@@ -859,7 +857,7 @@ test('playing room keeps chat visible and offers sound control', async ({ page }
 });
 
 for (const width of [1440, 390]) {
-  test(`guide dialog has one navigation and functional help in both languages at ${width}px`, async ({
+  test(`guide page has one navigation and functional help in both languages at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -887,8 +885,11 @@ for (const width of [1440, 390]) {
       },
     ]) {
       await changeLanguage(page, locale.code);
+      await page.goto('/');
       await page.locator('.club-features .text-button').click();
-      const dialog = page.getByRole('dialog', { name: locale.title, exact: true });
+      await expect(page).toHaveURL(/\/como-jogar$/);
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      const dialog = page.locator('.learning-hub');
       await expect(dialog.getByRole('tablist')).toHaveCount(1);
       await expect(dialog.getByRole('tab')).toHaveCount(4);
       await expect(dialog.locator('.learning-heading nav')).toHaveCount(0);
@@ -912,10 +913,10 @@ for (const width of [1440, 390]) {
         }),
       );
       expect(rows.every((gap) => gap < 1)).toBe(true);
-      await expect(page.locator('html')).toHaveCSS('overflow', 'hidden');
+      await expect(page.locator('html')).not.toHaveCSS('overflow', 'hidden');
 
       await dialog.locator('.rank-card').last().scrollIntoViewIfNeeded();
-      await expect(dialog.getByRole('tab', { name: locale.help, exact: true })).toBeInViewport();
+      await dialog.getByRole('tab', { name: locale.help, exact: true }).scrollIntoViewIfNeeded();
       await dialog.getByRole('tab', { name: locale.hands, exact: true }).focus();
       await page.keyboard.press('End');
       await expect(dialog.getByRole('tab', { name: locale.help, exact: true })).toBeFocused();
@@ -931,9 +932,19 @@ for (const width of [1440, 390]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
-      await page.keyboard.press('Escape');
-      await expect(dialog).not.toBeVisible();
-      await expect(page).toHaveURL(/\/$/);
+      await page.reload();
+      await expect(page.locator('.learning-hub .walkthrough-scene')).toBeVisible();
+      await page.goBack();
+      await expect(page).toHaveURL(/\/regras-da-casa$/);
+      await expect(page.locator('.house-rules')).toBeVisible();
+      await page.goto('/mesas');
+      if (width < 700) await page.locator('.mobile-nav summary').click();
+      await page
+        .locator(width < 700 ? '.mobile-nav' : '.desktop-nav')
+        .getByRole('button', { name: locale.guide, exact: true })
+        .click();
+      await expect(page).toHaveURL(/\/como-jogar$/);
+      await expect(page.getByRole('dialog')).toHaveCount(0);
     }
   });
 }

@@ -4420,3 +4420,44 @@ html:has(.modal[open]) {
     font-size: 12px;
   }
 }
+
+/* Public poker guide uses document scrolling, like Home and Lobby. */
+.learning-hub {
+  max-width: 1120px;
+  margin: 48px auto 72px;
+}
+.learning-hub-heading {
+  margin-bottom: 28px;
+}
+.learning-hub-heading h1 {
+  margin: 14px 0;
+  font-size: clamp(30px, 4vw, 44px);
+  letter-spacing: -1.4px;
+}
+.learning-hub-heading > p:last-child {
+  max-width: 65ch;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.learning-hub > .learning-tabs {
+  padding: 0;
+  background: var(--bg-void);
+}
+.learning-hub > .learning-center-content {
+  overflow: visible;
+  padding: 32px 0 0;
+}
+@media (max-width: 700px) {
+  .learning-hub {
+    margin: 28px auto 44px;
+  }
+  .learning-hub-heading {
+    margin-bottom: 20px;
+  }
+  .learning-hub > .learning-tabs {
+    gap: 0 16px;
+  }
+  .learning-hub > .learning-center-content {
+    padding-top: 24px;
+  }
+}

@@ -6,16 +6,17 @@ import type { Snapshot } from './api.ts';
 export type LearningKind = 'guide' | 'hands' | 'help';
 export type LearningSection = LearningKind | 'rules';
 const sections: LearningSection[] = ['guide', 'hands', 'rules', 'help'];
-export const learningPaths: Record<LearningKind, string> = {
+export const learningPaths: Record<LearningSection, string> = {
   guide: '/como-jogar',
   hands: '/ranking-de-maos',
   help: '/ajuda',
+  rules: '/regras-da-casa',
 };
-export function learningRoute(): LearningKind | 'play' {
+export function learningRoute(): LearningSection | 'play' {
   return (
     (Object.entries(learningPaths).find(
       ([, path]) => path === location.pathname.replace(/\/$/, ''),
-    )?.[0] as LearningKind) ?? 'play'
+    )?.[0] as LearningSection) ?? 'play'
   );
 }
 export function LearningPage({
@@ -208,9 +209,13 @@ export function LearningPage({
 export function LearningCenter({
   section,
   onSection,
+  standalone = false,
+  onPlay,
 }: {
   section: LearningSection;
   onSection: (section: LearningSection) => void;
+  standalone?: boolean;
+  onPlay?: () => void;
 }) {
   const { t } = useTranslation();
   const id = useId();
@@ -220,7 +225,13 @@ export function LearningCenter({
     content.current?.scrollTo({ top: 0, left: 0 });
   }, [section]);
   return (
-    <div className="learning-center">
+    <div className={`learning-center${standalone ? ' learning-hub' : ''}`}>
+      {standalone && (
+        <header className="learning-hub-heading">
+          <p className="eyebrow">HIGHLORDS / {t('learn:academy')}</p>
+          <h1>{t('learn:guideNav')}</h1>
+        </header>
+      )}
       <div className="learning-tabs" role="tablist" aria-label={t('learn:sections')}>
         {sections.map((key, index) => (
           <button
@@ -273,7 +284,7 @@ export function LearningCenter({
             </div>
           </section>
         ) : (
-          <LearningPage key={section} kind={section} embedded />
+          <LearningPage key={section} kind={section} embedded onPlay={onPlay} />
         )}
       </div>
     </div>

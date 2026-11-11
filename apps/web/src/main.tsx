@@ -39,14 +39,12 @@ import {
   ActionBar,
 } from './components.tsx';
 import {
-  LearningPage,
   LearningCenter,
   type LearningSection,
   DecisionDock,
   TournamentPresentation,
   learningRoute,
   learningPaths,
-  type LearningKind,
 } from './learning.tsx';
 import { visibleHand } from './poker-learning.ts';
 function roomPath() {
@@ -85,8 +83,12 @@ function App() {
   const [rulesOpen, setRulesOpen] = useState(false);
   const [rulesTab, setRulesTab] = useState<LearningSection>('guide');
   const openRules = (tab: LearningSection = 'guide') => {
-    setRulesTab(tab);
-    setRulesOpen(true);
+    if (roomId) {
+      setRulesTab(tab);
+      setRulesOpen(true);
+    } else {
+      openLearning(tab);
+    }
   };
   const [roomId, setRoomId] = useState(roomPath);
   const [page, setPage] = useState(learningRoute);
@@ -97,7 +99,7 @@ function App() {
       write('highlords.coach', !value);
       return !value;
     });
-  const openLearning = (kind: LearningKind) => {
+  const openLearning = (kind: LearningSection) => {
     if (roomId) {
       openRules(kind);
       return;
@@ -451,7 +453,7 @@ function App() {
   useEffect(() => {
     document.title =
       visiblePage !== 'play'
-        ? `${t(`learn:${visiblePage}Nav`)} · Highlords Poker`
+        ? `${visiblePage === 'rules' ? t('rules') : t(`learn:${visiblePage}Nav`)} · Highlords Poker`
         : snapshot
           ? `${snapshot.config.title} · Highlords Poker`
           : 'Highlords Poker';
@@ -543,7 +545,11 @@ function App() {
               <button className={homeScreen === 'lobby' ? 'nav active' : 'nav'} onClick={openLobby}>
                 {t('lobby:lobbyNav')}
               </button>
-              <button className="nav" onClick={() => openRules()}>
+              <button
+                className={visiblePage !== 'play' ? 'nav active' : 'nav'}
+                aria-current={visiblePage !== 'play' ? 'page' : undefined}
+                onClick={() => openLearning('guide')}
+              >
                 {t('learn:guideNav')}
               </button>
             </nav>
@@ -620,7 +626,12 @@ function App() {
             <p className="banner">{t('offlineNotice')}</p>
           )}
           {visiblePage !== 'play' ? (
-            <LearningPage kind={visiblePage} onPlay={openLobby} onSection={openLearning} />
+            <LearningCenter
+              section={visiblePage}
+              onSection={openLearning}
+              onPlay={openLobby}
+              standalone
+            />
           ) : !roomId ? (
             <>
               {homeScreen === 'home' && (
