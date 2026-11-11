@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import './i18n/index.ts';
 import './design.css';
 import { playTableSound, primeTableAudio } from './table-audio.ts';
-import { ClubArtwork } from './club-art.tsx';
+import { ClubArtwork, ClubFeatures } from './club-art.tsx';
 import {
   ProfileSchema,
   type Profile,
@@ -57,8 +57,14 @@ function App() {
   const [railTab, setRailTab] = useState('players');
   const [directorOpen, setDirectorOpen] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(
-    () => !window.matchMedia('(max-width: 800px)').matches,
+    () => !window.matchMedia('(max-width: 700px)').matches,
   );
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 700px)');
+    const adaptChat = (event: MediaQueryListEvent) => setMobileChatOpen(!event.matches);
+    media.addEventListener('change', adaptChat);
+    return () => media.removeEventListener('change', adaptChat);
+  }, []);
   const closeDirector = useCallback(() => setDirectorOpen(false), []);
   const [homeScreen, setHomeScreen] = useState(() =>
     location.pathname === '/mesas' ? 'lobby' : 'home',
@@ -104,6 +110,7 @@ function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [lobby, setLobby] = useState<{ rooms: Lobby }>({ rooms: [] });
   const [connected, setConnected] = useState(false);
+  const [connectionChecked, setConnectionChecked] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
@@ -214,6 +221,8 @@ function App() {
         }
       } catch {
         if (active) setConnected(false);
+      } finally {
+        if (active) setConnectionChecked(true);
       }
     };
     void poll();
@@ -388,11 +397,12 @@ function App() {
   };
   const filteredRooms = lobby.rooms.filter(
     (r) =>
-      r.title.toLowerCase().includes(filter.toLowerCase()) &&
-      (!mode || r.mode === mode) &&
-      (!status || r.status === status) &&
-      (!vacancies || r.players < r.capacity) &&
-      (!protection || r.protected === (protection === 'yes')),
+      homeScreen !== 'lobby' ||
+      (r.title.toLowerCase().includes(filter.toLowerCase()) &&
+        (!mode || r.mode === mode) &&
+        (!status || r.status === status) &&
+        (!vacancies || r.players < r.capacity) &&
+        (!protection || r.protected === (protection === 'yes'))),
   );
   const num = (n: number) => new Intl.NumberFormat(i18n.language).format(n);
   const me = snapshot?.players.find((p) => p.id === snapshot.me);
@@ -523,7 +533,13 @@ function App() {
                 HIGHLORDS<small>POKER CLUB</small>
               </span>
             </a>
-            <nav className="desktop-nav">
+            <nav className="desktop-nav" aria-label={t('club:navigation')}>
+              <button
+                className={homeScreen === 'home' && visiblePage === 'play' ? 'nav active' : 'nav'}
+                onClick={() => navigate()}
+              >
+                {t('club:home')}
+              </button>
               <button className={homeScreen === 'lobby' ? 'nav active' : 'nav'} onClick={openLobby}>
                 {t('lobby:lobbyNav')}
               </button>
@@ -568,15 +584,12 @@ function App() {
                 <span className="language-globe" aria-hidden>
                   🌐
                 </span>
-                <span className="language-code" aria-hidden>
-                  {i18n.language === 'en' ? 'EN' : 'PT'}
-                </span>
                 <select
                   aria-label={t('selectLanguage')}
                   value={i18n.language}
                   onChange={(e) => void i18n.changeLanguage(e.target.value)}
                 >
-                  <option value="pt-BR">Português (Brasil)</option>
+                  <option value="pt-BR">Português</option>
                   <option value="en">English</option>
                 </select>
               </label>
@@ -606,7 +619,9 @@ function App() {
           </div>
         )}
         <main onPointerDownCapture={primeTableAudio}>
-          {!connected && visiblePage === 'play' && <p className="banner">{t('offlineNotice')}</p>}
+          {connectionChecked && !connected && visiblePage === 'play' && (
+            <p className="banner">{t('offlineNotice')}</p>
+          )}
           {visiblePage !== 'play' ? (
             <LearningPage kind={visiblePage} onPlay={() => navigate()} onSection={openLearning} />
           ) : !roomId ? (
@@ -647,6 +662,7 @@ function App() {
                   <ClubArtwork />
                 </section>
               )}
+              {homeScreen === 'home' && <ClubFeatures onLearn={() => openRules()} />}
               {homeScreen === 'lobby' && (
                 <div className="club-lobby-heading">
                   <div>
@@ -659,7 +675,7 @@ function App() {
                   </button>
                 </div>
               )}
-              {(homeScreen === 'lobby' || homeScreen === 'home') && (
+              {homeScreen === 'lobby' && (
                 <div className="lobby-layout lobby-layout-premium">
                   <section className="rooms">
                     <div className="section-heading">
@@ -668,13 +684,12 @@ function App() {
                           {t('lobby:rooms')} <span className="count">{lobby.rooms.length}</span>
                         </h2>
                         <p>{t('lobby:subtitle')}</p>
-                        <p className="lobby-retention">{t('lobby:retentionHint')}</p>
                       </div>
                       <span className={`connection ${connected ? 'live' : ''}`}>
                         ● {t(connected ? 'online' : 'offline')}
                       </span>
                     </div>
-                    <div className="filters">
+                    <div className="filters" hidden={homeScreen !== 'lobby'}>
                       <input
                         aria-label={t('lobby:search')}
                         placeholder={'⌕ ' + t('lobby:search')}
@@ -813,10 +828,28 @@ function App() {
                             <p>
                               {t(lobby.rooms.length ? 'lobby:changeFilters' : 'lobby:noRoomsText')}
                             </p>
+                            {lobby.rooms.length ? (
+                              <button
+                                onClick={() => {
+                                  setFilter('');
+                                  setMode('');
+                                  setStatus('');
+                                  setProtection('');
+                                  setVacancies(false);
+                                }}
+                              >
+                                {t('club:clearFilters')}
+                              </button>
+                            ) : (
+                              <button className="primary" onClick={() => setCreateOpen(true)}>
+                                {t('lobby:createRoom')} <span aria-hidden>＋</span>
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
                     </div>
+                    <p className="lobby-retention">{t('lobby:retentionHint')}</p>
                   </section>
                 </div>
               )}
@@ -828,7 +861,7 @@ function App() {
                   <div className="room-heading">
                     <button className="room-brand" onClick={openLobby}>
                       <span aria-hidden="true">←</span>
-                      <b>{t('leave')}</b>
+                      <b>{t('lobby:lobbyNav')}</b>
                     </button>
                     <div className="room-name">
                       <h1>{snapshot.config.title}</h1>
@@ -838,6 +871,17 @@ function App() {
                       </p>
                     </div>
                     <div className="room-controls">
+                      <button
+                        className="invite-button"
+                        onClick={() => {
+                          navigator.clipboard
+                            .writeText(location.href)
+                            .then(() => setNotice(t('copied')))
+                            .catch(() => fail(new Error('INTERNAL')));
+                        }}
+                      >
+                        {t('club:invite')} <span aria-hidden>↗</span>
+                      </button>
                       <button
                         className="panel-trigger"
                         aria-label={t('game:manageRoom')}
@@ -868,7 +912,13 @@ function App() {
                           <path d="M8 8h8M8 12h5" />
                         </svg>
                       </button>
-                      <details className="room-options">
+                      <details
+                        className="room-options"
+                        onClick={(e) => {
+                          if ((e.target as HTMLElement).closest('button'))
+                            e.currentTarget.open = false;
+                        }}
+                      >
                         <summary>⚙ {t('game:tableMenu')}</summary>
                         <div>
                           <span className={`connection ${connected ? 'live' : ''}`}>
@@ -894,7 +944,7 @@ function App() {
                               value={i18n.language}
                               onChange={(e) => void i18n.changeLanguage(e.target.value)}
                             >
-                              <option value="pt-BR">Português (Brasil)</option>
+                              <option value="pt-BR">Português</option>
                               <option value="en">English</option>
                             </select>
                           </label>

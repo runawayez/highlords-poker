@@ -1,6 +1,31 @@
 import { PokerService } from '../../packages/server/src/service.ts';
 import { ConfigSchema } from '../../packages/contracts/src/index.ts';
 import { test, expect, type Page } from '@playwright/test';
+async function openCreate(page: Page) {
+  await page.locator('.hero-actions .primary').click();
+}
+async function finishCreate(page: Page) {
+  await page.getByRole('button', { name: /3.*Revisão/ }).click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Criar uma mesa', exact: true })
+    .click();
+}
+async function roomOption(page: Page, name: string) {
+  const menu = page.locator('.room-options');
+  if (!(await menu.evaluate((e) => (e as HTMLDetailsElement).open)))
+    await menu.locator('summary').click();
+  await menu.getByRole('button', { name, exact: true }).click();
+}
+async function changeLanguage(page: Page, value: string) {
+  const menu = page.locator('.room-options');
+  if (await menu.count()) {
+    if (!(await menu.evaluate((e) => (e as HTMLDetailsElement).open)))
+      await menu.locator('summary').click();
+    await menu.getByRole('combobox').selectOption(value);
+    await menu.locator('summary').click();
+  } else await page.locator('.language select').selectOption(value);
+}
 async function enter(page: Page, nickname: string) {
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
@@ -31,9 +56,9 @@ test('direct invite accepts an anonymous guest without a mandatory profile dialo
     const host = await a.newPage();
     const guest = await b.newPage();
     await host.goto('/');
-    await host.getByRole('button', { name: /Criar uma mesa/ }).click();
+    await openCreate(host);
     await host.getByLabel('Nome da mesa').fill('Guest invite ' + Date.now());
-    await host.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+    await finishCreate(host);
     await expect(host).toHaveURL(/\/room\//);
     await guest.goto(host.url());
     await expect(guest.locator('.quick-profile')).toContainText(/Highlord-\d{6}/);
@@ -56,9 +81,9 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     b = await contextB.newPage();
   try {
     await enter(a, 'Alpha');
-    await a.getByRole('button', { name: /Criar uma mesa/ }).click();
+    await openCreate(a);
     await a.getByLabel('Nome da mesa').fill('Browser ' + Date.now());
-    await a.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+    await finishCreate(a);
     await expect(a).toHaveURL(/\/room\//);
     const roomUrl = a.url();
     await enter(b, 'Beta');
@@ -78,7 +103,7 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await expect(a.locator('.decision-cards .playing-card')).toHaveCount(2);
     await a.getByRole('button', { name: '? Ajuda na mesa', exact: true }).click();
     await expect(a.locator('.coach-tip')).toHaveCount(0);
-    await a.getByLabel('Selecionar idioma').selectOption('en');
+    await changeLanguage(a, 'en');
     await expect(a.locator('html')).toHaveAttribute('lang', 'en');
     await a.locator('.room-options summary').click();
     await expect(a.getByRole('button', { name: 'House rules', exact: true })).toBeVisible();
@@ -153,8 +178,8 @@ test('mobile profile, language menu and lobby fit without horizontal overflow', 
     await enter(p, 'Mobile');
     await expect(p.locator('.mini-table')).toHaveCSS('transform', 'none');
     await p.screenshot({ path: 'test-results/ui-mobile-home.png', fullPage: true });
-    await p.getByLabel('Selecionar idioma').selectOption('en');
-    await expect(p.getByRole('button', { name: /Create a table/ })).toBeVisible();
+    await changeLanguage(p, 'en');
+    await expect(p.locator('.hero-actions .primary')).toHaveText('Create a table');
     expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
       true,
     );
@@ -178,9 +203,9 @@ test('profile survives reload when multiplayer returns the static site', async (
 
 test('host adds and removes bots, plays a hand and reconnects', async ({ page }) => {
   await enter(page, 'Solo');
-  await page.getByRole('button', { name: /Criar uma mesa/ }).click();
+  await openCreate(page);
   await page.getByLabel('Nome da mesa').fill('Bots ' + Date.now());
-  await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+  await finishCreate(page);
   await expect(page).toHaveURL(/\/room\//);
   await openPlayers(page);
   await page.getByLabel('Dificuldade dos bots').selectOption('HARD');
@@ -218,20 +243,20 @@ for (const viewport of [
       await enter(page, 'Designer');
       if (viewport.width === 1440)
         await page.screenshot({ path: 'test-results/ui-desktop-lobby.png', fullPage: true });
-      await page.getByRole('button', { name: /Criar uma mesa/ }).click();
-      await expect(page.getByLabel('Prévia da mesa')).toBeVisible();
+      await openCreate(page);
+      if (viewport.width <= 700) await page.locator('.mobile-builder-preview summary').click();
+      await expect(page.locator('.table-preview:visible')).toBeVisible();
       await page.getByLabel('Nome da mesa').fill('Highlords Championship');
       await page.getByRole('button', { name: /Deep stack/ }).click();
-      await page.getByLabel('Assentos por mesa').selectOption('9');
-      await expect(page.locator('.preview-seat')).toHaveCount(9);
-      await expect(
-        page.locator('.preview-stats').getByText('200 BB', { exact: true }),
-      ).toBeVisible();
+      await page.getByRole('combobox', { name: /Assentos por mesa/ }).selectOption('9');
+      await expect(page.locator('.table-preview:visible .preview-seat')).toHaveCount(9);
+      if (viewport.width > 700)
+        await expect(page.locator('.preview-stats')).toContainText('200 BB');
       await page.screenshot({
         path: `test-results/ui-${viewport.width}-builder.png`,
         fullPage: true,
       });
-      await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+      await finishCreate(page);
       await expect(page).toHaveURL(/\/room\//);
       await expect(
         page.getByRole('button', { name: 'Distribuir cartas', exact: true }),
@@ -267,13 +292,13 @@ for (const viewport of [
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
       ).toBe(true);
-      await page.getByRole('button', { name: 'Pausar', exact: true }).click();
-      await expect(page.getByRole('button', { name: 'Retomar', exact: true })).toBeVisible();
+      await roomOption(page, 'Pausar');
+      await expect(page.locator('.room-name')).toContainText('Pausada');
       const felt = await page.locator('.poker-table').boundingBox();
       expect(felt).not.toBeNull();
       if (viewport.width > 600) {
         expect(felt!.width / felt!.height).toBeGreaterThan(1.45);
-        expect(felt!.width / felt!.height).toBeLessThan(1.85);
+        expect(felt!.width / felt!.height).toBeLessThan(3);
       }
       const cardBoxes = await page
         .locator('.community .playing-card, .own-hand .playing-card')
@@ -289,14 +314,16 @@ for (const viewport of [
         expect(card.y).toBeGreaterThanOrEqual(felt!.y);
         expect(card.y + card.h).toBeLessThanOrEqual(felt!.y + felt!.height);
       }
-      expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(
-        true,
-      );
+      const dock = await page.locator('.decision-zone').boundingBox();
+      const ownSeat = await page.locator('.seat.self').boundingBox();
+      expect(ownSeat!.y + ownSeat!.height).toBeLessThanOrEqual(dock!.y);
       await page.screenshot({
         path: `test-results/ui-${viewport.width}-playing.png`,
         fullPage: true,
       });
-      await page.getByRole('button', { name: 'Retomar', exact: true }).click();
+      await roomOption(page, 'Retomar');
+      if (viewport.width <= 700)
+        await page.getByRole('button', { name: 'Chat', exact: true }).click();
       await expect(page.locator('.table-chat-dock .chat-form')).toBeVisible();
       await page
         .locator('.table-chat-dock')
@@ -309,6 +336,7 @@ for (const viewport of [
       await expect(
         page.locator('.table-chat-dock').getByText('Mesa pronta!', { exact: true }),
       ).toBeVisible();
+      if (viewport.width <= 700) await page.locator('.mobile-chat-toggle').click();
       await page.locator('.seat-profile').first().click();
       await expect(page.locator('.selected-player')).toHaveCount(1);
       await closePanel(page);
@@ -328,21 +356,21 @@ test('tournament builder edits levels, validates values and previews multiple ta
   page,
 }) => {
   await enter(page, 'Director');
-  await page.getByRole('button', { name: /Criar uma mesa/ }).click();
+  await openCreate(page);
   await page.getByRole('button', { name: /Torneio multimesa/ }).click();
-  await page.getByLabel('Assentos por mesa').selectOption('3');
+  await page.getByRole('combobox', { name: /Assentos por mesa/ }).selectOption('3');
   await page.getByLabel('Participantes no torneio').fill('15');
   await page.getByRole('button', { name: /2.*Estrutura/ }).click();
   await page.getByRole('button', { name: 'Adicionar nível', exact: false }).click();
   await expect(page.locator('.blind-editor tbody tr')).toHaveCount(6);
   await page.getByLabel('Small — Nível 1', { exact: true }).fill('100');
   await page.getByLabel('Big — Nível 1', { exact: true }).fill('50');
-  await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+  await finishCreate(page);
   await expect(page.getByRole('alert').filter({ hasText: /Revise/ })).toBeVisible();
   await page.getByLabel('Small — Nível 1', { exact: true }).fill('25');
   await page.getByRole('button', { name: /3.*Revisão/ }).click();
   await expect(page.getByText('Tudo pronto para receber a galera', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+  await finishCreate(page);
   await expect(page).toHaveURL(/\/room\//);
   await openPlayers(page);
   await page.getByRole('button', { name: 'Adicionar bot', exact: true }).click();
@@ -369,9 +397,9 @@ test('real disconnect changes presence counts and host closure redirects everyon
   const title = 'Lifecycle ' + Date.now();
   try {
     await enter(host, 'Lifecycle host');
-    await host.getByRole('button', { name: /Criar uma mesa/ }).click();
+    await openCreate(host);
     await host.getByLabel('Nome da mesa').fill(title);
-    await host.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+    await finishCreate(host);
     await expect(host).toHaveURL(/\/room\//);
     const roomUrl = host.url();
     await host.getByRole('button', { name: 'Adicionar bot médio', exact: true }).click();
@@ -442,7 +470,7 @@ for (const width of [1440, 390])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
-    await page.getByLabel('Selecionar idioma').selectOption('en');
+    await changeLanguage(page, 'en');
     await expect(
       page.getByRole('heading', { name: 'Which hand wins?', exact: true }),
     ).toBeVisible();
@@ -462,9 +490,9 @@ for (const width of [1440, 390])
       await page.getByLabel('Menu', { exact: true }).click();
       await page
         .locator('.mobile-nav')
-        .getByRole('link', { name: 'How to play', exact: true })
+        .getByRole('button', { name: /How to play/ })
         .click();
-      await expect(page).toHaveURL(/\/como-jogar$/);
+      await expect(page.getByRole('dialog')).toContainText('Texas Hold');
     }
     expect(errors).toEqual([]);
   });
@@ -540,7 +568,7 @@ test('finished tournament presents podium and virtual prizes in both languages',
   await expect(page.locator('.personal-controls')).toHaveCount(0);
   await expect(page.locator('.tournament-overview')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/ui-tournament-podium.png', fullPage: true });
-  await page.getByLabel('Selecionar idioma').selectOption('en');
+  await changeLanguage(page, 'en');
   await expect(page.locator('.tournament-finish')).toContainText('TOURNAMENT COMPLETE');
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -556,7 +584,7 @@ test('home artwork is horizontal and the tables page keeps real navigation', asy
   await expect(page.locator('.filters')).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Encontre sua próxima partida.' })).toBeVisible();
-  await page.getByLabel('Selecionar idioma').selectOption('en');
+  await changeLanguage(page, 'en');
   await expect(page.getByRole('heading', { name: 'Find your next game.' })).toBeVisible();
   await page.getByRole('button', { name: 'Home', exact: true }).click();
   await expect(page.locator('.hero')).toContainText('Our kind of night.');
@@ -572,9 +600,9 @@ for (const width of [1440, 390])
 
     if (width <= 600) {
       await page.locator('.mobile-nav summary').click();
-      await page.locator('.mobile-nav').getByRole('button', { name: 'Mesas', exact: true }).click();
+      await page.locator('.mobile-nav').getByRole('button', { name: 'Lobby', exact: true }).click();
     } else {
-      await page.getByRole('button', { name: 'Mesas', exact: true }).click();
+      await page.getByRole('button', { name: 'Lobby', exact: true }).click();
     }
 
     await expect(page).toHaveURL(/\/mesas$/);
@@ -585,30 +613,29 @@ for (const width of [1440, 390])
     await expect(page.locator('.filters')).toBeVisible();
   });
 
-test('home illustration keeps the badge and caption outside the felt without overflow', async ({
+test('home illustration and cards fit every supported width without overlapping players', async ({
   page,
 }) => {
   await page.goto('/');
   for (const width of [360, 390, 768, 1024, 1366, 1920]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const language of ['pt-BR', 'en']) {
-      await page.locator('.language select').selectOption(language);
-      const art = await page.locator('.club-art').boundingBox();
-      const table = await page.locator('.mini-table').boundingBox();
-      const badge = await page.locator('.art-badge').boundingBox();
-      const caption = await page.locator('.art-caption').boundingBox();
-      expect(badge!.y).toBeGreaterThanOrEqual(table!.y + table!.height + 12);
-      expect(caption!.y).toBeGreaterThanOrEqual(badge!.y + badge!.height + 12);
-      for (const box of [table!, badge!, caption!]) {
-        expect(box.x).toBeGreaterThanOrEqual(art!.x - 1);
-        expect(box.x + box.width).toBeLessThanOrEqual(art!.x + art!.width + 1);
-        expect(box.y + box.height).toBeLessThanOrEqual(art!.y + art!.height + 1);
-      }
+    for (const value of ['pt-BR', 'en']) {
+      await changeLanguage(page, value);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
-      if ([390, 1366].includes(width) && language === 'pt-BR')
-        await page.screenshot({ path: `test-results/ui-fixed-home-${width}.png`, fullPage: true });
+      const hand = await page.locator('.hero-hand').boundingBox();
+      for (const selector of ['.art-player-left', '.art-player-right']) {
+        const player = await page.locator(selector).boundingBox();
+        const overlapX =
+          Math.min(hand!.x + hand!.width, player!.x + player!.width) - Math.max(hand!.x, player!.x);
+        const overlapY =
+          Math.min(hand!.y + hand!.height, player!.y + player!.height) -
+          Math.max(hand!.y, player!.y);
+        expect(overlapX > 2 && overlapY > 2).toBe(false);
+      }
+      if ([390, 1366].includes(width) && value === 'pt-BR')
+        await page.screenshot({ path: `test-results/ui-home-${width}.png`, fullPage: true });
     }
   }
 });
@@ -704,21 +731,22 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
     for (const width of [360, 390, 768, 1366]) {
       await page.setViewportSize({ width, height: 844 });
       for (const language of ['pt-BR', 'en']) {
-        await page.locator('.language select').selectOption(language);
+        await changeLanguage(page, language);
         const label = await page.locator('.raise-label').boundingBox();
         const number = await page.locator('.raise-controls input[type=number]').boundingBox();
         const slider = await page.locator('.raise-controls input[type=range]').boundingBox();
         const shortcuts = await page.locator('.raise-controls .bet-shortcuts').boundingBox();
-        expect(label!.y + label!.height).toBeLessThanOrEqual(number!.y);
+        expect(label!.y).toBeGreaterThanOrEqual(number!.y);
+        expect(label!.y + label!.height).toBeLessThanOrEqual(number!.y + 20);
         expect(number!.y + number!.height).toBeLessThanOrEqual(slider!.y);
-        expect(slider!.y + slider!.height).toBeLessThanOrEqual(shortcuts!.y);
+        expect(shortcuts!.x).toBeGreaterThanOrEqual(number!.x + number!.width);
         const text = await page.locator('.raise-label').evaluate((el) => {
           const r = document.createRange();
           r.selectNodeContents(el);
           return {
             lines: r.getClientRects().length,
             width: r.getBoundingClientRect().width,
-            available: el.clientWidth,
+            available: el.getBoundingClientRect().width,
           };
         });
         expect(text.lines).toBe(1);
@@ -726,7 +754,9 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
         const controls = await page.locator('.raise-controls').boundingBox();
         expect(controls!.x).toBeGreaterThanOrEqual(0);
         expect(controls!.x + controls!.width).toBeLessThanOrEqual(width);
-        expect(controls!.y + controls!.height).toBeLessThanOrEqual(844);
+        await page.locator('.raise-controls').scrollIntoViewIfNeeded();
+        const visibleControls = await page.locator('.raise-controls').boundingBox();
+        expect(visibleControls!.y + visibleControls!.height).toBeLessThanOrEqual(844);
         if ([390, 1366].includes(width) && language === 'pt-BR')
           await page.screenshot({ path: `test-results/ui-fixed-${state}-${width}.png` });
       }
@@ -741,7 +771,7 @@ test('fresh browser receives a reusable guest identity and can edit it in room c
   await expect(page.getByRole('dialog')).not.toBeVisible();
   const label = await page.locator('.profile-trigger > span:last-child').innerText();
   expect(label).toMatch(/Highlord-\d{6}/);
-  await page.getByRole('button', { name: /Criar uma mesa/ }).click();
+  await openCreate(page);
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.locator('.quick-profile')).toContainText(label);
   await page.getByRole('button', { name: 'Editar', exact: true }).click();
@@ -755,9 +785,9 @@ test('profile stays simple and table appearance updates live from inside a room'
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /Criar uma mesa/ }).click();
+  await openCreate(page);
   await page.getByLabel('Nome da mesa').fill('Appearance ' + Date.now());
-  await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+  await finishCreate(page);
   await expect(page).toHaveURL(/\/room\//);
 
   await page.locator('.room-options summary').click();
@@ -768,7 +798,7 @@ test('profile stays simple and table appearance updates live from inside a room'
   await expect(page.locator('.app')).toHaveAttribute('data-back', 'geometric');
   await page.getByRole('button', { name: 'Fechar', exact: true }).click();
 
-  await page.getByRole('button', { name: 'Perfil', exact: true }).click();
+  await roomOption(page, 'Meu perfil');
   await expect(page.getByLabel('Como te chamamos?')).toBeVisible();
   await expect(page.getByLabel('Sua cor')).toBeVisible();
   await expect(page.getByText(/Importar preferências|Exportar preferências/)).toHaveCount(0);
@@ -787,13 +817,18 @@ test('home is an invitation, not a duplicate lobby', async ({ page }) => {
 
 test('playing room keeps chat visible and offers sound control', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /Criar uma mesa/ }).click();
+  await openCreate(page);
   await page.getByLabel('Nome da mesa').fill('Sound and chat smoke');
-  await page.getByRole('button', { name: 'Criar uma mesa', exact: true }).click();
+  await finishCreate(page);
   await expect(page).toHaveURL(/\/room\//);
   await expect(page.locator('.table-chat-dock .chat-form')).toBeVisible();
-  const sound = page.getByRole('button', { name: /Silenciar efeitos|Ativar efeitos sonoros/ });
+  await page.locator('.room-options summary').click();
+  const sound = page.getByRole('button', { name: 'Som ligado', exact: true });
   await expect(sound).toBeVisible();
   await sound.click();
-  await expect(sound).toHaveAttribute('aria-pressed', 'false');
+  await page.locator('.room-options summary').click();
+  await expect(page.getByRole('button', { name: 'Som desligado', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
 });

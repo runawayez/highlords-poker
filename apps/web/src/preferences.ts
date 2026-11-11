@@ -13,11 +13,11 @@ export const defaults: Preferences = {
   profile: { nickname: '', avatar: '♠', frame: 'plain', accent: '#df3449', tagline: '' },
   theme: 'felt',
   cardBack: 'classic',
-  chipColor: '#d9b66b',
+  chipColor: '#b22232',
   sound: true,
 };
 const avatars: Profile['avatar'][] = ['♠', '♣', '♦', '♥', '☠', '♜', '⚔', '☾'];
-const accents = ['#c73546', '#a976c5', '#d0a264', '#558e9e', '#9b768e', '#7caa95'];
+const accents = ['#dc303d', '#d85d70', '#b8435c', '#b7a8b5', '#985366', '#ed8496'];
 export function guestProfile(random = crypto.getRandomValues(new Uint32Array(1))[0]): Profile {
   return {
     nickname: 'Highlord-' + String(100000 + (random % 900000)),

@@ -36,7 +36,7 @@ await service.init();
 const port = Number(process.env.PORT ?? 3001);
 const origins = (
   process.env.ALLOWED_ORIGINS ??
-  `http://localhost:5173,http://localhost:4173,http://terminal.local:4173,http://localhost:${port}`
+  `http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173,http://terminal.local:4173,http://localhost:${port}`
 ).split(',');
 const server = createServer(async (req, res) => {
   const origin = req.headers.origin;

@@ -214,6 +214,7 @@ export function PokerTable({
                 </button>
                 <button
                   className="text-button quick-bot"
+                  hidden={!canAdd}
                   disabled={busy || !canAdd}
                   onClick={onAddBot}
                 >
@@ -250,20 +251,16 @@ export function PokerTable({
                 aria-label={t('game:addAtSeat', { number: i + 1 })}
               >
                 <b>＋</b>
-                <small>{t('game:sit')}</small>
+                <small>{t(canAdd ? 'club:botSeat' : 'game:seat')}</small>
               </button>
             </div>
           );
         const acting = snapshot.status === 'RUNNING' && !h?.done && h?.actor === p.id,
           last = h?.log.filter((e) => e.player === p.id).at(-1),
           isSelf = p.id === snapshot.me;
-        const cardPosition = {
-          left: (y > 35 && y < 65 ? (x < 50 ? 18 : 82) : x * 0.65 + 17.5) + '%',
-          top: (y > 35 && y < 65 ? y + 12 : y * 0.65 + 15.75) + '%',
-        };
         const betPosition = {
-          left: (isSelf ? 50 : x < 35 ? 27 : x > 65 ? 77 : 62) + '%',
-          top: (isSelf ? 57 : y < 35 ? 36 : y > 65 ? 74 : 55) + '%',
+          left: (isSelf ? 65 : 50 + (x - 50) * 0.72) + '%',
+          top: (isSelf ? 84 : 50 + (y - 50) * 0.72) + '%',
         };
         return (
           <React.Fragment key={p.id}>
@@ -272,6 +269,13 @@ export function PokerTable({
               className={`seat ${acting ? 'acting' : ''} ${p.folded ? 'folded' : ''} ${isSelf ? 'self' : ''}`}
               style={{ ...position, '--accent': '#DC2626' } as React.CSSProperties}
             >
+              {h && !isSelf && !p.folded && (
+                <div className="hole-cards">
+                  {p.cards.length
+                    ? p.cards.map((c) => <Card key={c} card={c} />)
+                    : [0, 1].map((n) => <Card key={n} hidden />)}
+                </div>
+              )}
               <button
                 className={`seat-profile ${p.profile?.frame ?? ''}`}
                 title={p.profile?.nickname}
@@ -322,13 +326,6 @@ export function PokerTable({
                 </span>
               )}
             </div>
-            {h && !isSelf && !p.folded && (
-              <div className="hole-cards" style={cardPosition}>
-                {p.cards.length
-                  ? p.cards.map((c) => <Card key={c} card={c} />)
-                  : [0, 1].map((n) => <Card key={n} hidden />)}
-              </div>
-            )}
             {p.bet > 0 && (
               <span className="seat-bet" style={betPosition}>
                 <i className="tiny-chip" />

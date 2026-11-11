@@ -236,6 +236,14 @@ export function ProfileEditor({
             onChange={(e) => set('nickname', e.target.value)}
           />
         </label>
+        <label>
+          {t('profile:accent')}
+          <input
+            type="color"
+            value={profile.accent}
+            onChange={(e) => set('accent', e.target.value)}
+          />
+        </label>
         <fieldset>
           <legend>{t('profile:avatar')}</legend>
           <div className="avatar-options">
@@ -375,6 +383,10 @@ export function CreateRoom({
   };
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (step < 2) {
+      setStep(step + 1);
+      return;
+    }
     if (!ProfileSchema.safeParse(profile).success) {
       setInvalid(t('profile:invalidQuick'));
       setStep(0);
@@ -410,6 +422,12 @@ export function CreateRoom({
       <form className="room-builder" onSubmit={submit} noValidate>
         <div className="builder-main">
           <QuickProfile value={profile} onChange={onProfileChange} />
+          <details className="mobile-builder-preview">
+            <summary>
+              {t('lobby:preview')} <span>{t('lobby:livePreview')}</span>
+            </summary>
+            <TablePreview seats={c.seats} stack={c.stack} title={c.title} />
+          </details>
           <p className="builder-intro">{t('lobby:builderIntro')}</p>
           <div className="builder-steps" aria-label={t('lobby:setupSteps')}>
             {['format', 'rules', 'review'].map((key, i) => (
@@ -685,11 +703,22 @@ export function CreateRoom({
                 </button>
               )}
               {step < 2 ? (
-                <button type="button" className="primary" onClick={() => setStep(step + 1)}>
+                <button
+                  key="next-step"
+                  type="button"
+                  className="primary"
+                  onClick={() => setStep(step + 1)}
+                >
                   {t('lobby:next')} →
                 </button>
               ) : (
-                <button className="primary" disabled={busy} aria-label={t('lobby:createRoom')}>
+                <button
+                  key="create-room"
+                  type="submit"
+                  className="primary"
+                  disabled={busy}
+                  aria-label={t('lobby:createRoom')}
+                >
                   {t('lobby:createRoom')} ↗
                 </button>
               )}
@@ -925,7 +954,8 @@ export function ActionBar({
                   )
                 }
               >
-                {factor === 0.5 ? '½' : t('game:pot')}
+                {factor === 0.5 ? '½ ' : factor === 2 ? '2× ' : ''}
+                {t('game:pot')}
               </button>
             ))}
             {opts.actions.includes('ALL_IN') && (

@@ -16,6 +16,11 @@ export default defineConfig({
       HIGHLORDS_E2E: '1',
     },
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], ...(process.env.CI ? { channel: 'chrome' } : {}) },
+    },
+  ],
   reporter: [['list'], ['html', { open: 'never' }]],
 });

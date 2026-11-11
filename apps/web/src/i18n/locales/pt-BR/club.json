@@ -1,12 +1,12 @@
 {
   "privateClub": "SEU CLUBE PARTICULAR",
   "goodCompany": "Bom jogo. Boa companhia.",
-  "rulesTitle": "Sua mesa, suas regras.",
-  "rulesBody": "Crie uma noite de cash game ou um campeonato entre amigos.",
-  "championTitle": "Uma noite de campeões.",
-  "championBody": "Blinds, rebuy, classificação e pódio para organizar sua disputa.",
-  "learnTitle": "Comece com uma boa mão.",
-  "learnBody": "Aprenda Texas Hold’em, as combinações e quando agir.",
+  "rulesTitle": "Prepare a mesa.",
+  "rulesBody": "Escolha o formato, os blinds e o ritmo. A partida é do seu jeito.",
+  "championTitle": "Chame a galera.",
+  "championBody": "Compartilhe o link. Seus amigos entram pelo navegador, sem cadastro.",
+  "learnTitle": "Aproveite o jogo.",
+  "learnBody": "Converse na mesa, jogue com bots e aprenda a cada rodada.",
   "startHere": "Aprenda a jogar",
   "tip": "Dica da mão",
   "handComplete": "Mão encerrada",
@@ -24,5 +24,11 @@
   "soundOn": "Som ligado",
   "soundOff": "Som desligado",
   "liveChat": "Chat da mesa",
-  "chatHint": "Conversa em tempo real"
+  "chatHint": "Conversa em tempo real",
+  "navigation": "Navegação principal",
+  "clearFilters": "Limpar filtros",
+  "invite": "Convidar amigos",
+  "tablePreview": "SUA PRÓXIMA NOITE DE POKER",
+  "previewNote": "Amigos à mesa. Boas histórias no chat.",
+  "botSeat": "Bot"
 }
