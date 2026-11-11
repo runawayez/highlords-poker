@@ -624,7 +624,26 @@ test('home illustration and cards fit every supported width without overlapping 
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
+      await expect(page.locator('.club-art')).toHaveCSS('transform', 'none');
+      for (const card of await page.locator('.art-own .playing-card').all())
+        await expect(card).toHaveCSS('transform', 'none');
+      const faces = await page.locator('.club-art .card-face').evaluateAll((elements) =>
+        elements.map((face) => {
+          const parts = [...face.children].map((part) => {
+            const box = part.getBoundingClientRect();
+            return { top: box.top, bottom: box.bottom };
+          });
+          return {
+            rankClear: parts[0].bottom <= parts[1].top,
+            suitClear: parts[1].bottom <= parts[2].top,
+          };
+        }),
+      );
+      expect(faces).toHaveLength(7);
+      expect(faces.every((face) => face.rankClear && face.suitClear)).toBe(true);
       const hand = await page.locator('.hero-hand').boundingBox();
+      const ownCards = await page.locator('.art-own').boundingBox();
+      expect(hand!.y + hand!.height + 4).toBeLessThanOrEqual(ownCards!.y);
       for (const selector of ['.art-player-left', '.art-player-right']) {
         const player = await page.locator(selector).boundingBox();
         const overlapX =

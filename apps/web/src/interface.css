@@ -413,7 +413,7 @@ small,
     radial-gradient(ellipse at 50% 40%, #41151e30, transparent 65%),
     linear-gradient(145deg, #17171c, #0e0e13);
   box-shadow: 0 30px 80px #0004;
-  transform: rotate(-1deg);
+  transform: none;
 }
 .art-topline {
   display: flex;
@@ -449,6 +449,7 @@ small,
   align-items: center;
   justify-content: center;
   gap: 15px;
+  padding-bottom: 18px;
 }
 .mini-table:after {
   content: '';
@@ -481,14 +482,8 @@ small,
   height: 58px;
   padding: 4px;
 }
-.hero-hand .playing-card b {
-  font-size: 16px;
-}
 .hero-hand .playing-card > span {
   font-size: 22px;
-}
-.hero-hand .card-corner {
-  font-size: 10px;
 }
 .art-player {
   position: absolute;
@@ -558,19 +553,13 @@ small,
   width: 38px;
   height: 53px;
   padding: 4px;
-  transform: rotate(-8deg);
+  transform: none;
 }
 .art-own .playing-card:last-child {
-  transform: rotate(8deg);
-}
-.art-own .playing-card b {
-  font-size: 14px;
+  transform: none;
 }
 .art-own .playing-card > span {
   font-size: 20px;
-}
-.art-own .card-corner {
-  font-size: 8px;
 }
 .tiny-chip {
   width: 14px;
@@ -1701,29 +1690,18 @@ footer > span:first-child {
   display: flex;
   flex-direction: column;
 }
-.playing-card b {
-  font:
-    bold 20px/1 Georgia,
-    serif;
-}
-.playing-card b i {
-  display: block;
-  font-size: 12px;
-  font-style: normal;
-  margin-top: 2px;
-}
 .playing-card > span {
   align-self: center;
   font:
     27px/1.1 Georgia,
     serif;
 }
-.playing-card .card-corner {
+.card-face {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  transform: rotate(180deg);
-  font-size: 12px;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .playing-card.red-card {
   color: #c32740;
@@ -1964,19 +1942,8 @@ footer > span:first-child {
 .hole-cards .playing-card:last-child {
   transform: rotate(8deg);
 }
-.hole-cards .playing-card b {
-  font-size: 12px;
-}
-.hole-cards .playing-card b i {
-  font-size: 8px;
-}
 .hole-cards .playing-card > span {
   font-size: 15px;
-}
-.hole-cards .card-corner {
-  font-size: 7px;
-  bottom: 2px;
-  right: 2px;
 }
 .own-hand {
   position: absolute;
@@ -2770,14 +2737,8 @@ footer > span:first-child {
   height: 58px;
   padding: 4px;
 }
-.rank-card .playing-card b {
-  font-size: 16px;
-}
 .rank-card .playing-card > span {
   font-size: 22px;
-}
-.rank-card .card-corner {
-  font-size: 9px;
 }
 .rank-card h2 {
   font-size: 17px;
@@ -2994,9 +2955,6 @@ footer > span:first-child {
     width: 34px;
     height: 50px;
   }
-  .hero-hand .playing-card b {
-    font-size: 13px;
-  }
   .hero-hand .playing-card > span {
     font-size: 20px;
   }
@@ -3146,19 +3104,8 @@ footer > span:first-child {
     height: 43px;
     padding: 3px;
   }
-  .hero-hand .playing-card b {
-    font-size: 11px;
-  }
-  .hero-hand .playing-card b i {
-    font-size: 8px;
-  }
   .hero-hand .playing-card > span {
     font-size: 17px;
-  }
-  .hero-hand .card-corner {
-    font-size: 7px;
-    bottom: 3px;
-    right: 3px;
   }
   .mini-mark {
     font-size: 7px;
@@ -3245,14 +3192,8 @@ footer > span:first-child {
     height: 65px;
     padding: 5px;
   }
-  .playing-card b {
-    font-size: 17px;
-  }
   .playing-card > span {
     font-size: 23px;
-  }
-  .playing-card .card-corner {
-    font-size: 10px;
   }
   .community {
     gap: 5px;
@@ -3428,9 +3369,6 @@ footer > span:first-child {
   .hero-hand .playing-card {
     width: 34px;
     height: 49px;
-  }
-  .hero-hand .playing-card b {
-    font-size: 13px;
   }
   .hero-hand .playing-card > span {
     font-size: 19px;
@@ -3827,19 +3765,8 @@ footer > span:first-child {
     height: 54px;
     padding: 4px;
   }
-  .community .playing-card b {
-    font-size: 15px;
-  }
-  .community .playing-card b i {
-    font-size: 9px;
-  }
   .community .playing-card > span {
     font-size: 20px;
-  }
-  .community .card-corner {
-    font-size: 9px;
-    bottom: 4px;
-    right: 4px;
   }
   .pot {
     margin-bottom: 14px;
@@ -3860,9 +3787,6 @@ footer > span:first-child {
     width: 43px;
     height: 62px;
     padding: 4px;
-  }
-  .own-hand .playing-card b {
-    font-size: 18px;
   }
   .own-hand .playing-card > span {
     font-size: 25px;
@@ -3927,17 +3851,8 @@ footer > span:first-child {
     width: 23px;
     height: 31px;
   }
-  .hole-cards .playing-card b {
-    font-size: 10px;
-  }
-  .hole-cards .playing-card b i {
-    font-size: 6px;
-  }
   .hole-cards .playing-card > span {
     font-size: 12px;
-  }
-  .hole-cards .card-corner {
-    font-size: 6px;
   }
   .dealer {
     width: 16px;
