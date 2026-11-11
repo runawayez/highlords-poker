@@ -40,6 +40,8 @@ import {
 } from './components.tsx';
 import {
   LearningPage,
+  LearningCenter,
+  type LearningSection,
   DecisionDock,
   TournamentPresentation,
   learningRoute,
@@ -81,16 +83,14 @@ function App() {
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
-  const [rulesTab, setRulesTab] = useState<'guide' | 'hands' | 'rules'>('guide');
-  const openRules = (tab: 'guide' | 'hands' | 'rules' = 'guide') => {
+  const [rulesTab, setRulesTab] = useState<LearningSection>('guide');
+  const openRules = (tab: LearningSection = 'guide') => {
     setRulesTab(tab);
     setRulesOpen(true);
   };
   const [roomId, setRoomId] = useState(roomPath);
   const [page, setPage] = useState(learningRoute);
   const visiblePage = homeScreen === 'lobby' ? 'play' : page;
-  const [lesson, setLesson] = useState<LearningKind | null>(null);
-  const closeLesson = useCallback(() => setLesson(null), []);
   const [coach, setCoach] = useState(() => read<boolean>('highlords.coach', true));
   const toggleCoach = () =>
     setCoach((value) => {
@@ -99,7 +99,7 @@ function App() {
     });
   const openLearning = (kind: LearningKind) => {
     if (roomId) {
-      setLesson(kind);
+      openRules(kind);
       return;
     }
     history.pushState({}, '', learningPaths[kind]);
@@ -145,7 +145,7 @@ function App() {
     setPage('play');
     setHomeScreen('home');
     setDirectorOpen(false);
-    setLesson(null);
+    setRulesOpen(false);
     history.pushState({}, '', id ? `/room/${id}` : '/');
     setRoomId(id);
     setSnapshot(null);
@@ -547,7 +547,7 @@ function App() {
                 {t('lobby:createRoom')}
               </button>
               <button className="nav" onClick={() => openRules()}>
-                {t('learn:guideNav')} &amp; {t('rules')}
+                {t('learn:guideNav')}
               </button>
             </nav>
             <details className="mobile-nav">
@@ -575,7 +575,7 @@ function App() {
                     openRules();
                   }}
                 >
-                  {t('learn:guideNav')} &amp; {t('rules')}
+                  {t('learn:guideNav')}
                 </button>
               </div>
             </details>
@@ -623,7 +623,7 @@ function App() {
             <p className="banner">{t('offlineNotice')}</p>
           )}
           {visiblePage !== 'play' ? (
-            <LearningPage kind={visiblePage} onPlay={() => navigate()} onSection={openLearning} />
+            <LearningPage kind={visiblePage} onPlay={openLobby} onSection={openLearning} />
           ) : !roomId ? (
             <>
               {homeScreen === 'home' && (
@@ -973,9 +973,7 @@ function App() {
                             {t('profile:appearanceShort')}
                           </button>
                           <button onClick={() => setProfileOpen(true)}>{t('profile')}</button>
-                          <button onClick={() => openRules('guide')}>{t('learn:guideNav')}</button>
-                          <button onClick={() => openRules('hands')}>{t('learn:handsNav')}</button>
-                          <button onClick={() => openRules('rules')}>{t('rules')}</button>
+                          <button onClick={() => openRules('guide')}>{t('learn:centerNav')}</button>
                           {snapshot.host && (
                             <>
                               <button onClick={() => void run('EXPORT')}>{t('game:export')}</button>
@@ -1069,7 +1067,7 @@ function App() {
                             table={table}
                             coach={coach}
                             onCoach={toggleCoach}
-                            onRankings={() => setLesson('hands')}
+                            onRankings={() => openRules('hands')}
                           />
                           <ActionBar
                             snapshot={snapshot}
@@ -1313,44 +1311,9 @@ function App() {
             onProfileChange={changeQuickProfile}
           />
         )}
-        {lesson && (
-          <Modal title={t('learn:learningModal')} onClose={closeLesson}>
-            <LearningPage kind={lesson} onSection={setLesson} />
-            <p className="lesson-note">{t('learn:coachingNotice')}</p>
-          </Modal>
-        )}
         {rulesOpen && (
-          <Modal
-            title={`${t('learn:guideNav')} & ${t('rules')}`}
-            onClose={closeRules}
-            wide
-            className="rules-drawer"
-          >
-            <div className="rules-tabs" role="tablist" aria-label={t('learn:learningModal')}>
-              {(['guide', 'hands', 'rules'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  role="tab"
-                  aria-selected={rulesTab === tab}
-                  onClick={() => setRulesTab(tab)}
-                >
-                  {tab === 'guide'
-                    ? t('learn:guideNav')
-                    : tab === 'hands'
-                      ? t('learn:handsNav')
-                      : t('rules')}
-                </button>
-              ))}
-            </div>
-            {rulesTab === 'rules' ? (
-              <p className="rules-text">{t('rulesText')}</p>
-            ) : (
-              <LearningPage
-                kind={rulesTab}
-                onSection={(section) => setRulesTab(section === 'hands' ? 'hands' : 'guide')}
-              />
-            )}
+          <Modal title={t('learn:centerTitle')} onClose={closeRules} wide className="rules-drawer">
+            <LearningCenter section={rulesTab} onSection={setRulesTab} />
           </Modal>
         )}
         {joinDialog && (

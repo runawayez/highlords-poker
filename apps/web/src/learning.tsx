@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from './room-tools.tsx';
 import { rankExamples, visibleHand } from './poker-learning.ts';
 import type { Snapshot } from './api.ts';
 export type LearningKind = 'guide' | 'hands' | 'help';
+export type LearningSection = LearningKind | 'rules';
+const sections: LearningSection[] = ['guide', 'hands', 'rules', 'help'];
 export const learningPaths: Record<LearningKind, string> = {
   guide: '/como-jogar',
   hands: '/ranking-de-maos',
@@ -20,14 +22,17 @@ export function LearningPage({
   kind,
   onPlay,
   onSection,
+  embedded = false,
 }: {
   kind: LearningKind;
   onPlay?: () => void;
   onSection?: (kind: LearningKind) => void;
+  embedded?: boolean;
 }) {
   const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [query, setQuery] = useState('');
+  const Title = embedded ? 'h2' : 'h1';
   const cards = [
     ['As', 'Kh'],
     ['As', 'Kh'],
@@ -39,10 +44,10 @@ export function LearningPage({
   return (
     <article className={`learning-page learning-${kind}`}>
       <header className="learning-heading">
-        <p className="eyebrow">HIGHLORDS / {t('learn:academy')}</p>
-        <h1>{t(`learn:${kind}Title`)}</h1>
+        {!embedded && <p className="eyebrow">HIGHLORDS / {t('learn:academy')}</p>}
+        <Title className="learning-title">{t(`learn:${kind}Title`)}</Title>
         <p>{t(`learn:${kind}Intro`)}</p>
-        {onSection && (
+        {!embedded && onSection && (
           <nav aria-label={t('learn:sections')}>
             {(['guide', 'hands', 'help'] as const).map((k) => (
               <a
@@ -199,6 +204,82 @@ export function LearningPage({
     </article>
   );
 }
+/** One navigation owner for every in-app learning entry point. */
+export function LearningCenter({
+  section,
+  onSection,
+}: {
+  section: LearningSection;
+  onSection: (section: LearningSection) => void;
+}) {
+  const { t } = useTranslation();
+  const id = useId();
+  const content = useRef<HTMLDivElement>(null);
+  const tabs = useRef<Array<HTMLButtonElement | null>>([]);
+  useEffect(() => {
+    content.current?.scrollTo({ top: 0, left: 0 });
+  }, [section]);
+  return (
+    <div className="learning-center">
+      <div className="learning-tabs" role="tablist" aria-label={t('learn:sections')}>
+        {sections.map((key, index) => (
+          <button
+            key={key}
+            ref={(element) => {
+              tabs.current[index] = element;
+            }}
+            type="button"
+            role="tab"
+            id={`${id}-${key}`}
+            aria-selected={section === key}
+            aria-controls={`${id}-content`}
+            tabIndex={section === key ? 0 : -1}
+            onClick={() => onSection(key)}
+            onKeyDown={(event) => {
+              const next =
+                event.key === 'ArrowRight'
+                  ? (index + 1) % sections.length
+                  : event.key === 'ArrowLeft'
+                    ? (index + sections.length - 1) % sections.length
+                    : event.key === 'Home'
+                      ? 0
+                      : event.key === 'End'
+                        ? sections.length - 1
+                        : null;
+              if (next === null) return;
+              event.preventDefault();
+              onSection(sections[next]);
+              tabs.current[next]?.focus();
+            }}
+          >
+            {key === 'rules' ? t('rules') : t(`learn:${key}Nav`)}
+          </button>
+        ))}
+      </div>
+      <div
+        ref={content}
+        className="learning-center-content"
+        id={`${id}-content`}
+        role="tabpanel"
+        aria-labelledby={`${id}-${section}`}
+        tabIndex={0}
+      >
+        {section === 'rules' ? (
+          <section className="house-rules">
+            <h2 className="learning-title">{t('rules')}</h2>
+            <p className="rules-intro">{t('virtual')}</p>
+            <div className="house-rules-copy">
+              <p>{t('rulesText')}</p>
+            </div>
+          </section>
+        ) : (
+          <LearningPage key={section} kind={section} embedded />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function DecisionDock({
   snapshot,
   table,

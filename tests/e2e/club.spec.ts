@@ -99,6 +99,12 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
       .getByRole('button', { name: 'Ranking de mãos', exact: true })
       .click();
     await expect(a.getByRole('dialog')).toContainText('Royal flush');
+    await expect(a.getByRole('dialog').getByRole('tablist')).toHaveCount(1);
+    await a.getByRole('tab', { name: 'Ajuda', exact: true }).click();
+    await expect(
+      a.getByRole('heading', { name: 'Perguntas frequentes', exact: true }),
+    ).toBeVisible();
+    await expect(a).toHaveURL(roomUrl);
     await a.getByRole('button', { name: 'Fechar', exact: true }).click();
     await expect(a.locator('.decision-cards .playing-card')).toHaveCount(2);
     await a.getByRole('button', { name: '? Ajuda na mesa', exact: true }).click();
@@ -106,7 +112,7 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await changeLanguage(a, 'en');
     await expect(a.locator('html')).toHaveAttribute('lang', 'en');
     await a.locator('.room-options summary').click();
-    await expect(a.getByRole('button', { name: 'House rules', exact: true })).toBeVisible();
+    await expect(a.getByRole('button', { name: 'Guides & help', exact: true })).toBeVisible();
     await a.locator('.room-options summary').click();
     await expect(a.locator('.table-chat-dock .chat-form')).toBeVisible();
     await expect(b.locator('.table-chat-dock .chat-form')).toBeVisible();
@@ -484,7 +490,7 @@ for (const width of [1440, 390])
     await expect(page.locator('.glossary-list>div')).toHaveCount(1);
     await expect(page.locator('.glossary-list dt')).toHaveText('Kicker');
     await page.getByRole('button', { name: 'Go to the lobby', exact: true }).click();
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/mesas$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
     if (width === 390) {
       await page.getByLabel('Menu', { exact: true }).click();
@@ -851,3 +857,83 @@ test('playing room keeps chat visible and offers sound control', async ({ page }
     'false',
   );
 });
+
+for (const width of [1440, 390]) {
+  test(`guide dialog has one navigation and functional help in both languages at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    for (const locale of [
+      {
+        code: 'pt-BR',
+        guide: 'Como jogar',
+        hands: 'Ranking de mãos',
+        rules: 'Regras da casa',
+        help: 'Ajuda',
+        faq: 'Perguntas frequentes',
+        search: 'Buscar termo',
+        title: 'Central de poker',
+      },
+      {
+        code: 'en',
+        guide: 'How to play',
+        hands: 'Hand rankings',
+        rules: 'House rules',
+        help: 'Help',
+        faq: 'Frequently asked questions',
+        search: 'Search terms',
+        title: 'Poker guide',
+      },
+    ]) {
+      await changeLanguage(page, locale.code);
+      await page.locator('.club-features .text-button').click();
+      const dialog = page.getByRole('dialog', { name: locale.title, exact: true });
+      await expect(dialog.getByRole('tablist')).toHaveCount(1);
+      await expect(dialog.getByRole('tab')).toHaveCount(4);
+      await expect(dialog.locator('.learning-heading nav')).toHaveCount(0);
+      await dialog.getByRole('tab', { name: locale.help, exact: true }).click();
+      await expect(dialog.getByRole('tab', { name: locale.help, exact: true })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      await expect(dialog.getByRole('heading', { name: locale.faq, exact: true })).toBeVisible();
+      await expect(dialog.locator('.faq-item')).toHaveCount(8);
+      await dialog.locator('.faq-item summary').first().click();
+      await expect(dialog.locator('.faq-item[open] p')).toBeVisible();
+      await dialog.getByPlaceholder(locale.search).fill('kicker');
+      await expect(dialog.locator('.glossary-list > div')).toHaveCount(1);
+      await dialog.getByRole('tab', { name: locale.hands, exact: true }).click();
+      await expect(dialog.locator('.rank-card')).toHaveCount(10);
+      const rows = await dialog.locator('.rank-card .example-cards').evaluateAll((elements) =>
+        elements.map((row) => {
+          const tops = [...row.children].map((card) => card.getBoundingClientRect().top);
+          return Math.max(...tops) - Math.min(...tops);
+        }),
+      );
+      expect(rows.every((gap) => gap < 1)).toBe(true);
+      await expect(page.locator('html')).toHaveCSS('overflow', 'hidden');
+
+      await dialog.locator('.rank-card').last().scrollIntoViewIfNeeded();
+      await expect(dialog.getByRole('tab', { name: locale.help, exact: true })).toBeInViewport();
+      await dialog.getByRole('tab', { name: locale.hands, exact: true }).focus();
+      await page.keyboard.press('End');
+      await expect(dialog.getByRole('tab', { name: locale.help, exact: true })).toBeFocused();
+      await expect(dialog.getByRole('heading', { name: locale.faq, exact: true })).toBeVisible();
+      await expect
+        .poll(() => dialog.locator('.learning-center-content').evaluate((el) => el.scrollTop))
+        .toBe(0);
+      await dialog.getByRole('tab', { name: locale.rules, exact: true }).click();
+      await expect(dialog.locator('.house-rules')).toContainText('Texas Hold');
+      await dialog.getByRole('tab', { name: locale.guide, exact: true }).click();
+      await expect(dialog.locator('.walkthrough-scene')).toBeVisible();
+      await page.screenshot({ path: `test-results/ui-guides-${width}-${locale.code}.png` });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      await page.keyboard.press('Escape');
+      await expect(dialog).not.toBeVisible();
+      await expect(page).toHaveURL(/\/$/);
+    }
+  });
+}
