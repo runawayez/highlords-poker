@@ -1,9 +1,43 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Command } from '../../../packages/contracts/src/index.ts';
 import type { Snapshot } from './api.ts';
 import { Knight } from './club-art.tsx';
 import { Card } from './card.tsx';
+
+/** Fit the complete table, including seats, inside the space left above the actions. */
+export function FittedScene({ children }: { children: React.ReactNode }) {
+  const viewport = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const host = viewport.current!;
+    const scene = canvas.current!;
+    const fit = () => {
+      const scale = Math.min(
+        1,
+        Math.max(0, host.clientHeight - 12) / Math.max(1, scene.offsetHeight),
+      );
+      scene.style.setProperty('--scene-scale', String(scale));
+      const actions = host.nextElementSibling as HTMLElement | null;
+      host.parentElement?.parentElement?.style.setProperty(
+        '--controls-height',
+        `${actions?.classList.contains('decision-zone') ? actions.offsetHeight + 20 : 0}px`,
+      );
+    };
+    const observer = new ResizeObserver(fit);
+    observer.observe(host);
+    observer.observe(scene);
+    fit();
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div className="scene-viewport" ref={viewport}>
+      <div className="scene-canvas" ref={canvas}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export const difficultyLabels = {
   EASY: 'game:botEASY',

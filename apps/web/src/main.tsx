@@ -25,7 +25,7 @@ import {
   type Messages,
 } from './api.ts';
 import { balance } from '../../../packages/tournament-engine/src/index.ts';
-import { RoomDirector, RoomStats } from './room-tools.tsx';
+import { FittedScene, RoomDirector, RoomStats } from './room-tools.tsx';
 import { storedPreferences, type Preferences } from './preferences.ts';
 import {
   ErrorContext,
@@ -1037,7 +1037,7 @@ function App() {
                           ))}
                         </div>
                       )}
-                      <div className="scene-viewport">
+                      <FittedScene>
                         {snapshot.status === 'FINISHED' && snapshot.config.mode !== 'CASH' ? (
                           <TournamentPresentation snapshot={snapshot} num={num} finished />
                         ) : (
@@ -1067,7 +1067,7 @@ function App() {
                             onStart={() => void run('START')}
                           />
                         )}
-                      </div>
+                      </FittedScene>
                       {table?.hand && snapshot.status !== 'FINISHED' && (
                         <div className="decision-zone">
                           <DecisionDock

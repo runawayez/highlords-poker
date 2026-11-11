@@ -331,6 +331,11 @@ for (const viewport of [
       if (viewport.width <= 700)
         await page.getByRole('button', { name: 'Chat', exact: true }).click();
       await expect(page.locator('.table-chat-dock .chat-form')).toBeVisible();
+      if (viewport.width <= 700) {
+        const chat = await page.locator('.table-chat-dock').boundingBox();
+        const actions = await page.locator('.decision-zone').boundingBox();
+        expect(chat!.y + chat!.height).toBeLessThanOrEqual(actions!.y);
+      }
       await page
         .locator('.table-chat-dock')
         .getByPlaceholder('Digite uma mensagem…')
@@ -751,8 +756,15 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
     );
     await page.goto(`/room/${roomId}`);
     await expect(page.locator('.raise-controls')).toBeVisible();
-    for (const width of [360, 390, 768, 1366]) {
-      await page.setViewportSize({ width, height: 844 });
+    for (const { width, height } of [
+      { width: 360, height: 740 },
+      { width: 390, height: 667 },
+      { width: 768, height: 844 },
+      { width: 1366, height: 768 },
+      { width: 1920, height: 920 },
+      { width: 844, height: 390 },
+    ]) {
+      await page.setViewportSize({ width, height });
       for (const language of ['pt-BR', 'en']) {
         await changeLanguage(page, language);
         const label = await page.locator('.raise-label').boundingBox();
@@ -761,8 +773,8 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
         const shortcuts = await page.locator('.raise-controls .bet-shortcuts').boundingBox();
         expect(label!.y).toBeGreaterThanOrEqual(number!.y);
         expect(label!.y + label!.height).toBeLessThanOrEqual(number!.y + 20);
-        expect(number!.y + number!.height).toBeLessThanOrEqual(slider!.y);
-        expect(shortcuts!.x).toBeGreaterThanOrEqual(number!.x + number!.width);
+        if (height > 500) expect(number!.y + number!.height).toBeLessThanOrEqual(slider!.y);
+        if (height > 500) expect(shortcuts!.x).toBeGreaterThanOrEqual(number!.x + number!.width);
         const text = await page.locator('.raise-label').evaluate((el) => {
           const r = document.createRange();
           r.selectNodeContents(el);
@@ -777,9 +789,20 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
         const controls = await page.locator('.raise-controls').boundingBox();
         expect(controls!.x).toBeGreaterThanOrEqual(0);
         expect(controls!.x + controls!.width).toBeLessThanOrEqual(width);
-        await page.locator('.raise-controls').scrollIntoViewIfNeeded();
+        await expect(page.locator('.action-buttons')).toBeInViewport({ ratio: 0.999 });
+        await expect(page.locator('.raise-controls')).toBeInViewport({ ratio: 0.999 });
+        await expect(page.locator('.own-hand')).toBeInViewport({ ratio: 0.999 });
+        await expect(page.locator('.table-center')).toBeInViewport({ ratio: 0.999 });
         const visibleControls = await page.locator('.raise-controls').boundingBox();
-        expect(visibleControls!.y + visibleControls!.height).toBeLessThanOrEqual(844);
+        expect(visibleControls!.y + visibleControls!.height).toBeLessThanOrEqual(height);
+        expect(
+          await page.evaluate(() => document.documentElement.scrollHeight),
+        ).toBeLessThanOrEqual(height);
+        const scene = await page.locator('.scene-viewport').boundingBox();
+        const self = await page.locator('.seat.self').boundingBox();
+        const dock = await page.locator('.decision-zone').boundingBox();
+        expect(self!.y + self!.height).toBeLessThanOrEqual(dock!.y);
+        expect(scene!.height).toBeGreaterThan(100);
         if ([390, 1366].includes(width) && language === 'pt-BR')
           await page.screenshot({ path: `test-results/ui-fixed-${state}-${width}.png` });
       }

@@ -4461,3 +4461,220 @@ html:has(.modal[open]) {
     padding-top: 24px;
   }
 }
+
+/* The room is an application viewport: actions reserve space before the table fits. */
+.in-room .club-room {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.club-room > .room-heading,
+.club-room > .tournament-overview,
+.club-room > .retention-notice {
+  flex: none;
+}
+.club-room .game-layout,
+.club-room .game-stage {
+  min-height: 0;
+}
+.club-room .game-stage {
+  padding-top: 8px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+.club-room .table-tabs,
+.club-room .decision-zone {
+  flex: none;
+}
+.club-room .scene-viewport {
+  position: relative;
+  min-height: 0;
+  flex: 1 1 0;
+  display: block;
+}
+.scene-canvas {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  display: flow-root;
+  padding-block: 24px 8px;
+  transform: translateY(-50%) scale(var(--scene-scale, 1));
+  transform-origin: center center;
+}
+.club-room .decision-zone {
+  position: relative;
+  bottom: auto;
+  margin: 0;
+}
+.club-room .decision-dock {
+  position: relative;
+  padding-block: 8px;
+  gap: 8px;
+}
+.club-room .coach-explanation {
+  width: auto;
+}
+.club-room .coach-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 150px;
+  overflow: auto;
+  max-width: none;
+  margin: 0;
+  padding: 14px 18px;
+  background: #1b1921;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 -8px 24px #0008;
+}
+.club-room .action-bar {
+  padding-block: 10px;
+}
+.club-room .table-chat-dock,
+.club-room .chat,
+.club-room .messages {
+  min-height: 0;
+}
+@media (max-width: 700px) {
+  .club-room .game-stage {
+    padding-inline: 8px;
+  }
+  .club-room .decision-dock {
+    gap: 6px;
+  }
+  .club-room .coach-explanation {
+    margin-left: auto;
+  }
+  .club-room .decision-zone {
+    max-width: 100%;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .club-room .room-heading {
+    flex-wrap: nowrap;
+    min-height: 54px;
+    padding: 6px 10px;
+  }
+  .club-room .room-name {
+    flex-basis: auto;
+  }
+  .club-room .room-controls {
+    width: auto;
+  }
+  .club-room .table-tabs {
+    position: absolute;
+    z-index: 6;
+  }
+  .club-room .decision-dock {
+    padding-block: 5px;
+  }
+  .club-room .coach-explanation,
+  .club-room .action-context {
+    display: none;
+  }
+  .club-room .action-bar {
+    grid-template-columns: 1fr 1.5fr;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  .club-room .action-buttons {
+    grid-row: auto;
+  }
+  .club-room .raise-controls {
+    grid-template-columns: 75px minmax(0, 1fr) 100px;
+  }
+  .club-room .bet-shortcuts {
+    display: none;
+  }
+  .club-room .raise-controls > input[type='range'] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .club-room .raise-controls > button.primary {
+    grid-row: 1;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 700px) {
+  .club-room .game-layout {
+    position: relative;
+  }
+  .club-room .table-chat-dock {
+    position: absolute;
+    inset: 0 0 var(--controls-height, 0px);
+    height: auto;
+    border-radius: 0;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .club-room .decision-summary {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .club-room .decision-summary > .badge,
+  .club-room .decision-summary .current-hand {
+    display: none;
+  }
+  .club-room .decision-dock {
+    flex-wrap: nowrap;
+  }
+  .club-room .raise-controls > button.primary {
+    min-width: 0;
+  }
+  .club-room .table-shell,
+  .club-room .table-shell:has(.own-hand) {
+    height: 280px;
+    max-width: 700px;
+  }
+  .club-room .table-watermark {
+    display: none;
+  }
+  .club-room .seat {
+    width: 80px;
+  }
+  .club-room .seat-profile {
+    min-height: 34px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .club-room .seat-avatar {
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+  }
+  .club-room .seat-identity strong {
+    font-size: 7px;
+  }
+  .club-room .seat-identity small {
+    font-size: 9px;
+  }
+  .club-room .community .playing-card,
+  .club-room .own-hand .playing-card {
+    width: 32px;
+    height: 45px;
+  }
+  .club-room .hole-cards .playing-card {
+    width: 19px;
+    height: 27px;
+  }
+  .club-room .hole-cards {
+    top: -22px;
+  }
+  .club-room .pot strong {
+    font-size: 18px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .club-room .decision-summary,
+  .club-room .coach-controls {
+    flex-direction: row;
+    align-items: center;
+  }
+  .club-room .decision-summary > strong,
+  .club-room .decision-summary > small {
+    white-space: nowrap;
+  }
+}
