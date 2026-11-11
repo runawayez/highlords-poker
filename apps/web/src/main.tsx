@@ -60,7 +60,9 @@ function App() {
   const lastSessionProfile = useRef('');
   const [railTab, setRailTab] = useState('players');
   const [directorOpen, setDirectorOpen] = useState(false);
-  const [mobileChatOpen, setMobileChatOpen] = useState(true);
+  const [mobileChatOpen, setMobileChatOpen] = useState(
+    () => !window.matchMedia('(max-width: 800px)').matches,
+  );
   const closeDirector = useCallback(() => setDirectorOpen(false), []);
   const [homeScreen, setHomeScreen] = useState(() =>
     location.pathname === '/mesas' ? 'lobby' : 'home',
@@ -639,8 +641,7 @@ function App() {
                       <span /> {t('lobby:eyebrow')}
                     </p>
                     <h1>
-                      {t('club:heroFirst')}
-                      <br />
+                      <span>{t('club:heroFirst')}</span>
                       <em>{t('club:heroSecond')}</em>
                     </h1>
                     <p className="hero-intro">{t('lobby:intro')}</p>

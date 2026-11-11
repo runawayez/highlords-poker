@@ -532,14 +532,16 @@
    touch-sized targets without changing the club's crimson, ivory, and charcoal palette. */
 .club-theme:not(.in-room)
   button:where(
-    :not(.nav),
-    :not(.text-button),
-    :not(.icon),
-    :not(.toast button),
-    :not(.avatar-options button),
-    :not(.builder-steps button),
-    :not(.mode-cards button),
-    :not(.preset-buttons button)
+    :not(
+      .nav,
+      .text-button,
+      .icon,
+      .toast button,
+      .avatar-options button,
+      .builder-steps button,
+      .mode-cards button,
+      .preset-buttons button
+    )
   ) {
   min-height: 44px;
   border: 1px solid #55434d;
@@ -559,14 +561,16 @@
 }
 .club-theme:not(.in-room)
   button:where(
-    :not(.nav),
-    :not(.text-button),
-    :not(.icon),
-    :not(.toast button),
-    :not(.avatar-options button),
-    :not(.builder-steps button),
-    :not(.mode-cards button),
-    :not(.preset-buttons button)
+    :not(
+      .nav,
+      .text-button,
+      .icon,
+      .toast button,
+      .avatar-options button,
+      .builder-steps button,
+      .mode-cards button,
+      .preset-buttons button
+    )
   ):hover:not(:disabled) {
   border-color: #80616e;
   background: linear-gradient(180deg, #342a33, #241e27);
@@ -577,14 +581,16 @@
 }
 .club-theme:not(.in-room)
   button:where(
-    :not(.nav),
-    :not(.text-button),
-    :not(.icon),
-    :not(.toast button),
-    :not(.avatar-options button),
-    :not(.builder-steps button),
-    :not(.mode-cards button),
-    :not(.preset-buttons button)
+    :not(
+      .nav,
+      .text-button,
+      .icon,
+      .toast button,
+      .avatar-options button,
+      .builder-steps button,
+      .mode-cards button,
+      .preset-buttons button
+    )
   ):active:not(:disabled) {
   transform: translateY(0);
   box-shadow: inset 0 1px #0004;
@@ -931,5 +937,662 @@
   .club-theme.view-lobby .lobby-aside > button {
     width: 100%;
     justify-content: space-between;
+  }
+}
+
+/* Consistent chrome and table-first layouts, informed by established poker clients. */
+.club-theme:not(.in-room) > .header {
+  height: 76px;
+  gap: clamp(22px, 3.2vw, 52px);
+  padding-inline: clamp(18px, 3vw, 52px);
+  border-bottom-color: #332a31;
+}
+.club-theme:not(.in-room) .desktop-nav {
+  height: 100%;
+  flex: 1;
+  align-items: stretch;
+  gap: clamp(16px, 1.65vw, 27px);
+}
+.club-theme:not(.in-room) .desktop-nav .nav {
+  display: inline-flex;
+  align-items: center;
+  min-height: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #b9adb2;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  white-space: nowrap;
+  transform: none !important;
+  transition: color 150ms ease;
+}
+.club-theme:not(.in-room) .desktop-nav .nav:hover,
+.club-theme:not(.in-room) .desktop-nav .nav.active {
+  color: #fff3ed;
+}
+.club-theme:not(.in-room) .desktop-nav .nav.active::after {
+  right: 0;
+  bottom: 15px;
+  left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: #d45b70;
+}
+.club-theme:not(.in-room) .header-right {
+  gap: 14px;
+}
+.club-theme:not(.in-room) .profile-trigger {
+  min-height: 42px;
+  padding: 8px 13px;
+  border-radius: 8px;
+  background: #19161c;
+  border-color: #40343d;
+  box-shadow: none;
+}
+.club-theme:not(.in-room) .profile-trigger:hover:not(:disabled) {
+  background: #241c23;
+  border-color: #654553;
+  box-shadow: none;
+  transform: none;
+}
+
+.club-theme.view-home > main {
+  max-width: 1640px;
+  padding-inline: clamp(20px, 4vw, 64px);
+}
+.club-theme.view-home .hero {
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  gap: clamp(28px, 4vw, 72px);
+  min-height: min(650px, calc(100svh - 140px));
+  padding-block: clamp(38px, 5vw, 74px);
+}
+.club-theme.view-home .hero-copy {
+  max-width: 720px;
+}
+.club-theme.view-home .hero h1 {
+  margin-block: 22px 20px;
+  font-size: clamp(48px, 4.2vw, 72px);
+  line-height: 1.06;
+  letter-spacing: -0.05em;
+}
+.club-theme.view-home .hero h1 > span,
+.club-theme.view-home .hero h1 > em {
+  display: block;
+  text-wrap: balance;
+}
+.club-theme.view-home .hero-intro {
+  max-width: 48ch;
+  font-size: clamp(15px, 1.15vw, 17px);
+  line-height: 1.75;
+}
+.club-theme.view-home .hero-actions {
+  gap: 12px;
+  margin-top: 28px;
+}
+.club-theme.view-home .hero-copy > .hero-actions .primary {
+  min-width: 220px;
+  min-height: 52px;
+  justify-content: space-between;
+  gap: 18px;
+  padding-inline: 19px;
+  border-radius: 8px;
+}
+.club-theme.view-home .hero-actions .hero-find {
+  min-height: 48px;
+  padding-inline: 14px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.club-theme.view-home .hero-actions .hero-find:hover:not(:disabled) {
+  border-color: #493741;
+  background: #19161c;
+  box-shadow: none;
+  transform: none;
+}
+.club-theme.view-home .club-art {
+  justify-self: end;
+  width: min(100%, 620px);
+  max-width: none;
+  aspect-ratio: 1.16;
+  padding: 0;
+  transform: none;
+}
+.club-theme.view-home .mini-table {
+  width: 100%;
+  border-width: clamp(14px, 1.55vw, 22px);
+  box-shadow:
+    inset 0 0 0 2px #a15c6555,
+    inset 0 -28px 45px #10081088,
+    0 24px 48px #05040778;
+}
+.club-theme.view-home .art-badge {
+  left: 50%;
+  bottom: 5%;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  transform: translateX(-50%);
+  padding: 9px 14px;
+  border-color: #51404a;
+  border-radius: 999px;
+  background: #17141bd9;
+  box-shadow: 0 8px 24px #03020566;
+}
+.club-theme.view-home .art-badge small {
+  letter-spacing: 1.4px;
+}
+.club-theme.view-home .art-badge b {
+  font-size: 12px;
+}
+.club-theme.view-home .art-caption {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.club-theme.view-home .club-features {
+  margin-top: 16px;
+  gap: 16px;
+}
+.club-theme.view-home .club-features > div {
+  min-height: 146px;
+  padding: 22px;
+  background: linear-gradient(145deg, #1b171e, #131116);
+  border-color: #382d36;
+  box-shadow: none;
+}
+.club-theme.view-home .club-features p button {
+  min-height: 36px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-color: #55404b;
+  background: #211a22;
+  border-radius: 7px;
+  color: #e9c7cf;
+  font-size: 12px;
+}
+
+.club-theme.view-lobby .club-lobby-heading {
+  align-items: center;
+  padding-block: 34px 26px;
+  border-bottom-color: #342b32;
+}
+.club-theme.view-lobby .club-lobby-heading h1 {
+  font-size: clamp(36px, 3.5vw, 48px);
+}
+.club-theme.view-lobby .club-lobby-heading .primary {
+  min-width: 184px;
+  min-height: 48px;
+  border-radius: 8px;
+}
+.club-theme.view-lobby .lobby-layout-premium {
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 270px);
+  gap: 18px;
+}
+.club-theme.view-lobby .lobby-layout-premium .rooms {
+  padding: clamp(16px, 2vw, 24px);
+  border-radius: 12px;
+  background: #121116;
+  border-color: #342c34;
+  box-shadow: 0 16px 36px #05040728;
+}
+.club-theme.view-lobby .section-heading {
+  align-items: center;
+  gap: 16px;
+}
+.club-theme.view-lobby .section-heading h2 {
+  font-size: 24px;
+}
+.club-theme.view-lobby .lobby-layout-premium .filters {
+  grid-template-columns: minmax(180px, 1.7fr) repeat(3, minmax(110px, 1fr)) auto;
+  align-items: center;
+  gap: 8px;
+  padding-block: 15px;
+}
+.club-theme.view-lobby .lobby-layout-premium .filters :is(input:not([type='checkbox']), select) {
+  height: 42px;
+  min-height: 42px;
+  border-radius: 7px;
+}
+.club-theme.view-lobby .lobby-table {
+  border-color: #332a32;
+  border-radius: 9px;
+}
+.club-theme.view-lobby .lobby-table-head {
+  min-height: 40px;
+  background: #1b171e;
+  color: #a99ba2;
+  font-size: 10px;
+  letter-spacing: 0.075em;
+}
+.club-theme.view-lobby .lobby-table .room-card {
+  min-height: 76px;
+  grid-template-columns:
+    minmax(190px, 2fr) minmax(92px, 0.9fr) minmax(84px, 0.75fr) minmax(118px, 1.05fr)
+    minmax(82px, 0.8fr) auto;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top-color: #2a242c;
+  background: #121116;
+  transition: background 150ms ease;
+}
+.club-theme.view-lobby .lobby-table .room-card:nth-child(even) {
+  background: #17141a;
+}
+.club-theme.view-lobby .lobby-table .room-card:hover {
+  background: #211920;
+}
+.club-theme.view-lobby .room-info h3 {
+  overflow: hidden;
+  color: #f0e7e4;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.club-theme.view-lobby .room-presence {
+  margin-top: 3px;
+  color: #91868e;
+  font-size: 10px;
+}
+.club-theme.view-lobby .room-mode-cell {
+  justify-self: start;
+  padding: 5px 8px;
+  border: 1px solid #40343f;
+  border-radius: 999px;
+  background: #1b171e;
+  color: #dfc3c8;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.club-theme.view-lobby .room-blinds-cell {
+  color: #f1e8e1;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+.club-theme.view-lobby .room-players-cell strong {
+  color: #c8bdc3;
+  font-size: 11px;
+}
+.club-theme.view-lobby .room-status-cell {
+  padding: 5px 8px;
+  border: 1px solid #3d343e;
+  border-radius: 999px;
+  background: #1b181e;
+  color: #c9bec3;
+  font-size: 10px;
+}
+.club-theme.view-lobby .room-buttons {
+  gap: 6px;
+}
+.club-theme.view-lobby .room-buttons .primary {
+  min-width: 88px;
+  min-height: 40px;
+  padding-inline: 12px;
+  border-radius: 7px;
+}
+.club-theme.view-lobby .room-buttons .text-button {
+  min-width: 62px;
+  min-height: 40px;
+  padding-inline: 9px;
+  border: 1px solid #3f343d;
+  border-radius: 7px;
+  color: #d5c5cb;
+}
+.club-theme.view-lobby .lobby-aside {
+  padding: 22px;
+  border-radius: 12px;
+  background: #17141a;
+  border-color: #342a33;
+}
+
+.club-theme.in-room .room-heading {
+  min-height: 68px;
+  padding-inline: clamp(14px, 2.2vw, 32px);
+  gap: clamp(10px, 1.4vw, 20px);
+  background: #100e13;
+  border-bottom-color: #332932;
+}
+.club-theme.in-room .room-brand {
+  flex: none;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #f2e9e4;
+}
+.club-theme.in-room .room-brand:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+.club-theme.in-room .room-name h1 {
+  font-size: 16px;
+  font-weight: 650;
+}
+.club-theme.in-room .room-name p {
+  margin-top: 3px;
+  color: #ac9da5;
+  font-size: 10px;
+}
+.club-theme.in-room .room-controls {
+  gap: 7px;
+}
+.club-theme.in-room .room-controls .panel-trigger,
+.club-theme.in-room .room-controls .sound-toggle,
+.club-theme.in-room .room-options summary {
+  min-height: 40px;
+  border: 1px solid #40343d;
+  border-radius: 8px;
+  background: #19161c;
+  box-shadow: none;
+  color: #e3d4d8;
+}
+.club-theme.in-room .room-controls .panel-trigger:hover,
+.club-theme.in-room .room-controls .sound-toggle:hover,
+.club-theme.in-room .room-options summary:hover {
+  border-color: #6a4854;
+  background: #211a22;
+}
+.club-theme.in-room .game-layout {
+  grid-template-columns: minmax(0, 1fr) clamp(270px, 24vw, 340px);
+  min-height: 0;
+}
+.club-theme.in-room .game-stage {
+  min-height: 0;
+  border-right-color: #342932;
+  background: radial-gradient(ellipse at 50% 45%, #281d27 0%, #151218 62%, #100e13 100%);
+}
+.club-theme.in-room .table-tabs {
+  display: flex;
+  align-items: center;
+  padding-inline: 20px;
+  background: #100e13;
+  border-bottom: 1px solid #2e252d;
+}
+.club-theme.in-room .table-tabs button {
+  min-height: 26px;
+  padding: 4px 11px;
+  border: 1px solid transparent;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  box-shadow: none;
+  color: #9d9098;
+  font-size: 10px;
+}
+.club-theme.in-room .table-tabs button.selected {
+  border-color: #46343e;
+  border-bottom-color: #d05c70;
+  background: #201820;
+  color: #f2e4df;
+}
+.club-theme.in-room .scene-viewport {
+  background: radial-gradient(ellipse at center, #211922 0%, #151218 68%, #100e13 100%);
+}
+.club-theme.in-room .table-chat-dock {
+  border-left-color: #342932;
+  background: #141117;
+  box-shadow: none;
+}
+.club-theme.in-room .table-chat-topline {
+  padding: 16px 17px 12px;
+  background: #19151c;
+}
+.club-theme.in-room .table-chat-dock .chat-form button {
+  min-height: 42px;
+  border: 1px solid #d4546a;
+  border-radius: 7px;
+  background: linear-gradient(145deg, #bd354d, #8c2038);
+}
+.club-theme.in-room .decision-zone {
+  border-top-color: #3a2d38;
+  background: #121016;
+  box-shadow: 0 -10px 28px #03020535;
+}
+
+@media (max-width: 1350px) {
+  .club-theme.view-lobby .lobby-layout-premium {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 980px) {
+  .club-theme.view-home .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.92fr);
+    gap: 26px;
+  }
+  .club-theme.view-home .hero h1 {
+    font-size: clamp(46px, 5.6vw, 60px);
+  }
+  .club-theme.view-lobby .lobby-table .room-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'title mode'
+      'blinds status'
+      'players players'
+      'actions actions';
+    gap: 10px 12px;
+  }
+  .club-theme.view-lobby .room-title-cell {
+    grid-area: title;
+    grid-column: auto;
+  }
+  .club-theme.view-lobby .room-mode-cell {
+    grid-area: mode;
+    grid-column: auto;
+    justify-self: end;
+  }
+  .club-theme.view-lobby .room-blinds-cell {
+    grid-area: blinds;
+    grid-column: auto;
+  }
+  .club-theme.view-lobby .room-status-cell {
+    display: inline-flex;
+    grid-area: status;
+    grid-column: auto;
+    justify-self: end;
+  }
+  .club-theme.view-lobby .room-players-cell {
+    grid-area: players;
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    padding-top: 9px;
+    border-top: 1px solid #302831;
+  }
+  .club-theme.view-lobby .lobby-table .room-buttons {
+    display: grid;
+    grid-area: actions;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) minmax(82px, 0.35fr);
+  }
+}
+@media (max-width: 800px) {
+  .club-theme.view-home .hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding-block: 32px 20px;
+    gap: 10px;
+  }
+  .club-theme.view-home .hero-copy {
+    max-width: 660px;
+  }
+  .club-theme.view-home .hero h1 {
+    font-size: clamp(44px, 8.6vw, 64px);
+  }
+  .club-theme.view-home .club-art {
+    justify-self: center;
+    width: min(100%, 520px);
+    aspect-ratio: 1.28;
+  }
+  .club-theme.view-home .mini-table {
+    width: 94%;
+  }
+  .club-theme.in-room .game-layout {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+  .club-theme.in-room .game-stage {
+    flex: none;
+    height: min(68dvh, 650px);
+  }
+  .club-theme.in-room .table-chat-dock {
+    flex: none;
+    height: 240px;
+    border-left: 0;
+    border-top: 1px solid #342932;
+  }
+  .club-theme.in-room .table-chat-dock:not(.chat-expanded) {
+    height: 50px;
+  }
+  .club-theme.in-room .table-chat-dock:not(.chat-expanded) .chat {
+    display: none;
+  }
+  .club-theme.in-room .table-chat-topline {
+    padding: 10px 14px;
+  }
+  .club-theme.in-room .table-chat-topline small {
+    display: none;
+  }
+  .club-theme.in-room .mobile-chat-toggle {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 32px;
+    border: 1px solid #5b414c;
+    border-radius: 7px;
+    background: #241b24;
+    color: #f1d9dd;
+  }
+  .club-theme.in-room .decision-zone {
+    gap: 8px;
+    padding: 9px 12px max(10px, env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 600px) {
+  .club-theme:not(.in-room) > .header {
+    gap: 8px;
+    padding-inline: 10px;
+  }
+  .club-theme.view-home .hero {
+    padding-top: 24px;
+  }
+  .club-theme.view-home .hero h1 {
+    font-size: clamp(42px, 10.5vw, 56px);
+    line-height: 1.03;
+  }
+  .club-theme.view-home .hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .club-theme.view-home .hero-copy > .hero-actions .primary,
+  .club-theme.view-home .hero-actions .hero-find {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+  }
+  .club-theme.view-home .hero-actions .hero-find {
+    justify-content: space-between;
+    padding-inline: 15px;
+  }
+  .club-theme.view-home .club-art {
+    width: 100%;
+    max-width: 440px;
+    aspect-ratio: 1.2;
+  }
+  .club-theme.view-home .art-badge {
+    bottom: 3%;
+    padding: 7px 11px;
+  }
+  .club-theme.view-home .art-badge b {
+    font-size: 11px;
+  }
+  .club-theme.view-lobby .club-lobby-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    padding-block: 24px 18px;
+  }
+  .club-theme.view-lobby .club-lobby-heading .primary {
+    width: 100%;
+  }
+  .club-theme.view-lobby .lobby-layout-premium .rooms {
+    padding: 13px;
+  }
+  .club-theme.view-lobby .lobby-layout-premium .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .club-theme.view-lobby .lobby-layout-premium .filters input:not([type='checkbox']) {
+    grid-column: 1 / -1;
+  }
+  .club-theme.view-lobby .lobby-table .room-card {
+    padding: 13px;
+  }
+  .club-theme.view-lobby .room-buttons .primary,
+  .club-theme.view-lobby .room-buttons .text-button {
+    min-height: 44px;
+  }
+  .club-theme.in-room .room-heading {
+    min-height: 56px;
+    gap: 6px;
+    padding: 7px 8px;
+  }
+  .club-theme.in-room .room-brand {
+    width: 28px;
+    justify-content: center;
+  }
+  .club-theme.in-room .room-brand b {
+    display: none;
+  }
+  .club-theme.in-room .room-name h1 {
+    max-width: 130px;
+    font-size: 12px;
+  }
+  .club-theme.in-room .room-name p {
+    max-width: 130px;
+    overflow: hidden;
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .club-theme.in-room .room-controls {
+    gap: 4px;
+  }
+  .club-theme.in-room .room-controls .panel-trigger,
+  .club-theme.in-room .room-controls .sound-toggle,
+  .club-theme.in-room .room-options summary {
+    min-width: 34px;
+    min-height: 36px;
+    padding: 6px;
+  }
+  .club-theme.in-room .room-controls .button-label,
+  .club-theme.in-room .room-controls .sound-text {
+    display: none;
+  }
+  .club-theme.in-room .room-controls svg {
+    width: 18px;
+    height: 18px;
+  }
+  .club-theme.in-room .room-controls select {
+    width: 49px;
+    min-height: 36px;
+    padding: 4px 2px;
+    font-size: 9px;
+  }
+  .club-theme.in-room .table-tabs {
+    padding-inline: 10px;
+  }
+  .club-theme.in-room .game-stage {
+    height: min(67dvh, 620px);
+  }
+  .club-theme.in-room .table-chat-dock:not(.chat-expanded) {
+    height: 46px;
+  }
+  .club-theme.in-room .decision-zone {
+    padding-inline: 8px;
   }
 }
