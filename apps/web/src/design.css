@@ -1,0 +1,8 @@
+/* Legacy components provide defaults; the reference design owns the final cascade. */
+@import './styles.css' layer(legacy);
+@import './club.css' layer(legacy);
+@import './premium.css' layer(legacy);
+@import './experience.css' layer(legacy);
+@import './quick-profile.css' layer(legacy);
+@import './club-premium.css' layer(legacy);
+@import './ui-refactor.css';

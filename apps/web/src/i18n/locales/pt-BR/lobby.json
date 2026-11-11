@@ -76,7 +76,7 @@
   "preview": "Prévia da mesa",
   "livePreview": "Atualiza ao vivo",
   "depth": "Profundidade",
-  "previewHelp": "Seu lugar está marcado em dourado. As outras cadeiras ficam disponíveis para amigos ou bots.",
+  "previewHelp": "Seu lugar está marcado em vermelho. As outras cadeiras ficam disponíveis para amigos ou bots.",
   "reviewErrors": "Revise os valores e os limites dos campos. O small deve ser menor ou igual ao big; o stack deve ficar entre os buy-ins mínimo e máximo.",
   "liveTables": "Mesas em jogo",
   "noResults": "Nenhuma mesa com esses filtros",

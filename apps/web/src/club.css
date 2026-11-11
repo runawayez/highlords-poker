@@ -11,7 +11,7 @@
 .club-theme.in-room {
   height: 100dvh;
   max-width: none;
-  padding: 0 !important;
+  padding: 0;
   overflow: hidden;
 }
 .club-theme .hero {
@@ -725,7 +725,7 @@
 }
 .club-theme .decision-zone {
   grid-row: 3;
-  position: static !important;
+  position: static;
   display: grid;
   grid-template-columns: minmax(170px, 0.65fr) minmax(520px, 2fr);
   gap: 20px;
@@ -1297,8 +1297,8 @@
   .club-theme *,
   .club-theme *:before,
   .club-theme *:after {
-    animation: none !important;
-    transition: none !important;
+    animation: none;
+    transition: none;
   }
 }
 

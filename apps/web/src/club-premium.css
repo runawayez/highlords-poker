@@ -394,7 +394,7 @@
 @media (prefers-reduced-motion: reduce) {
   .club-theme.view-home *,
   .club-theme.in-room .table-chat-dock * {
-    transition-duration: 0.01ms !important;
+    transition-duration: 0.01ms;
   }
 }
 
@@ -957,17 +957,17 @@
   display: inline-flex;
   align-items: center;
   min-height: 0;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: #b9adb2;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.015em;
   white-space: nowrap;
-  transform: none !important;
+  transform: none;
   transition: color 150ms ease;
 }
 .club-theme:not(.in-room) .desktop-nav .nav:hover,
@@ -1631,7 +1631,7 @@
   margin-bottom: 16px;
 }
 .profile-color-field {
-  flex-direction: row !important;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
 }
@@ -1737,7 +1737,7 @@
 }
 .appearance-chip-color {
   grid-column: 1 / -1;
-  display: flex !important;
+  display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;

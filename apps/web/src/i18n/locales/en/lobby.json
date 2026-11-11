@@ -76,7 +76,7 @@
   "preview": "Table preview",
   "livePreview": "Updates live",
   "depth": "Stack depth",
-  "previewHelp": "Your seat is marked in gold. Other seats are available for friends or bots.",
+  "previewHelp": "Your seat is marked in red. Other seats are available for friends or bots.",
   "reviewErrors": "Check field values and limits. Small blind must not exceed big blind; stack must be within the buy-in range.",
   "liveTables": "Tables playing",
   "noResults": "No tables match your filters",

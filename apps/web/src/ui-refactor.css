@@ -42,7 +42,7 @@ summary:focus-visible {
   outline: 2px solid var(--brand-vivid);
 }
 
-.club-theme button:not(.nav):not(.text-button):not(.icon) {
+.club-theme button:where(:not(.nav):not(.text-button):not(.icon)) {
   min-height: 40px;
   padding: 0 20px;
   border: 1px solid var(--border-subtle);
@@ -179,7 +179,7 @@ summary:focus-visible {
   border: 0;
   background: transparent;
   color: var(--text-primary);
-  font-size: 0;
+  font-size: 12px;
 }
 
 .club-theme .language select option {
@@ -1448,5 +1448,461 @@ summary:focus-visible {
   .club-theme .builder-steps button {
     padding-inline: 8px;
     font-size: 10px;
+  }
+}
+
+/* Reference composition: full-width canvas, bounded content, compact navigation. */
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+}
+.club-theme .header {
+  height: 72px;
+  padding-inline: max(24px, calc((100% - 1232px) / 2));
+}
+.club-theme .desktop-nav {
+  height: 40px;
+  flex: none;
+  align-items: center;
+}
+.club-theme .desktop-nav .nav {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 14px;
+  background: transparent;
+  font-family: inherit;
+}
+.club-theme .language-code {
+  display: block;
+}
+.club-theme .language select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.club-theme .language {
+  width: 56px;
+  justify-content: center;
+}
+.club-theme .language::after {
+  content: '⌄';
+  font-size: 12px;
+}
+.club-theme:not(.in-room) > main {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+.club-theme.view-home .hero {
+  min-height: 480px;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 48px;
+  padding: 64px 0;
+}
+.club-theme.view-home .hero h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(40px, 4.5vw, 60px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+.club-theme .hero-copy .eyebrow {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--bg-surface);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+.club-theme .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 26px;
+}
+.club-theme .hero-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.club-theme .hero-actions > .primary {
+  background: var(--brand-vivid);
+  border-color: var(--brand-vivid);
+  color: white;
+}
+.club-theme .hero-actions > .hero-find {
+  background: var(--bg-surface);
+  border-color: #ffffff1f;
+  color: var(--text-primary);
+}
+.club-theme .hero-actions svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+.club-theme .club-art {
+  display: flex;
+  justify-content: center;
+  padding: 0;
+}
+.club-theme .mini-table {
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 1.6;
+  border: 14px solid #18181f;
+  border-radius: 999px;
+  transform: none;
+}
+.club-theme .hero-hand {
+  top: 45%;
+}
+.club-theme .hero-hand .playing-card {
+  width: 64px;
+}
+.club-theme .mini-mark {
+  bottom: 17%;
+  font-size: 8px;
+  letter-spacing: 0.3em;
+}
+.club-theme.view-home .club-features {
+  gap: 16px;
+  padding-top: 24px;
+}
+.club-theme.view-home .club-features > div {
+  padding: 24px;
+}
+.club-theme .builder-footer {
+  position: static;
+  margin-top: 24px;
+  padding: 16px 0 0;
+  background: transparent;
+  border-top: 1px solid var(--border-subtle);
+}
+.club-theme .modal input,
+.club-theme .modal select,
+.club-theme .modal textarea {
+  background: var(--bg-elevated);
+  border-color: #ffffff1a;
+  color: var(--text-primary);
+}
+.club-theme .modal {
+  padding: 24px;
+}
+@media (max-width: 1000px) {
+  .club-theme .header {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding-inline: 20px;
+  }
+  .club-theme .desktop-nav {
+    display: none;
+  }
+  .club-theme .mobile-nav {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .club-theme .header-right {
+    grid-column: 2;
+    grid-row: 1;
+    margin-right: 44px;
+  }
+  .club-theme .mobile-nav > div {
+    right: 16px;
+    top: 62px;
+  }
+}
+@media (max-width: 800px) {
+  .club-theme .header {
+    height: 64px;
+    padding-inline: 16px;
+  }
+  .club-theme:not(.in-room) > main {
+    padding-inline: 20px;
+  }
+  .club-theme.view-home .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+    min-height: 0;
+    padding: 36px 0;
+  }
+  .club-theme.view-home .hero h1 {
+    font-size: clamp(38px, 7vw, 56px);
+  }
+  .club-theme .club-art {
+    max-width: 440px;
+  }
+  .club-theme .hero-trust {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+  .club-theme .builder-footer {
+    position: static;
+  }
+}
+@media (max-width: 420px) {
+  .club-theme .brand {
+    font-size: 11px;
+    gap: 6px;
+  }
+  .club-theme .brand-mark {
+    width: 26px;
+  }
+  .club-theme .profile-trigger {
+    max-width: 92px;
+  }
+  .club-theme .language {
+    width: 44px;
+  }
+  .club-theme .hero-actions > button {
+    width: 100%;
+  }
+  .club-theme .hero-hand .playing-card {
+    width: 52px;
+  }
+  .club-theme .modal {
+    padding: 16px;
+  }
+}
+
+.club-theme .desktop-nav {
+  align-self: center;
+}
+.club-theme .hero-find span {
+  color: inherit;
+  font-size: inherit;
+}
+.club-theme .hero-actions .primary {
+  min-width: 0;
+}
+.club-theme .hero-intro {
+  max-width: 55ch;
+}
+.club-theme .builder-preview .preview-seat {
+  background: var(--bg-elevated);
+  border-color: #ffffff20;
+}
+.club-theme .builder-preview .preview-self {
+  color: var(--brand-vivid);
+  border-color: var(--brand-primary);
+  background: #1a1113;
+}
+.club-theme .builder-preview .table-preview {
+  background: transparent;
+}
+.club-theme .builder-profile {
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+}
+.club-theme .modal-heading {
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.club-theme .modal-heading h2 {
+  font:
+    700 18px/1.3 Inter,
+    sans-serif;
+}
+.club-theme .lobby-layout-premium {
+  grid-template-columns: minmax(0, 1fr);
+}
+.club-theme .lobby-layout-premium .rooms {
+  padding: 24px;
+  margin-bottom: 40px;
+}
+.club-theme .lobby-table {
+  border: 0;
+  overflow: visible;
+}
+.club-theme .lobby-table-head {
+  display: none;
+}
+.club-theme .room-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 16px;
+}
+.club-theme .lobby-table .room-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  min-width: 0;
+}
+.club-theme .room-title-cell {
+  flex-basis: 100%;
+  min-width: 0;
+}
+.club-theme .room-info h3 {
+  color: var(--text-primary);
+  font:
+    700 16px/1.4 Inter,
+    sans-serif;
+}
+.club-theme .room-presence {
+  color: var(--text-secondary);
+}
+.club-theme .room-buttons {
+  display: flex;
+  flex-basis: 100%;
+  gap: 8px;
+}
+.club-theme .room-buttons .primary {
+  flex: 1;
+}
+.club-theme .room-list .empty-state {
+  grid-column: 1 / -1;
+  border: 1px dashed #ffffff20;
+  border-radius: 12px;
+  background: var(--bg-surface);
+}
+@media (max-width: 1000px) {
+  .club-theme .room-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .club-theme .room-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .club-theme .lobby-layout-premium .rooms {
+    padding: 16px;
+  }
+  .club-theme .filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .club-theme .filters > input {
+    grid-column: 1 / -1;
+  }
+  .club-theme .mode-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .club-theme .mode-cards button {
+    padding: 12px;
+  }
+}
+
+.club-theme .connection,
+.club-theme .connection.live {
+  background: transparent;
+  color: var(--text-secondary);
+  box-shadow: none;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.club-theme .section-heading h2 {
+  font:
+    700 22px/1.3 Inter,
+    sans-serif;
+  letter-spacing: -0.02em;
+}
+.club-theme .section-heading {
+  border-color: var(--border-subtle);
+}
+.club-theme .lobby-layout-premium .rooms {
+  background: transparent;
+  border: 0;
+  padding-inline: 0;
+}
+.club-theme .builder-profile {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+.club-theme .quick-profile {
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+}
+.club-theme .review-grid {
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+}
+.club-theme .review-grid dd {
+  color: var(--text-primary);
+}
+.club-theme .review-heading > span {
+  background: #1a1113;
+  color: var(--brand-vivid);
+  border-color: var(--brand-primary);
+}
+.club-theme .advanced-settings summary {
+  color: var(--text-secondary);
+}
+
+/* The room is an edge-to-edge application, including on wide screens. */
+.club-theme.in-room > main {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.club-theme .preview-seat > span {
+  background: var(--bg-elevated);
+  border-color: #ffffff20;
+  color: var(--text-secondary);
+}
+.club-theme .preview-self > span {
+  background: #1a1113;
+  border-color: var(--brand-primary);
+  color: var(--brand-vivid);
+}
+.club-theme .preview-seat > small {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+.club-theme .preview-heading small {
+  color: var(--text-secondary);
+}
+.club-theme .table-chat-dock .chat-heading > span {
+  color: var(--brand-vivid);
+  background: transparent;
+}
+
+@media (max-width: 800px) {
+  .club-theme .builder-main {
+    padding: 0;
+  }
+  .club-theme .modal-wide > .modal-heading {
+    padding: 0 0 16px;
+  }
+  .club-theme .quick-profile-name strong {
+    overflow-wrap: anywhere;
+  }
+}
+
+.club-theme.in-room .club-room {
+  height: 100dvh;
+}
+.club-theme.in-room .scene-viewport {
+  background: transparent;
+}
+@media (max-width: 800px) {
+  .club-theme.in-room .game-stage {
+    flex: 1;
+    height: auto;
+    min-height: 560px;
   }
 }

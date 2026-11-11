@@ -2,15 +2,9 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
 import './i18n/index.ts';
-import './styles.css';
-import './club.css';
-import './premium.css';
-import './experience.css';
-import './quick-profile.css';
-import './club-premium.css';
-import './ui-refactor.css';
+import './design.css';
 import { playTableSound, primeTableAudio } from './table-audio.ts';
-import { ClubArtwork, ClubFeatures } from './club-art.tsx';
+import { ClubArtwork } from './club-art.tsx';
 import {
   ProfileSchema,
   type Profile,
@@ -665,7 +659,7 @@ function App() {
                   </button>
                 </div>
               )}
-              {homeScreen === 'lobby' && (
+              {(homeScreen === 'lobby' || homeScreen === 'home') && (
                 <div className="lobby-layout lobby-layout-premium">
                   <section className="rooms">
                     <div className="section-heading">
@@ -826,7 +820,6 @@ function App() {
                   </section>
                 </div>
               )}
-              {homeScreen === 'home' && <ClubFeatures onLearn={() => openLearning('guide')} />}
             </>
           ) : (
             <>
