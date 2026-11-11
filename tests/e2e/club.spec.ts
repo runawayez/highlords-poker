@@ -562,6 +562,29 @@ test('home artwork is horizontal and the tables page keeps real navigation', asy
   await expect(page.locator('.hero')).toContainText('Our kind of night.');
 });
 
+for (const width of [1440, 390])
+  test(`tables navigation leaves learning pages and shows the lobby at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/como-jogar');
+    await expect(page.locator('.learning-page')).toBeVisible();
+
+    if (width <= 600) {
+      await page.locator('.mobile-nav summary').click();
+      await page.locator('.mobile-nav').getByRole('button', { name: 'Mesas', exact: true }).click();
+    } else {
+      await page.getByRole('button', { name: 'Mesas', exact: true }).click();
+    }
+
+    await expect(page).toHaveURL(/\/mesas$/);
+    await expect(
+      page.getByRole('heading', { name: 'Encontre sua próxima partida.' }),
+    ).toBeVisible();
+    await expect(page.locator('.learning-page')).toHaveCount(0);
+    await expect(page.locator('.filters')).toBeVisible();
+  });
+
 test('home illustration keeps the badge and caption outside the felt without overflow', async ({
   page,
 }) => {

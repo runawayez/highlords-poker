@@ -80,6 +80,7 @@ function App() {
   const [rulesOpen, setRulesOpen] = useState(false);
   const [roomId, setRoomId] = useState(roomPath);
   const [page, setPage] = useState(learningRoute);
+  const visiblePage = homeScreen === 'lobby' ? 'play' : page;
   const [lesson, setLesson] = useState<LearningKind | null>(null);
   const closeLesson = useCallback(() => setLesson(null), []);
   const [coach, setCoach] = useState(() => read<boolean>('highlords.coach', true));
@@ -94,6 +95,7 @@ function App() {
       return;
     }
     history.pushState({}, '', learningPaths[kind]);
+    setHomeScreen('home');
     setPage(kind);
     window.scrollTo(0, 0);
   };
@@ -194,7 +196,7 @@ function App() {
     if (roomId && prefs.profile.nickname) void connectProfile(prefs);
   }, []);
   useEffect(() => {
-    if (ready || roomId || page !== 'play') return;
+    if (ready || roomId || visiblePage !== 'play') return;
     let active = true;
     const poll = async () => {
       try {
@@ -213,9 +215,9 @@ function App() {
       active = false;
       clearInterval(timer);
     };
-  }, [ready, roomId, page]);
+  }, [ready, roomId, visiblePage]);
   const refresh = useCallback(async () => {
-    if (!ready || page !== 'play') return;
+    if (!ready || visiblePage !== 'play') return;
     try {
       if (roomId) {
         const result = await request<Snapshot>(`/api/rooms/${roomId}`);
@@ -241,9 +243,9 @@ function App() {
         }
       } else fail(e);
     }
-  }, [ready, roomId, page, fail, t]);
+  }, [ready, roomId, visiblePage, fail, t]);
   useEffect(() => {
-    if (!ready || page !== 'play') return;
+    if (!ready || visiblePage !== 'play') return;
     let disposed = false;
     let ws: WebSocket | undefined;
     let retry: ReturnType<typeof setTimeout>;
@@ -290,7 +292,7 @@ function App() {
       clearInterval(fallback);
       ws?.close();
     };
-  }, [ready, roomId, page, refresh]);
+  }, [ready, roomId, visiblePage, refresh]);
   useEffect(() => {
     const id = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(id);
@@ -431,12 +433,12 @@ function App() {
   const table = tables[tableIndex] ?? tables.find((t) => t.ids.includes(snapshot!.me)) ?? tables[0];
   useEffect(() => {
     document.title =
-      page !== 'play'
-        ? `${t(`learn:${page}Nav`)} · Highlords Poker`
+      visiblePage !== 'play'
+        ? `${t(`learn:${visiblePage}Nav`)} · Highlords Poker`
         : snapshot
           ? `${snapshot.config.title} · Highlords Poker`
           : 'Highlords Poker';
-  }, [page, snapshot?.config.title, t]);
+  }, [visiblePage, snapshot?.config.title, t]);
   const played = useRef(new Set<string>());
   useEffect(() => {
     const hand = table?.hand;
@@ -518,7 +520,7 @@ function App() {
             <nav className="desktop-nav">
               <button
                 className={
-                  !roomId && page === 'play' && homeScreen === 'home' ? 'nav active' : 'nav'
+                  !roomId && visiblePage === 'play' && homeScreen === 'home' ? 'nav active' : 'nav'
                 }
                 onClick={() => navigate()}
               >
@@ -529,7 +531,7 @@ function App() {
               </button>
               {(['guide', 'hands', 'help'] as const).map((kind) => (
                 <a
-                  className={`nav ${page === kind ? 'active' : ''}`}
+                  className={`nav ${homeScreen === 'home' && visiblePage === kind ? 'active' : ''}`}
                   href={learningPaths[kind]}
                   key={kind}
                   onClick={(e) => {
@@ -629,9 +631,9 @@ function App() {
           </div>
         )}
         <main onPointerDownCapture={primeTableAudio}>
-          {!connected && page === 'play' && <p className="banner">{t('offlineNotice')}</p>}
-          {page !== 'play' ? (
-            <LearningPage kind={page} onPlay={() => navigate()} onSection={openLearning} />
+          {!connected && visiblePage === 'play' && <p className="banner">{t('offlineNotice')}</p>}
+          {visiblePage !== 'play' ? (
+            <LearningPage kind={visiblePage} onPlay={() => navigate()} onSection={openLearning} />
           ) : !roomId ? (
             <>
               {homeScreen === 'home' && (
