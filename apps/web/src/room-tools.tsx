@@ -1,8 +1,8 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Command } from '../../../packages/contracts/src/index.ts';
+import type { Profile, Command } from '../../../packages/contracts/src/index.ts';
 import type { Snapshot } from './api.ts';
-import { Knight } from './club-art.tsx';
+import { Avatar } from './avatar.tsx';
 import { Card } from './card.tsx';
 
 /** Fit the complete table, including seats, inside the space left above the actions. */
@@ -147,6 +147,7 @@ export function TablePreview({
 }
 export function PokerTable({
   snapshot,
+  selfProfile,
   table,
   bestFive,
   clock,
@@ -157,6 +158,7 @@ export function PokerTable({
   busy,
 }: {
   snapshot: Snapshot;
+  selfProfile?: Profile;
   table?: Snapshot['tables'][number];
   bestFive?: string[];
   clock: number;
@@ -316,7 +318,10 @@ export function PokerTable({
                 onClick={() => onSelect(p.id)}
               >
                 <span className="seat-avatar">
-                  {p.bot ? <Knight color="#DC2626" /> : (p.profile?.avatar ?? '♠')}
+                  <Avatar
+                    profile={isSelf ? (selfProfile ?? p.profile) : p.bot ? undefined : p.profile}
+                    seed={p.id}
+                  />
                 </span>
                 <span className="seat-identity">
                   <strong>
@@ -594,7 +599,7 @@ export function RoomDirector({
                     <td>
                       <div className="roster-name">
                         <span className="roster-avatar" style={{ color: p.profile?.accent }}>
-                          {p.profile?.avatar}
+                          <Avatar profile={p.bot ? undefined : p.profile} seed={p.id} />
                         </span>
                         <div>
                           <strong>{p.profile?.nickname}</strong>

@@ -7,6 +7,11 @@ export const ProfileSchema = z.object({
     .max(24)
     .regex(/^[\p{L}\p{N}_ .-]+$/u),
   avatar: z.enum(['♠', '♣', '♦', '♥', '☠', '♜', '⚔', '☾']).default('♠'),
+  avatarImage: z
+    .string()
+    .max(8192)
+    .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/)
+    .optional(),
   frame: z.enum(['plain', 'red', 'gold']).default('plain'),
   accent: z
     .string()

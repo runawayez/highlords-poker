@@ -1,3 +1,4 @@
+import { Avatar } from './avatar.tsx';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
@@ -601,7 +602,7 @@ function App() {
                 aria-label={prefs.profile.nickname || t('profile')}
                 onClick={() => setProfileOpen(true)}
               >
-                <span style={{ color: prefs.profile.accent }}>{prefs.profile.avatar}</span>
+                <Avatar profile={prefs.profile} />
                 <span>{prefs.profile.nickname || t('profile')}</span>
               </button>
             </div>
@@ -760,7 +761,10 @@ function App() {
                           <article className={`room-card room-${r.mode.toLowerCase()}`} key={r.id}>
                             <div className="room-title-cell">
                               <span className="room-symbol" aria-hidden="true">
-                                {r.mode === 'CASH' ? '♠' : r.mode === 'SIT_AND_GO' ? '♜' : '♛'}
+                                <span className="room-mini-felt">
+                                  <i />
+                                  <i />
+                                </span>
                               </span>
                               <div className="room-info">
                                 <h3>
@@ -859,6 +863,28 @@ function App() {
                     </div>
                     <p className="lobby-retention">{t('lobby:retentionHint')}</p>
                   </section>
+                  <aside className="lobby-companion">
+                    <div className="lobby-side-card">
+                      <p className="eyebrow">HIGHLORDS POKER CLUB</p>
+                      <h2>{t('club:startTitle')}</h2>
+                      {['prepare', 'invite', 'play'].map((key, index) => (
+                        <div className="lobby-step" key={key}>
+                          <b>{index + 1}</b>
+                          <div>
+                            <strong>{t(`club:${key}Title`)}</strong>
+                            <p>{t(`club:${key}Body`)}</p>
+                          </div>
+                        </div>
+                      ))}
+                      <button className="text-button" onClick={() => openLearning('guide')}>
+                        {t('learn:guideNav')} →
+                      </button>
+                    </div>
+                    <div className="lobby-side-note">
+                      <img src="/highlords-torch.png" alt="" />
+                      <p>{t('virtual')}</p>
+                    </div>
+                  </aside>
                 </div>
               )}
             </>
@@ -1043,6 +1069,7 @@ function App() {
                         ) : (
                           <PokerTable
                             snapshot={snapshot}
+                            selfProfile={prefs.profile}
                             table={table}
                             bestFive={
                               coach && table?.hand

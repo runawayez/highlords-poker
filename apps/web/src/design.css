@@ -1,2 +1,4 @@
-/* One system for the club, lobby and table. No legacy cascade. */
+/* Shared layout foundation and the Highlords club visual treatment. */
 @import './interface.css';
+
+@import './premium.css';

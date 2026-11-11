@@ -1,0 +1,913 @@
+/* Highlords Club: portraits, tactile cards and a single action hierarchy. */
+:root {
+  --red: #e62d46;
+  --red-deep: #a90925;
+  --muted: #b0a7b1;
+}
+body {
+  background: #09090c;
+}
+button {
+  border-color: #ffffff25;
+  box-shadow: inset 0 1px #ffffff08;
+}
+button.primary {
+  background: linear-gradient(180deg, #ed354d, #b9102d);
+  border-color: #f84c61;
+  box-shadow:
+    inset 0 1px #ffb1bc45,
+    0 4px 12px #8b001d25;
+}
+button.primary:hover:not(:disabled) {
+  background: linear-gradient(#ff4860, #d41b37);
+  border-color: #ff8696;
+}
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #ff8798;
+  outline-offset: 3px;
+}
+.brand {
+  font-family: Georgia, serif;
+  letter-spacing: 1.7px;
+  font-size: 22px;
+}
+.brand small {
+  font-family: Arial, sans-serif;
+  font-size: 8px;
+}
+.portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 35%;
+  background: #27151e;
+}
+.profile-trigger > .portrait {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ba5b6a;
+}
+.avatar-preview {
+  width: 92px;
+  height: 92px;
+  padding: 3px;
+  margin: 0 auto 20px;
+  border: 2px solid #e63c57;
+  border-radius: 50%;
+  box-shadow: 0 0 28px #d21e3533;
+}
+.avatar-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.avatar-options button {
+  width: 64px;
+  height: 64px;
+  padding: 3px;
+  border-radius: 50%;
+  background: #1c131b;
+}
+.avatar-options button[aria-pressed='true'] {
+  border: 2px solid #ff4e6a;
+  box-shadow: 0 0 0 3px #e62d4622;
+}
+.portrait-picker {
+  margin-block: 16px;
+}
+.photo-upload {
+  position: relative;
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #9d5261;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-top: 16px;
+  background: #2a1922;
+  color: #ffb4c0;
+  font-size: 12px;
+  cursor: pointer;
+}
+.photo-upload input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.photo-upload:focus-within {
+  outline: 2px solid #ff8798;
+  outline-offset: 3px;
+}
+.photo-hint {
+  max-width: 50ch;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 10px 0;
+}
+.quick-profile-avatar,
+.roster-avatar {
+  padding: 0;
+  overflow: hidden;
+}
+.message-heading > .portrait {
+  width: 28px;
+  height: 28px;
+  margin-right: 8px;
+  flex: none;
+}
+.message-heading {
+  justify-content: start;
+}
+.message-heading time {
+  margin-left: auto;
+}
+.art-player > span {
+  padding: 0;
+  overflow: hidden;
+}
+.club-art {
+  border-color: #633341;
+  background: linear-gradient(135deg, #27101b, #100e13);
+  box-shadow:
+    0 20px 60px #0007,
+    inset 0 1px #ffffff12;
+}
+.mini-table {
+  background: radial-gradient(ellipse at 50% 30%, #8a1834, #410b1c);
+  box-shadow:
+    inset 0 0 35px #15020c,
+    0 0 0 8px #141116,
+    0 18px 35px #0008;
+  border-color: #4d2835;
+}
+.hero h1 {
+  letter-spacing: -2px;
+}
+.hero-actions button {
+  font-size: 14px;
+  min-height: 52px;
+}
+.club-lobby-heading {
+  position: relative;
+  padding: 28px 30px;
+  margin: 28px 0;
+  border: 1px solid #6f34424d;
+  border-radius: 14px;
+  background:
+    linear-gradient(90deg, #180e15ee, #200c18a8),
+    url('/lounge.webp') center 45% / cover;
+}
+.club-lobby-heading h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(28px, 3.1vw, 46px);
+  letter-spacing: -1px;
+}
+.club-lobby-heading > .primary {
+  flex: none;
+  font-size: 14px;
+  padding: 14px 24px;
+}
+.lobby-layout-premium {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 24px;
+  align-items: start;
+}
+.lobby-layout-premium .rooms {
+  min-width: 0;
+}
+.lobby-companion {
+  display: grid;
+  gap: 18px;
+}
+.lobby-side-card {
+  border: 1px solid #5b3541;
+  border-radius: 13px;
+  padding: 24px 20px;
+  background: linear-gradient(145deg, #27151e, #100e13);
+}
+.lobby-side-card h2 {
+  font-family: Georgia, serif;
+  font-size: 25px;
+  margin: 12px 0 25px;
+}
+.lobby-step {
+  display: flex;
+  gap: 12px;
+  margin: 22px 0;
+}
+.lobby-step > b {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  background: linear-gradient(#d82c45, #751325);
+  font-size: 14px;
+}
+.lobby-step strong {
+  font-size: 13px;
+}
+.lobby-step p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.lobby-side-card > .text-button {
+  color: #ff7189;
+  padding: 10px 0;
+}
+.lobby-side-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  color: #c8b3bd;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.lobby-side-note img {
+  width: 30px;
+  height: 38px;
+  object-fit: contain;
+}
+.lobby-table {
+  border-color: #51313c;
+  background: linear-gradient(135deg, #1d1219, #0e0d12);
+  border-radius: 12px;
+}
+.lobby-table-head {
+  background: #2c1d25;
+  color: #ded5dc;
+  font-size: 11px;
+}
+.room-card {
+  min-height: 106px;
+  background: transparent;
+}
+.room-card:hover {
+  background: #64213224;
+}
+.room-info h3 {
+  font-size: 14px;
+}
+.room-presence {
+  font-size: 10px;
+}
+.room-symbol {
+  width: 70px;
+  height: 48px;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.room-mini-felt {
+  position: relative;
+  display: block;
+  width: 66px;
+  height: 35px;
+  border: 5px solid #33202a;
+  border-radius: 50%;
+  background: radial-gradient(#9a2745, #420b21);
+  box-shadow:
+    0 6px 8px #0008,
+    inset 0 0 0 1px #bb5c7240;
+}
+.room-mini-felt i {
+  position: absolute;
+  width: 10px;
+  height: 15px;
+  top: 5px;
+  left: 20px;
+  background: #eee5e5;
+  border-radius: 2px;
+  transform: rotate(-12deg);
+}
+.room-mini-felt i + i {
+  left: 29px;
+  transform: rotate(12deg);
+  background: #ead2d9;
+}
+.room-occupancy i.occupied {
+  background: #ed4964;
+  box-shadow: 0 0 5px #ed496430;
+}
+.room-buttons .primary {
+  min-width: 82px;
+  min-height: 38px;
+  font-size: 12px;
+}
+.club-room .room-heading {
+  background: linear-gradient(#171217, #09090d);
+  border-color: #6c354544;
+}
+.room-heading:before {
+  content: '';
+  display: block;
+  width: 30px;
+  height: 40px;
+  flex: none;
+  background: url('/highlords-torch.png') center/contain no-repeat;
+}
+.club-room .game-stage {
+  background:
+    linear-gradient(#08070be8, #08070bcc),
+    url('/lounge.webp') center/cover;
+}
+.poker-table {
+  border-color: #1a151a;
+  background: radial-gradient(ellipse at 50% 35%, #981638 0%, #6a102c 53%, #310c1b 100%);
+  box-shadow:
+    inset 0 0 0 2px #b8415e50,
+    inset 0 0 60px #190009bb,
+    0 0 0 2px #49303b,
+    0 0 0 9px #1b141c,
+    0 0 0 11px #65414e70,
+    0 22px 32px #000a;
+}
+.poker-table:before {
+  opacity: 0.12;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.55' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.felt-border {
+  border-color: #e593a527;
+}
+.table-watermark {
+  color: #f0b5c22b;
+  font-family: Georgia, serif;
+  letter-spacing: 5px;
+}
+.table-watermark small {
+  color: #f2c4d45c;
+}
+.playing-card {
+  border-color: #eee1dd;
+  border-radius: 6px;
+  background: linear-gradient(145deg, #fffef8, #e5dedb);
+  color: #1f2029;
+  box-shadow:
+    0 4px 6px #0005,
+    inset 0 0 0 1px #fff8;
+}
+.red-card {
+  color: #c51b3c;
+}
+.card-back {
+  border: 2px solid #e7c4cd;
+  background: repeating-linear-gradient(45deg, #8d1534 0 2px, #5e0d25 2px 5px);
+  box-shadow: 0 3px 7px #0007;
+}
+.card-back > span {
+  color: #ead7df;
+  font-size: 15px;
+}
+.pot {
+  width: max-content;
+  margin: 0 auto 15px;
+  background: #260b18bb;
+  border: 1px solid #c54a6544;
+  border-radius: 40px;
+  padding: 8px 20px;
+  font-size: 11px;
+  color: #f0c9d3;
+}
+.pot strong {
+  font-size: 29px;
+}
+.chip-stack {
+  width: 43px;
+  height: 32px;
+}
+.chip-stack i {
+  width: 32px;
+  height: 15px;
+  border-width: 4px;
+  background: #d82443;
+  box-shadow:
+    0 2px 0 #68051c,
+    0 4px 0 #df3a53,
+    0 5px 0 #6c071f;
+}
+.chip-stack i:nth-child(2) {
+  left: 14px;
+  bottom: 4px;
+}
+.chip-stack i:nth-child(3) {
+  bottom: 13px;
+  background: #c41d3b;
+  border-color: #f3e2e6;
+}
+.tiny-chip {
+  width: 16px;
+  height: 13px;
+  border: 3px dashed #eee;
+  background: #d31f41;
+  box-shadow:
+    0 2px #68061b,
+    0 4px #c42340;
+}
+.seat-profile {
+  background: linear-gradient(#292229, #09090d);
+  border-color: #a37a885c;
+  box-shadow:
+    0 5px 10px #0008,
+    inset 0 1px #ffffff16;
+  padding-left: 43px;
+  min-height: 57px;
+  border-radius: 10px;
+}
+.seat-avatar {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  left: -17px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 2px solid #b198a2;
+  box-shadow:
+    0 0 0 3px #110d12,
+    0 5px 10px #0007;
+  overflow: hidden;
+}
+.seat-identity strong {
+  font-size: 11px;
+  color: #fff;
+  font-weight: 750;
+}
+.seat-identity small {
+  font-size: 14px;
+  margin-top: 4px;
+}
+.seat.self .seat-profile {
+  background: linear-gradient(#3c1926, #160d15);
+  border-color: #ca4c67;
+}
+.seat.acting .seat-avatar {
+  border-color: #ff385f;
+  box-shadow:
+    0 0 0 3px #a20b31,
+    0 0 18px #ed234f88;
+}
+.seat.acting .seat-profile {
+  border-color: #ed3658;
+  box-shadow:
+    inset 0 1px #ffffff20,
+    0 0 20px #e72a4b30;
+}
+.seat-status {
+  width: max-content;
+  max-width: 100%;
+  padding: 4px 10px;
+  margin: 5px auto 0;
+  border-radius: 20px;
+  background: #181218e8;
+  border: 1px solid #7b53603d;
+  color: #d1bbc6;
+  font-size: 9px;
+}
+.seat-timer {
+  height: 4px;
+  margin-inline: 7px;
+  background: #33101e;
+}
+.seat-timer i {
+  background: #ff3358;
+}
+.turn-indicator {
+  border: 1px solid #9d3450;
+  background: linear-gradient(#3c1022, #160c14);
+  color: #e5b8c6;
+  font-size: 11px;
+}
+.turn-indicator.your-turn {
+  background: linear-gradient(#e82d4d, #920e2e);
+  color: white;
+  box-shadow: 0 0 20px #f52d5733;
+}
+.club-room .decision-zone {
+  border-color: #8e5a6c50;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #201720, #0b0b10);
+  box-shadow:
+    0 -5px 30px #0007,
+    inset 0 1px #ffffff12;
+}
+.club-room .decision-dock {
+  padding: 9px 18px;
+}
+.decision-summary > strong {
+  color: #fff;
+  font-size: 13px;
+}
+.club-room .current-hand {
+  font-size: 11px;
+  color: #e2bac7;
+}
+.club-room .action-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 10px 18px 14px;
+  gap: 10px 12px;
+}
+.club-room .action-context {
+  display: none;
+}
+.club-room .raise-controls {
+  grid-column: 1/-1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 8px 14px;
+  align-items: center;
+}
+.club-room .raise-controls > label {
+  grid-column: 1;
+  grid-row: 1;
+}
+.club-room .raise-controls .bet-shortcuts {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+}
+.club-room .raise-controls > input[type='range'] {
+  grid-column: 1/-1;
+  grid-row: 2;
+  margin: 2px 0;
+  width: 100%;
+  accent-color: #f63359;
+}
+.club-room .raise-controls input[type='number'] {
+  background: #0c0b10;
+  border-color: #74616c;
+  border-radius: 8px;
+  min-height: 45px;
+  height: 45px;
+  font-size: 15px;
+}
+.club-room .raise-label {
+  font-size: 8px;
+  top: 5px;
+}
+.club-room .bet-shortcuts button {
+  background: linear-gradient(#2b2730, #131118);
+  border-color: #65545e;
+  min-height: 36px;
+  font-size: 11px;
+}
+.club-room .action-buttons {
+  grid-column: 1/3;
+  grid-row: 2;
+  display: flex;
+  gap: 12px;
+}
+.club-room .action-buttons button,
+.club-room .raise-submit {
+  min-height: 55px;
+  font-size: 16px;
+  font-weight: 750;
+  border-radius: 10px;
+  padding: 10px;
+}
+.club-room .raise-submit {
+  grid-column: 3;
+  grid-row: 2;
+}
+.club-room .action-buttons .fold {
+  background: linear-gradient(#302a32, #121016);
+  border-color: #76616d;
+  color: #efdae3;
+}
+.club-room .action-buttons .call {
+  background: linear-gradient(#5a6070, #363a49);
+  border-color: #8d94a5;
+  box-shadow: inset 0 1px #ffffff28;
+  color: white;
+}
+.club-room .action-bar:not(:has(.raise-controls)) .action-buttons {
+  grid-column: 1/-1;
+}
+.club-room .table-chat-dock {
+  background: linear-gradient(145deg, #1b121b, #0d0c11);
+  border-color: #69445455;
+}
+.table-chat-topline {
+  padding: 20px 18px;
+}
+.table-chat-topline strong {
+  font-size: 14px;
+}
+.table-chat-dock .chat-form {
+  padding: 14px;
+}
+.chat-form input {
+  background: #18131d;
+  border-color: #715565;
+  border-radius: 9px;
+}
+.roster-avatar {
+  width: 38px;
+  height: 38px;
+}
+@media (max-width: 1200px) {
+  .lobby-layout-premium {
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 16px;
+  }
+  .seat-profile {
+    padding-left: 34px;
+  }
+  .seat-avatar {
+    width: 44px;
+    height: 44px;
+    left: -12px;
+  }
+  .seat-identity strong {
+    font-size: 9px;
+  }
+  .seat-identity small {
+    font-size: 12px;
+  }
+  .club-room .action-buttons button,
+  .club-room .raise-submit {
+    font-size: 14px;
+  }
+}
+@media (max-width: 950px) {
+  .lobby-layout-premium {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lobby-companion {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lobby-side-card {
+    padding: 20px;
+  }
+  .seat-profile {
+    padding-left: 28px;
+  }
+  .seat-avatar {
+    width: 38px;
+    height: 38px;
+    left: -12px;
+  }
+  .seat-identity small {
+    font-size: 11px;
+  }
+  .room-heading:before {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .brand {
+    font-size: 15px;
+  }
+  .profile-trigger > .portrait {
+    width: 27px;
+    height: 27px;
+  }
+  .avatar-options button {
+    width: 57px;
+    height: 57px;
+  }
+  .club-lobby-heading {
+    padding: 22px 18px;
+    margin: 18px 0;
+    gap: 18px;
+  }
+  .club-lobby-heading h1 {
+    font-size: 29px;
+  }
+  .club-lobby-heading .primary {
+    width: 100%;
+    font-size: 13px;
+  }
+  .lobby-companion {
+    grid-template-columns: 1fr;
+  }
+  .lobby-side-note {
+    display: none;
+  }
+  .lobby-side-card {
+    padding: 20px;
+  }
+  .lobby-side-card h2 {
+    font-size: 22px;
+  }
+  .room-symbol {
+    width: 55px;
+  }
+  .room-mini-felt {
+    transform: scale(0.8);
+    transform-origin: left center;
+  }
+  .room-info h3 {
+    font-size: 14px;
+  }
+  .room-card {
+    min-height: 125px;
+  }
+  .seat-profile {
+    padding: 5px 5px 5px 27px;
+    min-height: 44px;
+  }
+  .seat-avatar {
+    width: 36px;
+    height: 36px;
+    left: -10px;
+  }
+  .seat-identity strong {
+    font-size: 8px;
+  }
+  .seat-identity small {
+    font-size: 10px;
+  }
+  .seat-status {
+    padding: 3px 6px;
+    font-size: 7px;
+  }
+  .turn-indicator {
+    font-size: 9px;
+  }
+  .pot {
+    padding: 5px 12px;
+    margin-bottom: 10px;
+    font-size: 9px;
+    gap: 7px;
+  }
+  .pot strong {
+    font-size: 22px;
+  }
+  .chip-stack {
+    transform: scale(0.8);
+    width: 33px;
+    height: 26px;
+  }
+  .club-room .decision-dock {
+    padding: 8px 10px;
+  }
+  .club-room .current-hand {
+    font-size: 9px;
+  }
+  .club-room .action-bar {
+    padding: 8px 10px 10px;
+    gap: 8px;
+  }
+  .club-room .raise-controls {
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 6px;
+  }
+  .club-room .bet-shortcuts button {
+    font-size: 9px;
+    padding: 5px;
+    min-height: 33px;
+  }
+  .club-room .action-buttons {
+    gap: 8px;
+  }
+  .club-room .action-buttons button,
+  .club-room .raise-submit {
+    min-height: 49px;
+    font-size: 12px;
+    padding: 7px 5px;
+  }
+  .club-room .action-placeholder {
+    min-height: 128px;
+  }
+  .table-chat-topline {
+    padding: 12px 14px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .club-room .decision-dock {
+    padding: 4px 10px;
+  }
+  .club-room .action-bar {
+    padding: 5px 10px;
+    gap: 5px 8px;
+  }
+  .club-room .raise-controls {
+    grid-template-columns: 90px 1fr 1fr;
+    gap: 6px;
+  }
+  .club-room .raise-controls > input[type='range'] {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .club-room .bet-shortcuts button {
+    min-height: 30px;
+    font-size: 9px;
+    padding: 4px;
+  }
+  .club-room .bet-shortcuts button:nth-child(3) {
+    display: none;
+  }
+  .club-room .raise-controls input[type='number'] {
+    min-height: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+  .club-room .raise-label {
+    font-size: 7px;
+    top: 3px;
+  }
+  .club-room .action-buttons button,
+  .club-room .raise-submit {
+    min-height: 38px;
+    font-size: 12px;
+    padding: 6px;
+  }
+  .club-room .seat-profile {
+    padding-left: 26px;
+    min-height: 34px;
+  }
+  .club-room .seat-avatar {
+    width: 33px;
+    height: 33px;
+    left: -10px;
+  }
+  .club-room .pot {
+    padding: 3px 10px;
+    margin-bottom: 8px;
+  }
+  .club-room .pot strong {
+    font-size: 19px;
+  }
+  .club-room .action-placeholder {
+    min-height: 76px;
+    padding: 12px;
+  }
+}
+@media (min-width: 1201px) and (min-height: 501px) {
+  .club-room .seat {
+    width: 158px;
+  }
+  .club-room .seat-profile {
+    min-height: 65px;
+    padding-left: 54px;
+  }
+  .club-room .seat-avatar {
+    width: 70px;
+    height: 70px;
+    left: -24px;
+    border-width: 3px;
+  }
+  .club-room .seat-identity strong {
+    font-size: 12px;
+  }
+  .club-room .seat-identity small {
+    font-size: 16px;
+  }
+  .club-room .community .playing-card {
+    width: 62px;
+    height: 88px;
+  }
+  .club-room .own-hand .playing-card {
+    width: 59px;
+    height: 83px;
+  }
+}
+/* Portrait tables use the available height before scaling; preserve readable width. */
+.club-room .scene-viewport {
+  container-type: size;
+}
+@media (max-width: 700px) and (orientation: portrait) {
+  .club-room .table-shell,
+  .club-room .table-shell:has(.own-hand) {
+    height: clamp(300px, calc(100cqh - 55px), 520px);
+  }
+}
+@media (max-width: 700px) and (orientation: portrait) {
+  .club-room .table-center {
+    top: 38%;
+  }
+  .club-room .own-hand {
+    top: 66%;
+  }
+  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) {
+    height: clamp(360px, calc(100cqh - 55px), 560px);
+  }
+  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .table-center {
+    top: 43%;
+  }
+  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .own-hand {
+    top: 72%;
+  }
+}
+.seat.folded {
+  opacity: 0.68;
+}
+.club-room .action-placeholder {
+  min-height: 64px;
+  display: grid;
+  place-items: center;
+}
