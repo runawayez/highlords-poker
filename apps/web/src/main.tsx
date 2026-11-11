@@ -841,27 +841,6 @@ function App() {
                       </div>
                     </div>
                   </section>
-                  {homeScreen === 'lobby' && (
-                    <aside className="lobby-aside">
-                      <div className="lobby-aside-crest" aria-hidden="true">
-                        ♠
-                      </div>
-                      <p className="eyebrow">HIGHLORDS POKER CLUB</p>
-                      <h2>{t('club:goodCompany')}</h2>
-                      <p>{t('club:lobbyIntro')}</p>
-                      <div className="lobby-aside-divider" />
-                      <strong>{t('learn:guideNav')}</strong>
-                      <button onClick={() => openLearning('guide')}>
-                        {t('learn:guideNav')} <span>↗</span>
-                      </button>
-                      <button onClick={() => openLearning('hands')}>
-                        {t('learn:handsNav')} <span>↗</span>
-                      </button>
-                      <button onClick={() => openLearning('help')}>
-                        {t('learn:helpNav')} <span>↗</span>
-                      </button>
-                    </aside>
-                  )}
                 </div>
               )}
               {homeScreen === 'home' && <ClubFeatures onLearn={() => openLearning('guide')} />}

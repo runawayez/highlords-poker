@@ -1130,8 +1130,10 @@
   border-radius: 8px;
 }
 .club-theme.view-lobby .lobby-layout-premium {
-  grid-template-columns: minmax(0, 1fr) minmax(230px, 270px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
+  border-top: 0;
+  padding-top: 0;
 }
 .club-theme.view-lobby .lobby-layout-premium .rooms {
   padding: clamp(16px, 2vw, 24px);
@@ -1247,6 +1249,24 @@
   border-radius: 12px;
   background: #17141a;
   border-color: #342a33;
+}
+.club-theme.view-lobby .lobby-table .empty-state {
+  min-height: 150px;
+  padding: 26px 16px;
+  border: 0;
+  border-radius: 0;
+  background: #111015;
+}
+.club-theme.view-lobby .lobby-table .empty-state > span {
+  font-size: 27px;
+}
+.club-theme.view-lobby .lobby-table .empty-state h3 {
+  margin: 7px 0 3px;
+  font-size: 14px;
+}
+.club-theme.view-lobby .lobby-table .empty-state p {
+  color: #9b8e96;
+  font-size: 12px;
 }
 
 .club-theme.in-room .room-heading {

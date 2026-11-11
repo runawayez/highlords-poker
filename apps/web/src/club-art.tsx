@@ -18,7 +18,6 @@ export function Knight({ color = '#c3ac7e' }: { color?: string }) {
 }
 
 export function ClubArtwork() {
-  const { t } = useTranslation();
   return (
     <div className="club-art" aria-hidden="true">
       <div className="mini-table">
@@ -29,15 +28,6 @@ export function ClubArtwork() {
         </div>
         <span className="mini-mark">HIGHLORDS ♠</span>
       </div>
-      <div className="art-badge">
-        <span className="art-chip gold" />
-        <div>
-          <small>{t('club:privateClub')}</small>
-          <b>{t('club:goodCompany')}</b>
-          <span>Highlords Poker Club</span>
-        </div>
-      </div>
-      <span className="art-caption">TEXAS HOLD’EM · NO LIMIT · HIGHLORDS</span>
     </div>
   );
 }
