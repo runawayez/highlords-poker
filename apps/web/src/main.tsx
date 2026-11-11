@@ -644,12 +644,24 @@ function App() {
                       <em>{t('club:heroSecond')}</em>
                     </h1>
                     <p className="hero-intro">{t('lobby:intro')}</p>
-                    <button className="primary" disabled={busy} onClick={() => setCreateOpen(true)}>
-                      ＋ {t('lobby:createRoom')} <span>↗</span>
-                    </button>
-                    <button className="hero-find text-button" onClick={openLobby}>
-                      {t('club:findTable')} <span aria-hidden="true">→</span>
-                    </button>
+                    <div className="hero-actions">
+                      <button
+                        className="primary"
+                        disabled={busy}
+                        onClick={() => setCreateOpen(true)}
+                      >
+                        <span>{t('lobby:createRoom')}</span>
+                        <svg aria-hidden="true" viewBox="0 0 20 20">
+                          <path d="M6 14 14 6M6.5 6H14v7.5" />
+                        </svg>
+                      </button>
+                      <button className="hero-find" onClick={openLobby}>
+                        <span>{t('club:findTable')}</span>
+                        <svg aria-hidden="true" viewBox="0 0 20 20">
+                          <path d="M3.5 10h12M10 4.5l5.5 5.5-5.5 5.5" />
+                        </svg>
+                      </button>
+                    </div>
                     <div className="hero-trust">
                       <span>♠</span> {t('lobby:stats')}
                     </div>

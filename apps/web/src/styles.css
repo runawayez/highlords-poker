@@ -85,6 +85,11 @@ textarea {
 input::placeholder {
   color: #758394;
 }
+/* Keep native option menus readable even when a dark color scheme is active. */
+select option {
+  color: #211b20;
+  background-color: #fbf8f6;
+}
 input[type='checkbox'] {
   width: auto;
   accent-color: var(--red);
