@@ -1754,3 +1754,49 @@
     grid-column: auto;
   }
 }
+
+/* Let the club canvas use the device width; keep padding fluid instead of
+   centering the whole experience in a narrow desktop-width column. */
+#root,
+.club-theme {
+  width: 100%;
+  min-width: 0;
+}
+#root {
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+.club-theme:not(.in-room) > .header {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+.club-theme:not(.in-room) > main {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: clamp(16px, 4vw, 72px);
+}
+.club-theme.view-home .club-features {
+  width: 100%;
+  max-width: none;
+}
+.club-theme.in-room {
+  max-width: none;
+  margin-inline: 0;
+}
+.club-theme.in-room > main,
+.club-theme.in-room .club-room,
+.club-theme.in-room .game-layout {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+@media (max-width: 600px) {
+  .club-theme:not(.in-room) > main {
+    padding-inline: 16px;
+  }
+  .club-theme.in-room .room-heading {
+    padding-inline: 10px;
+  }
+}
