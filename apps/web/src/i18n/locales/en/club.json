@@ -30,5 +30,13 @@
   "invite": "Invite friends",
   "tablePreview": "YOUR NEXT POKER NIGHT",
   "previewNote": "Friends at the table. Good stories in the chat.",
-  "botSeat": "Bot"
+  "botSeat": "Bot",
+  "startTitle": "Get started",
+  "prepareTitle": "Create a table",
+  "prepareBody": "Choose your format and blinds.",
+  "inviteTitle": "Send an invite",
+  "inviteBody": "Share the link with your friends.",
+  "playTitle": "Play with friends",
+  "playBody": "Take your seat and enjoy the game.",
+  "resumeTitle": "Back to your table?"
 }

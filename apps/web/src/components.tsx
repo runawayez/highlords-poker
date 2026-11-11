@@ -1,3 +1,4 @@
+import { Avatar, AvatarPicker } from './avatar.tsx';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -106,7 +107,9 @@ export function QuickProfile({
     <section className="quick-profile">
       <div className="quick-profile-heading">{t('profile:playingAs')}</div>
       <div className="quick-profile-summary">
-        <span className="quick-profile-avatar">{value.avatar}</span>
+        <span className="quick-profile-avatar">
+          <Avatar profile={value} />
+        </span>
         <div className="quick-profile-name">
           <strong>{value.nickname}</strong>
           <small>{t('profile:guestHint')}</small>
@@ -132,22 +135,7 @@ export function QuickProfile({
               onChange={(e) => onChange({ ...value, nickname: e.target.value })}
             />
           </label>
-          <fieldset>
-            <legend>{t('profile:avatar')}</legend>
-            <div className="quick-profile-symbols">
-              {(['♠', '♣', '♦', '♥', '☠', '♜', '⚔', '☾'] as const).map((avatar) => (
-                <button
-                  key={avatar}
-                  type="button"
-                  aria-label={avatar}
-                  aria-pressed={value.avatar === avatar}
-                  onClick={() => onChange({ ...value, avatar })}
-                >
-                  {avatar}
-                </button>
-              ))}
-            </div>
-          </fieldset>
+          <AvatarPicker value={value} onChange={onChange} />
         </div>
       )}
     </section>
@@ -224,7 +212,9 @@ export function ProfileEditor({
           onSave({ ...value, profile: ProfileSchema.parse(profile) });
         }}
       >
-        <div className="avatar-preview">{profile.avatar}</div>
+        <div className="avatar-preview">
+          <Avatar profile={profile} />
+        </div>
         <label>
           {t('profile:nickname')}
           <input
@@ -244,21 +234,7 @@ export function ProfileEditor({
             onChange={(e) => set('accent', e.target.value)}
           />
         </label>
-        <fieldset>
-          <legend>{t('profile:avatar')}</legend>
-          <div className="avatar-options">
-            {['♠', '♣', '♦', '♥', '☠', '♜', '⚔', '☾'].map((a) => (
-              <button
-                type="button"
-                aria-pressed={profile.avatar === a}
-                key={a}
-                onClick={() => set('avatar', a)}
-              >
-                {a}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        <AvatarPicker value={profile} onChange={setProfile} />
         <button disabled={busy} className="primary">
           {t('save')}
         </button>
@@ -799,7 +775,7 @@ export function Chat({
               <>
                 <div className="message-heading">
                   <span style={{ color: m.profile?.accent }}>
-                    {m.profile?.avatar} <strong>{m.profile?.nickname ?? '—'}</strong>
+                    <Avatar profile={m.profile} /> <strong>{m.profile?.nickname ?? '—'}</strong>
                   </span>
                   <time>
                     {new Intl.DateTimeFormat(i18n.language, {
@@ -865,6 +841,7 @@ export function ActionBar({
 }) {
   const { t, i18n } = useTranslation();
   const num = (n: number) => new Intl.NumberFormat(i18n.language).format(n);
+  const actionFormId = React.useId();
   const opts = table.hand!.legal;
   const [amount, setAmount] = useState(opts.min);
   useEffect(() => setAmount(Math.min(opts.min, opts.max)), [opts.min, opts.max, table.hand?.actor]);
@@ -917,6 +894,7 @@ export function ActionBar({
       {(opts.actions.includes('RAISE') || opts.actions.includes('BET')) && (
         <form
           className="raise-controls"
+          id={actionFormId}
           onSubmit={(e) => {
             e.preventDefault();
             void onAction(table.hand!.currentBet === 0 ? 'BET' : 'RAISE', amount);
@@ -963,7 +941,7 @@ export function ActionBar({
                 type="button"
                 disabled={busy}
                 className="all-in-shortcut"
-                onClick={() => void onAction('ALL_IN')}
+                onClick={() => setAmount(opts.max)}
               >
                 {t('game:ALL_IN')}
               </button>
@@ -977,12 +955,14 @@ export function ActionBar({
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
           />
-          <button className="primary" disabled={busy}>
-            {t(table.hand!.currentBet === 0 ? 'learn:betAmount' : 'learn:raiseAmount', {
-              amount: num(amount),
-            })}
-          </button>
         </form>
+      )}
+      {(opts.actions.includes('RAISE') || opts.actions.includes('BET')) && (
+        <button className="primary raise-submit" form={actionFormId} disabled={busy}>
+          {t(table.hand!.currentBet === 0 ? 'learn:betAmount' : 'learn:raiseAmount', {
+            amount: num(amount),
+          })}
+        </button>
       )}
     </div>
   );

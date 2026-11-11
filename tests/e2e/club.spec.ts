@@ -791,8 +791,18 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
         expect(controls!.x + controls!.width).toBeLessThanOrEqual(width);
         await expect(page.locator('.action-buttons')).toBeInViewport({ ratio: 0.999 });
         await expect(page.locator('.raise-controls')).toBeInViewport({ ratio: 0.999 });
+        await expect(page.locator('.raise-submit')).toBeInViewport({ ratio: 0.999 });
+        const buttons = await page.locator('.action-buttons').boundingBox();
+        const raise = await page.locator('.raise-submit').boundingBox();
+        expect(Math.abs(buttons!.y - raise!.y)).toBeLessThan(1);
+        expect(raise!.x).toBeGreaterThanOrEqual(buttons!.x + buttons!.width);
         await expect(page.locator('.own-hand')).toBeInViewport({ ratio: 0.999 });
         await expect(page.locator('.table-center')).toBeInViewport({ ratio: 0.999 });
+        const board = await page.locator('.community').boundingBox();
+        const ownCards = await page.locator('.own-hand').boundingBox();
+        const selfProfile = await page.locator('.seat.self .seat-profile').boundingBox();
+        expect(board!.y + board!.height).toBeLessThanOrEqual(ownCards!.y);
+        expect(ownCards!.y + ownCards!.height).toBeLessThanOrEqual(selfProfile!.y);
         const visibleControls = await page.locator('.raise-controls').boundingBox();
         expect(visibleControls!.y + visibleControls!.height).toBeLessThanOrEqual(height);
         expect(
@@ -971,3 +981,50 @@ for (const width of [1440, 390]) {
     }
   });
 }
+
+test('portrait selection and personal photo survive reload and can be removed', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('.profile-trigger .portrait')).toHaveAttribute(
+    'src',
+    /\/avatars\/avatar-[1-4]\.webp$/,
+  );
+  await page.locator('.profile-trigger').click();
+  await page.getByRole('button', { name: 'Avatar 3', exact: true }).click();
+  await page.getByRole('button', { name: 'Salvar', exact: true }).click();
+  await page.reload();
+  await expect(page.locator('.profile-trigger .portrait')).toHaveAttribute(
+    'src',
+    '/avatars/avatar-3.webp',
+  );
+  await page.locator('.profile-trigger').click();
+  await page
+    .getByLabel('Enviar minha foto', { exact: true })
+    .setInputFiles('apps/web/public/avatars/avatar-1.webp');
+  await expect(page.locator('.avatar-preview .portrait')).toHaveAttribute(
+    'src',
+    /^data:image\/jpeg;base64,/,
+  );
+  await page.getByRole('button', { name: 'Salvar', exact: true }).click();
+  await page.reload();
+  await expect(page.locator('.profile-trigger .portrait')).toHaveAttribute(
+    'src',
+    /^data:image\/jpeg;base64,/,
+  );
+  const image = await page.locator('.profile-trigger .portrait').getAttribute('src');
+  expect(image!.length).toBeLessThanOrEqual(8192);
+  await openCreate(page);
+  await finishCreate(page);
+  await expect(page.locator('.seat.self .portrait')).toHaveAttribute('src', image!);
+  await page.getByRole('button', { name: 'Gerenciar sala', exact: true }).click();
+  await closePanel(page);
+  await page.locator('.room-options summary').click();
+  await page.getByRole('button', { name: 'Meu perfil', exact: true }).click();
+  await page.getByRole('button', { name: 'Remover minha foto', exact: true }).click();
+  await page.getByRole('button', { name: 'Salvar', exact: true }).click();
+  await expect(page.locator('.seat.self .portrait')).toHaveAttribute(
+    'src',
+    '/avatars/avatar-3.webp',
+  );
+});

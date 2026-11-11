@@ -30,5 +30,13 @@
   "invite": "Convidar amigos",
   "tablePreview": "SUA PRÓXIMA NOITE DE POKER",
   "previewNote": "Amigos à mesa. Boas histórias no chat.",
-  "botSeat": "Bot"
+  "botSeat": "Bot",
+  "startTitle": "Como começar",
+  "prepareTitle": "Crie uma mesa",
+  "prepareBody": "Escolha o formato e os blinds.",
+  "inviteTitle": "Envie o convite",
+  "inviteBody": "Compartilhe o link com a galera.",
+  "playTitle": "Jogue com amigos",
+  "playBody": "Sente à mesa e aproveite a partida.",
+  "resumeTitle": "De volta à mesa?"
 }

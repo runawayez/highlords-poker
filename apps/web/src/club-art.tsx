@@ -1,3 +1,4 @@
+import { Avatar } from './avatar.tsx';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from './card.tsx';
@@ -39,19 +40,25 @@ export function ClubArtwork() {
           </div>
         </div>
         <div className="art-player art-player-top">
-          <span>♜</span>
+          <span>
+            <Avatar profile={{ avatar: '♠' }} />
+          </span>
           <div>
             HIGH LORD<small>5.000</small>
           </div>
         </div>
         <div className="art-player art-player-left">
-          <span>♠</span>
+          <span>
+            <Avatar profile={{ avatar: '♣' }} />
+          </span>
           <div>
             THE KNIGHT<small>4.750</small>
           </div>
         </div>
         <div className="art-player art-player-right">
-          <span>♦</span>
+          <span>
+            <Avatar profile={{ avatar: '♥' }} />
+          </span>
           <div>
             CRIMSON<small>6.250</small>
           </div>
@@ -61,7 +68,9 @@ export function ClubArtwork() {
           <Card card="Ad" />
         </div>
         <div className="art-player art-player-self">
-          <span>♞</span>
+          <span>
+            <Avatar profile={{ avatar: '♦' }} />
+          </span>
           <div>
             HIGHLORD<small>5.000</small>
           </div>

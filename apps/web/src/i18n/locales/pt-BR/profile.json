@@ -1,7 +1,7 @@
 {
   "title": "Sua presença à mesa.",
   "nickname": "Como te chamamos?",
-  "avatar": "Escolha seu símbolo",
+  "avatar": "Escolha seu avatar",
   "accent": "Sua cor",
   "appearanceTitle": "Aparência da mesa",
   "appearanceShort": "Aparência da mesa",
@@ -18,5 +18,10 @@
   "guestHint": "Perfil de convidado · sem cadastro",
   "editQuick": "Editar",
   "done": "Concluir",
-  "invalidQuick": "Use um apelido de 2 a 24 caracteres, sem símbolos especiais."
+  "invalidQuick": "Use um apelido de 2 a 24 caracteres, sem símbolos especiais.",
+  "portrait": "Avatar {{number}}",
+  "upload": "Enviar minha foto",
+  "photoHint": "Salva neste navegador. Uma miniatura é compartilhada com a sala durante o jogo. JPG, PNG ou WebP, até 10 MB.",
+  "photoError": "Não foi possível abrir a imagem. Use JPG, PNG ou WebP de até 10 MB.",
+  "removePhoto": "Remover minha foto"
 }
