@@ -55,5 +55,18 @@
   "recent": "Recent tables",
   "filters": "Filter tables",
   "filterAll": "All",
-  "filterOpen": "Open seats"
+  "filterOpen": "Open seats",
+  "botPace": "Bot speed",
+  "pace_CALM": "Calm (best for learning)",
+  "pace_NORMAL": "Normal",
+  "pace_FAST": "Fast",
+  "ante": "Ante (cash)",
+  "anteNone": "No ante",
+  "antePercent": "{{percent}}% of the big blind",
+  "straddle": "Allow straddle (3+ players)",
+  "filterStakes": "Blinds",
+  "stakes_ALL": "All blinds",
+  "stakes_LOW": "Low (up to 20)",
+  "stakes_MID": "Mid (21–100)",
+  "stakes_HIGH": "High (100+)"
 }

@@ -23,6 +23,12 @@ export type Hand = {
   done: boolean;
   showdown: boolean;
   awards: Record<string, number>;
+  /** Segundo tabuleiro quando a mão foi decidida em duas rodadas (run it twice). */
+  board2?: Card[];
+  /** Quem aceitou decidir um all-in em duas rodadas. */
+  twice: string[];
+  /** Jogador que pagou o straddle (blind extra do under the gun), se houve. */
+  straddler: string | null;
   log: { player: string; action: string; amount: number; street: number }[];
 };
 export class RuleError extends Error {
@@ -144,6 +150,7 @@ function finish(h: Hand) {
   h.done = true;
   h.actor = null;
   const levels = [...new Set(h.players.map((p) => p.total).filter(Boolean))].sort((a, b) => a - b);
+  const boards = h.board2 ? [h.board, h.board2] : [h.board];
   let prev = 0;
   for (const level of levels) {
     const contributors = h.players.filter((p) => p.total >= level);
@@ -151,26 +158,40 @@ function finish(h: Hand) {
     prev = level;
     let eligible = contributors.filter((p) => !p.folded);
     if (!eligible.length) eligible = contributors;
-    let winners = eligible;
-    if (eligible.length > 1) {
-      let best: number[] = [];
-      winners = [];
-      for (const p of eligible) {
-        const s = evaluate([...p.cards, ...h.board]);
-        const c = compare(s, best);
-        if (c > 0) {
-          best = s;
-          winners = [p];
-        } else if (c === 0) winners.push(p);
+    // Em duas rodadas cada tabuleiro vale metade do pote; a ficha ímpar fica com o primeiro.
+    boards.forEach((board, run) => {
+      const share = Math.floor(amount / boards.length) + (run < amount % boards.length ? 1 : 0);
+      let winners = eligible;
+      if (eligible.length > 1) {
+        let best: number[] = [];
+        winners = [];
+        for (const p of eligible) {
+          const s = evaluate([...p.cards, ...board]);
+          const c = compare(s, best);
+          if (c > 0) {
+            best = s;
+            winners = [p];
+          } else if (c === 0) winners.push(p);
+        }
       }
-    }
-    const order = clockwise(h, h.button).filter((p) => winners.some((w) => w.id === p.id));
-    order.forEach((p, i) => {
-      const prize = Math.floor(amount / order.length) + (i < amount % order.length ? 1 : 0);
-      p.stack += prize;
-      h.awards[p.id] = (h.awards[p.id] ?? 0) + prize;
+      const order = clockwise(h, h.button).filter((p) => winners.some((w) => w.id === p.id));
+      order.forEach((p, i) => {
+        const prize = Math.floor(share / order.length) + (i < share % order.length ? 1 : 0);
+        p.stack += prize;
+        h.awards[p.id] = (h.awards[p.id] ?? 0) + prize;
+      });
     });
   }
+}
+/** Completa um tabuleiro com queima antes de cada rua, sem mexer na mão. */
+function runout(board: Card[], cards: Card[]) {
+  const out = [...board];
+  const rest = [...cards];
+  while (out.length < 5) {
+    rest.pop();
+    for (let n = out.length === 0 ? 3 : 1; n > 0; n--) out.push(rest.pop()!);
+  }
+  return { board: out, rest };
 }
 function progress(h: Hand, after: number) {
   const live = h.players.filter((p) => !p.folded);
@@ -185,6 +206,17 @@ function progress(h: Hand, after: number) {
     return;
   }
   if (h.street === 3) {
+    finish(h);
+    return;
+  }
+  // All-in sem mais apostas: se todos aceitaram, o pote é decidido em dois tabuleiros.
+  if (active.length < 2 && h.twice.length && live.every((p) => h.twice.includes(p.id))) {
+    const first = runout(h.board, h.deck);
+    const second = runout(h.board, first.rest);
+    h.board = first.board;
+    h.board2 = second.board;
+    h.deck = second.rest;
+    h.street = 3;
     finish(h);
     return;
   }
@@ -211,6 +243,7 @@ export function startHand(
   ante = 0,
   cards = shuffle(),
   id = crypto.randomUUID(),
+  options: { straddle?: boolean; twice?: string[] } = {},
 ): Hand {
   demand(seats.length >= 2 && seats.length <= 9, 'NEED_PLAYERS');
   demand(
@@ -256,6 +289,8 @@ export function startHand(
     done: false,
     showdown: false,
     awards: {},
+    twice: [...(options.twice ?? [])],
+    straddler: null,
     log: [],
   };
   const order = clockwise(h, button);
@@ -265,7 +300,16 @@ export function startHand(
   const bb = clockwise(h, sb.seat)[0];
   pay(sb, smallBlind);
   pay(bb, bigBlind);
-  progress(h, bb.seat);
+  let last = bb;
+  // Straddle: o under the gun posta o dobro do big blind e é o último a falar antes do flop.
+  if (options.straddle && seats.length >= 3) {
+    const straddler = clockwise(h, bb.seat)[0];
+    pay(straddler, bigBlind * 2);
+    h.straddler = straddler.id;
+    h.currentBet = Math.max(bigBlind, straddler.bet);
+    last = straddler;
+  }
+  progress(h, last.seat);
   return h;
 }
 export function legal(h: Hand, id: string) {
@@ -317,6 +361,8 @@ export function publicHand(h: Hand, id?: string) {
   return {
     id: h.id,
     board: h.board,
+    board2: h.board2,
+    straddler: h.straddler,
     button: h.button,
     street: h.street,
     actor: h.actor,

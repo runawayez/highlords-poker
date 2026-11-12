@@ -28,5 +28,11 @@
   "size_m": "Normal",
   "size_l": "Large",
   "size_xl": "Largest",
-  "contrast": "High contrast"
+  "contrast": "High contrast",
+  "runTwice": "Accept running it twice",
+  "runTwiceNote": "When everyone is all-in and agrees, the rest of the deck is dealt twice and the pot is split.",
+  "cardSize": "Card size",
+  "cards_s": "Small",
+  "cards_m": "Medium",
+  "cards_l": "Large"
 }

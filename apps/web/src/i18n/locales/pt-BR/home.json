@@ -55,5 +55,18 @@
   "recent": "Mesas recentes",
   "filters": "Filtrar mesas",
   "filterAll": "Todas",
-  "filterOpen": "Com vaga"
+  "filterOpen": "Com vaga",
+  "botPace": "Ritmo dos bots",
+  "pace_CALM": "Calmo (ideal para aprender)",
+  "pace_NORMAL": "Normal",
+  "pace_FAST": "Rápido",
+  "ante": "Ante (cash)",
+  "anteNone": "Sem ante",
+  "antePercent": "{{percent}}% do big blind",
+  "straddle": "Permitir straddle (3+ jogadores)",
+  "filterStakes": "Blinds",
+  "stakes_ALL": "Todos os blinds",
+  "stakes_LOW": "Baixos (até 20)",
+  "stakes_MID": "Médios (21–100)",
+  "stakes_HIGH": "Altos (100+)"
 }

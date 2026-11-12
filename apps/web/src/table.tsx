@@ -22,9 +22,14 @@ export const useNumber = () => {
 /** Cadeira `rel` (0 = eu, embaixo) no oval; retorna % do palco. */
 function seatPosition(rel: number, count: number, tall: boolean) {
   const angle = Math.PI / 2 + (2 * Math.PI * rel) / count;
-  const rx = tall ? 40 : 42;
-  const ry = tall ? 37 : 32;
-  return { x: 50 + rx * Math.cos(angle), y: 50 + ry * Math.sin(angle) };
+  const rx = tall ? 41 : 42;
+  const ry = tall ? 38 : 32;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  // Em pé a mesa é um "estádio" (superelipse): os assentos ocupam os cantos e o centro sobra para o pote.
+  const curve = tall ? 0.75 : 1;
+  const bend = (v: number) => Math.sign(v) * Math.abs(v) ** curve;
+  return { x: 50 + rx * bend(cos), y: 50 + ry * bend(sin) };
 }
 
 function useTall() {
@@ -167,6 +172,7 @@ function Seat({
         acting && 'acting',
         player.folded && 'folded',
         award > 0 && 'winner',
+        allIn && 'allin',
         (player.sitOut || !player.online) && 'away',
         !player.inHand && 'idle',
       ]
@@ -220,6 +226,11 @@ function Seat({
           </span>
         )}
         {player.bot && <span className="bot-tag">BOT</span>}
+        {hand?.straddler === player.id && (
+          <span className="straddle-tag" title={t('game:straddle')}>
+            S
+          </span>
+        )}
       </button>
       <div className="plate">
         <strong>{isMe ? t('game:you') : player.nickname}</strong>
@@ -331,7 +342,7 @@ export function Table({
   );
   // No showdown, destaca as cinco cartas da mão vencedora e apaga o resto da mesa.
   const highlight = useMemo(() => {
-    if (!hand?.done || !hand.showdown || hand.board.length < 5) return null;
+    if (!hand?.done || !hand.showdown || hand.board.length < 5 || hand.board2) return null;
     const board = new Set<string>();
     const perPlayer: Record<string, Set<string>> = {};
     for (const [id, amount] of Object.entries(hand.awards)) {
@@ -378,6 +389,14 @@ export function Table({
             ),
           )}
         </div>
+        {hand?.board2 && (
+          <div className="board board-second" aria-label={t('game:secondBoard')}>
+            <small>{t('game:secondBoard')}</small>
+            {hand.board2.map((card) => (
+              <Card key={card} card={card} className="board-card" />
+            ))}
+          </div>
+        )}
         {winners.length > 0 && (
           <div className="banner" key={hand?.id} role="status">
             {winners.slice(0, 2).map((w) => (
@@ -408,6 +427,23 @@ export function Table({
           </div>
         )}
       </div>
+
+      {hand?.done &&
+        Object.entries(hand.awards).map(([id, amount]) => {
+          const winner = amount > 0 ? state.players.find((p) => p.id === id) : undefined;
+          if (!winner) return null;
+          const { x, y } = seatPosition((winner.seat - base + count) % count, count, tall);
+          return (
+            <span
+              key={`award-${hand.id}-${id}`}
+              className="award"
+              aria-hidden
+              style={{ ['--x' as string]: `${x}%`, ['--y' as string]: `${y}%` }}
+            >
+              <Chips amount={Math.min(amount, 1500)} />
+            </span>
+          );
+        })}
 
       {Array.from({ length: count }, (_, seat) => {
         const rel = (seat - base + count) % count;
@@ -594,6 +630,18 @@ export function ActionBar({
     [prefs.coach, inPlay, hand?.board.length, holeKey],
   );
   const advice = equity !== null && myTurn ? adviseAction(equity, toCall, pot) : null;
+
+  // Dica didática sobre o último agressor, quando é um bot de estilo conhecido.
+  const botHint = useMemo(() => {
+    if (!prefs.coach || !myTurn || toCall <= 0 || !hand) return null;
+    const lastRaise = [...hand.log]
+      .reverse()
+      .find((e) => e.action === 'BET' || e.action === 'RAISE' || e.action === 'ALL_IN');
+    const aggressor = lastRaise && state.players.find((p) => p.id === lastRaise.player);
+    return aggressor?.bot && aggressor.botStyle && aggressor.id !== state.me
+      ? { name: aggressor.nickname, style: aggressor.botStyle }
+      : null;
+  }, [prefs.coach, myTurn, toCall, hand, state.players, state.me]);
 
   const coachLine = useMemo(() => {
     if (!prefs.coach || !me || !hand || me.cards.length !== 2 || me.folded) return null;
@@ -784,6 +832,11 @@ export function ActionBar({
           {outs !== null && outs > 0 && (
             <span className="coach-stat" title={t('game:outsHint')}>
               {t('game:outs', { count: outs })}
+            </span>
+          )}
+          {botHint && (
+            <span className="coach">
+              {t(`game:botHint_${botHint.style}`, { name: botHint.name })}
             </span>
           )}
           {advice && (

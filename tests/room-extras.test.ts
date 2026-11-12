@@ -142,3 +142,59 @@ describe('perfil e bots', () => {
     expect(bot.botStyle).toBe('AGGRESSIVE');
   });
 });
+
+describe('ante, straddle, ritmo dos bots e run it twice', () => {
+  it('o ante do cash é cobrado de todos e o pote o inclui', () => {
+    const { room } = headsUp({ ante: 5 });
+    const hand = room.state.hand!;
+    expect(hand.players.every((p) => p.total >= 5)).toBe(true);
+    expect(room.view('host', T0 + 2100, new Set(['host', 'p2'])).level.ante).toBe(5);
+  });
+
+  it('o straddle da sala vale quando há 3 ou mais jogadores', () => {
+    const { room, online } = headsUp({ straddle: true });
+    // Com 2 jogadores não há straddle.
+    expect(room.state.hand!.straddler).toBeNull();
+    room.admit('p3', { nickname: 'Beto', avatar: 'a3' }, T0);
+    room.command('p3', { type: 'SIT' }, T0 + 2100);
+    online.add('p3');
+    // Termina a mão atual e espera a próxima com 3 jogadores.
+    const actor = room.state.hand!.actor!;
+    room.command(actor, { type: 'ACT', action: 'FOLD' }, T0 + 2200);
+    room.tick(T0 + 20_000, online);
+    expect(room.state.hand!.players).toHaveLength(3);
+    expect(room.state.hand!.straddler).toBeTruthy();
+  });
+
+  it('o ritmo CALM deixa o bot mais lento que o FAST', () => {
+    const delay = (botPace: 'CALM' | 'FAST') => {
+      const { room, online } = headsUp({ botPace });
+      room.command('host', { type: 'ADD_BOT', difficulty: 'EASY' }, T0 + 2100);
+      const bot = room.state.players.find((p) => p.bot)!;
+      // Termina a mão em andamento e começa uma onde o bot age.
+      let now = T0 + 3000;
+      for (let i = 0; i < 60 && !room.state.botAt; i++) {
+        const hand = room.state.hand;
+        if (hand && !hand.done && hand.actor && hand.actor !== bot.id)
+          room.command(hand.actor, { type: 'ACT', action: 'FOLD' }, now);
+        now += 8000;
+        room.tick(now, online);
+      }
+      return room.state.botAt - (now - 0);
+    };
+    const calm = delay('CALM');
+    const fast = delay('FAST');
+    expect(calm).toBeGreaterThanOrEqual(1500);
+    expect(calm).toBeLessThan(3000);
+    expect(fast).toBeGreaterThanOrEqual(300);
+    expect(fast).toBeLessThan(700);
+  });
+
+  it('o jogador aceita run it twice e o bot sempre aceita', () => {
+    const { room, online } = headsUp();
+    room.command('host', { type: 'RUN_TWICE', value: true }, T0 + 2100);
+    expect(room.view('host', T0 + 2100, online).players.find((p) => p.id === 'host')!.twice).toBe(
+      true,
+    );
+  });
+});

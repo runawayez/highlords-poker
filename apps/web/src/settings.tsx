@@ -105,6 +105,15 @@ export function SettingsModal({
               send?.({ type: 'SHOWDOWN', mode: muck ? 'MUCK' : 'SHOW' });
             }}
           />
+          <Toggle
+            label={t('settings:runTwice')}
+            note={t('settings:runTwiceNote')}
+            checked={prefs.runTwice}
+            onChange={(runTwice) => {
+              set({ runTwice });
+              send?.({ type: 'RUN_TWICE', value: runTwice });
+            }}
+          />
           {onTour && (
             <button
               type="button"
@@ -179,6 +188,19 @@ export function SettingsModal({
                 onClick={() => set({ textSize: size })}
               >
                 {t(`settings:size_${size}`)}
+              </button>
+            ))}
+          </div>
+          <div className="option-row" role="radiogroup" aria-label={t('settings:cardSize')}>
+            {(['s', 'm', 'l'] as const).map((size) => (
+              <button
+                key={size}
+                type="button"
+                role="radio"
+                aria-checked={prefs.cardSize === size}
+                onClick={() => set({ cardSize: size })}
+              >
+                {t(`settings:cards_${size}`)}
               </button>
             ))}
           </div>

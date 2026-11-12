@@ -33,6 +33,14 @@ export function ReplayModal({
           ) : (
             <p className="empty-note">{t('game:replayNoBoard')}</p>
           )}
+          {hand.board2 && (
+            <>
+              <small>{t('game:secondBoard')}</small>
+              {hand.board2.map((card) => (
+                <Card key={`b2-${card}`} card={card} className="mini" />
+              ))}
+            </>
+          )}
           <span className="replay-pot">
             {t('game:pot')} {format(hand.pot)}
           </span>

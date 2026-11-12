@@ -17,7 +17,8 @@ Fichas 100% virtuais — não há dinheiro real, depósitos ou prêmios.
 - **Perfil sem conta:** retrato, emblema ou foto, cor da moldura e estatísticas só no seu navegador, editáveis a qualquer momento.
 - **Para quem está aprendendo:** modo treino com chance de vitória, pot odds, outs e sugestão; passo a passo na primeira mesa; bots com estilos de jogo (fechado, solto, agressivo).
 - **Para quem já joga:** tempo extra (time bank), mostrar ou esconder cartas no showdown, rever mãos, HUD opcional dos adversários e atalhos de teclado (F, C, R, T e 1 a 6).
-- **Aparência:** temas de mesa, versos de carta, naipes em 4 cores, tamanho de texto e alto contraste. Instalável como app (PWA).
+- **Mais regras de mesa:** ante e straddle no cash, rodar duas vezes quando todos estão all-in, ritmo dos bots (calmo, normal, rápido) e QR code para convidar pelo celular.
+- **Aparência:** temas de mesa, versos de carta, naipes em 4 cores, tamanho de texto e das cartas e alto contraste. Instalável como app (PWA).
 - **Chat, emotes, sons e animações** de cartas, fichas e vitórias. Funciona no celular e no computador.
 - **Aprender:** guia de como jogar, ranking de mãos, ajuda e regras da casa (português e inglês), além de uma dica opcional da sua mão atual.
 

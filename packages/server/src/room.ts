@@ -39,6 +39,8 @@ export type Seated = {
   bank?: number;
   /** Prefere esconder as cartas ao perder no showdown. */
   muck?: boolean;
+  /** Aceita decidir all-ins em dois tabuleiros (run it twice). */
+  twice?: boolean;
   /** Nome e retrato dos bots; humanos usam `members`. */
   botProfile?: Profile;
 };
@@ -56,6 +58,7 @@ export type HandSummary = {
   at: number;
   pot: number;
   board: string[];
+  board2?: string[];
   winners: { id: string; nickname: string; amount: number; category?: number }[];
   /** Jogadores da mão; as cartas só aparecem para quem as mostrou no showdown. */
   players?: { id: string; nickname: string; seat: number; folded: boolean; cards: string[] }[];
@@ -313,6 +316,11 @@ export class RoomEngine {
         me.muck = msg.mode === 'MUCK';
         break;
       }
+      case 'RUN_TWICE': {
+        demand(me, 'INVALID_ACTION');
+        me.twice = msg.value;
+        break;
+      }
       case 'SHOW': {
         const h = s.hand;
         demand(me && h?.done && h.players.some((p) => p.id === id), 'INVALID_ACTION');
@@ -518,6 +526,7 @@ export class RoomEngine {
       at: now,
       pot: winners.reduce((sum, w) => sum + w.amount, 0),
       board: [...h.board],
+      board2: h.board2 ? [...h.board2] : undefined,
       winners,
       players: h.players.map((hp) => ({
         id: hp.id,
@@ -604,6 +613,13 @@ export class RoomEngine {
       level.small,
       level.big,
       level.ante,
+      undefined,
+      undefined,
+      {
+        straddle: !!s.config.straddle,
+        // Os bots sempre topam; os humanos escolhem nos ajustes.
+        twice: seats.filter((p) => p.bot || p.twice).map((p) => p.id),
+      },
     );
     s.handNo++;
     for (const p of s.players) p.bank = Math.min(TIME_BANK_CAP, (p.bank ?? TIME_BANK_START) + 5000);
@@ -614,6 +630,14 @@ export class RoomEngine {
       p.stack = hp.stack;
     }
     if (s.hand.done) this.afterAction(now);
+  }
+
+  /** Tempo de "pensar" do bot, conforme o ritmo escolhido na sala. */
+  private botDelay() {
+    const [base, spread] = { CALM: [1500, 1500], NORMAL: [700, 900], FAST: [300, 400] }[
+      this.state.config.botPace ?? 'NORMAL'
+    ];
+    return base + Math.floor(Math.random() * spread);
   }
 
   /** Avança o relógio: timeouts, bots, próxima mão, pausas e limpeza. */
@@ -677,7 +701,7 @@ export class RoomEngine {
       const p = s.players.find((x) => x.id === actorId)!;
       if (p.bot) {
         if (!s.botAt) {
-          s.botAt = now + 700 + Math.floor(Math.random() * 900);
+          s.botAt = now + this.botDelay();
           this.touch();
         }
         if (now < s.botAt) return;
@@ -790,6 +814,7 @@ export class RoomEngine {
         botStyle: p.botStyle,
         bank: p.bank ?? TIME_BANK_START,
         muck: !!p.muck,
+        twice: !!p.twice,
         /** As cartas desta mão estão à mostra para a mesa (showdown ou revelação voluntária). */
         shown:
           !!h?.done &&
@@ -825,6 +850,8 @@ export class RoomEngine {
         ? {
             id: pub.id,
             board: pub.board,
+            board2: pub.board2,
+            straddler: pub.straddler,
             street: pub.street,
             actor: pub.actor,
             done: pub.done,

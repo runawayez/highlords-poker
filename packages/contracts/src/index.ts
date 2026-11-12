@@ -63,8 +63,14 @@ export const ConfigSchema = z
     /** Minutos por nível de blinds (apenas Sit & Go). */
     levelMinutes: z.number().int().min(1).max(30).default(5),
     isPublic: z.boolean().default(true),
+    /** Ante por jogador em cash game (no Sit & Go o ante segue a tabela de níveis). */
+    ante: z.number().int().min(0).max(10_000_000).default(0),
+    /** Straddle automático: o under the gun posta o dobro do big blind antes das cartas. */
+    straddle: z.boolean().default(false),
+    /** Ritmo dos bots: calmo para quem está aprendendo, rápido para quem quer volume. */
+    botPace: z.enum(['CALM', 'NORMAL', 'FAST']).default('NORMAL'),
   })
-  .refine((c) => c.small <= c.big, 'Blinds inválidos');
+  .refine((c) => c.small <= c.big && c.ante <= c.big, 'Blinds inválidos');
 export type Config = z.infer<typeof ConfigSchema>;
 export type PublicConfig = Omit<Config, 'password'>;
 
@@ -110,6 +116,8 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('TIME_BANK') }),
   /** Preferência no showdown: mostrar as cartas ao perder ou escondê-las (muck). */
   z.object({ type: z.literal('SHOWDOWN'), mode: z.enum(['SHOW', 'MUCK']) }),
+  /** Aceita decidir os all-ins em dois tabuleiros (só vale se todos no all-in aceitarem). */
+  z.object({ type: z.literal('RUN_TWICE'), value: z.boolean() }),
   /** Mostra suas cartas depois que a mão acabou (mesmo se você desistiu). */
   z.object({ type: z.literal('SHOW') }),
   z.object({ type: z.literal('REMOVE_BOT'), id: z.string().max(40) }),
@@ -148,8 +156,12 @@ export function newRoomCode(): string {
 }
 
 /** Níveis de blinds do Sit & Go: dobram a cada dois níveis, com passos suaves. */
-export function blindLevel(config: Pick<PublicConfig, 'small' | 'big' | 'mode'>, index: number) {
-  if (config.mode === 'CASH') return { small: config.small, big: config.big, ante: 0, index: 0 };
+export function blindLevel(
+  config: Pick<PublicConfig, 'small' | 'big' | 'mode'> & { ante?: number },
+  index: number,
+) {
+  if (config.mode === 'CASH')
+    return { small: config.small, big: config.big, ante: config.ante ?? 0, index: 0 };
   const steps = [1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64];
   const factor = steps[Math.min(index, steps.length - 1)];
   const small = Math.max(1, Math.round(config.small * factor));

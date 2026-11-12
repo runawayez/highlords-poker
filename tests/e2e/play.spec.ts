@@ -76,10 +76,11 @@ test('o campo de senha mantém o foco enquanto se digita', async ({ browser, pag
 });
 
 test('cada assento tem no máximo duas cartas ao longo de várias mãos', async ({ page }) => {
+  test.setTimeout(120_000);
   await page.goto('/');
   await page.getByRole('button', { name: /Jogar contra bots/ }).click();
   await expect(page.locator('.seat.me .hole-card').first()).toBeVisible();
-  const deadline = Date.now() + 40_000;
+  const deadline = Date.now() + 90_000;
   const handsSeen = new Set<string>();
   while (Date.now() < deadline && handsSeen.size < 3) {
     const call = page.getByRole('button', { name: /Pagar|Passar/ });
