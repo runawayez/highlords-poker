@@ -1,8 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card } from './room-tools.tsx';
-import { rankExamples, visibleHand } from './poker-learning.ts';
-import type { Snapshot } from './api.ts';
+import { Card } from './card.tsx';
+import { rankExamples } from './poker-learning.ts';
 export type LearningKind = 'guide' | 'hands' | 'help';
 export type LearningSection = LearningKind | 'rules';
 const sections: LearningSection[] = ['guide', 'hands', 'rules', 'help'];
@@ -201,7 +200,7 @@ export function LearningPage({
           </button>
         </div>
       )}
-      <p className="lesson-note">{t('virtual')}</p>
+      <p className="lesson-note">{t('common:virtual')}</p>
     </article>
   );
 }
@@ -263,7 +262,7 @@ export function LearningCenter({
               tabs.current[next]?.focus();
             }}
           >
-            {key === 'rules' ? t('rules') : t(`learn:${key}Nav`)}
+            {key === 'rules' ? t('common:rules') : t(`learn:${key}Nav`)}
           </button>
         ))}
       </div>
@@ -277,10 +276,10 @@ export function LearningCenter({
       >
         {section === 'rules' ? (
           <section className="house-rules">
-            <h2 className="learning-title">{t('rules')}</h2>
-            <p className="rules-intro">{t('virtual')}</p>
+            <h2 className="learning-title">{t('common:rules')}</h2>
+            <p className="rules-intro">{t('common:virtual')}</p>
             <div className="house-rules-copy">
-              <p>{t('rulesText')}</p>
+              <p>{t('common:rulesText')}</p>
             </div>
           </section>
         ) : (
@@ -288,151 +287,5 @@ export function LearningCenter({
         )}
       </div>
     </div>
-  );
-}
-
-export function DecisionDock({
-  snapshot,
-  table,
-  coach,
-  onCoach,
-  onRankings,
-}: {
-  snapshot: Snapshot;
-  table: Snapshot['tables'][number];
-  coach: boolean;
-  onCoach: () => void;
-  onRankings: () => void;
-}) {
-  const { t, i18n } = useTranslation();
-  const h = table.hand!;
-  const own = h.players.find((p) => p.id === snapshot.me);
-  if (!own || own.cards.length !== 2) return null;
-  const hand = visibleHand(own.cards, h.board);
-  const num = (n: number) => new Intl.NumberFormat(i18n.language).format(n);
-  return (
-    <section className="decision-dock" aria-label={t('learn:yourCards')}>
-      <div className="decision-summary">
-        <span className="badge">{t('learn:yourCards')}</span>
-        <strong>
-          {own.folded
-            ? t('game:folded')
-            : h.actor === snapshot.me && !h.done
-              ? t('game:yourTurn')
-              : t('learn:watchAction')}
-        </strong>
-        <small>
-          {t('game:stack')}: {num(own.stack)}
-        </small>
-        {coach && (
-          <p className="current-hand" role="status">
-            {hand
-              ? t('learn:currentHand', { hand: t(`learn:rank${hand.category}`) })
-              : t('learn:beforeFlop')}
-          </p>
-        )}
-      </div>
-      <div className="coach-controls">
-        <button aria-pressed={coach} onClick={onCoach}>
-          ? {t('learn:tableHelp')}
-        </button>
-        <button className="text-button" onClick={onRankings}>
-          {t('learn:handsNav')}
-        </button>
-      </div>
-      {coach && (
-        <details className="coach-explanation">
-          <summary>{t('club:tip')}</summary>
-          <p className="coach-tip">
-            {own.folded
-              ? t('learn:foldedTip')
-              : h.done
-                ? t('learn:handOverTip')
-                : h.actor === snapshot.me
-                  ? h.legal.call
-                    ? t('learn:callTip', { amount: num(h.legal.call) })
-                    : t('learn:checkTip')
-                  : t('learn:watchTip')}
-          </p>
-        </details>
-      )}
-    </section>
-  );
-}
-export function TournamentPresentation({
-  snapshot,
-  num,
-  finished = false,
-}: {
-  snapshot: Snapshot;
-  num: (n: number) => string;
-  finished?: boolean;
-}) {
-  const { t } = useTranslation();
-  if (snapshot.config.mode === 'CASH') return null;
-  const liveHands = snapshot.tables.flatMap((table) =>
-    table.hand && !table.hand.done ? [table.hand] : [],
-  );
-  const pending = new Set(liveHands.flatMap((hand) => hand.players.map((player) => player.id)));
-  const active = snapshot.players.filter((p) => !p.left && (p.stack > 0 || pending.has(p.id))),
-    next = snapshot.config.levels[snapshot.level.index + 1];
-  const chips =
-    snapshot.players.reduce((sum, p) => sum + p.stack, 0) +
-    liveHands.reduce((sum, hand) => sum + hand.pot, 0);
-  const ranked = [...snapshot.players].filter((p) => p.rank).sort((a, b) => a.rank! - b.rank!);
-  if (finished)
-    return (
-      <section className="tournament-finish">
-        <span className="trophy" aria-hidden>
-          ♛
-        </span>
-        <p className="eyebrow">{t('learn:tournamentComplete')}</p>
-        <h2>{t('learn:champion')}</h2>
-        <h3>{ranked[0]?.profile?.nickname ?? t('learn:noChampion')}</h3>
-        <p>{t('learn:finalResult')}</p>
-        <div className="podium">
-          {ranked.slice(0, 3).map((p) => (
-            <article key={p.id} data-rank={p.rank}>
-              <b>#{p.rank}</b>
-              <span style={{ color: p.profile?.accent }}>{p.profile?.avatar}</span>
-              <strong>{p.profile?.nickname}</strong>
-              <small>
-                {t('game:prize')}: {num(snapshot.payouts[p.id] ?? 0)}
-              </small>
-            </article>
-          ))}
-        </div>
-        <p>{t('learn:finalHint')}</p>
-      </section>
-    );
-  return (
-    <section className="tournament-overview" aria-label={t('learn:tournamentOverview')}>
-      <div>
-        <small>{t('learn:remaining')}</small>
-        <strong>
-          {active.length} / {snapshot.players.filter((p) => !p.left).length}
-        </strong>
-      </div>
-      <div>
-        <small>{t('learn:activeTables')}</small>
-        <strong>
-          {snapshot.tables.length || Math.ceil(active.length / snapshot.config.seats)}
-        </strong>
-      </div>
-      <div>
-        <small>{t('game:average')}</small>
-        <strong>{num(active.length ? Math.round(chips / active.length) : 0)}</strong>
-      </div>
-      <div>
-        <small>{t('learn:nextLevel')}</small>
-        <strong>{next ? `${num(next.small)} / ${num(next.big)}` : t('game:finalLevel')}</strong>
-      </div>
-      <p>
-        {snapshot.config.rebuy && snapshot.level.index <= snapshot.config.rebuyUntil
-          ? t('learn:rebuyOpen', { level: snapshot.config.rebuyUntil + 1 })
-          : t('learn:rebuyClosed')}{' '}
-        · {t('learn:addonAt', { level: snapshot.config.addOnLevel + 1 })}
-      </p>
-    </section>
   );
 }

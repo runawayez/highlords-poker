@@ -1,117 +1,173 @@
 /// <reference types="@cloudflare/workers-types" />
-import { PokerService, type State } from '../../../packages/server/src/service.ts';
-import { handleApi } from '../../../packages/server/src/http.ts';
+import { ROOM_CODE_PATTERN, type LobbyEntry } from '../../../packages/contracts/src/index.ts';
+import { handleApi, json, type Backend } from '../../../packages/server/src/api.ts';
+import { LobbyRegistry } from '../../../packages/server/src/lobby.ts';
+import { RoomRuntime, type RoomInit, type Socket } from '../../../packages/server/src/runtime.ts';
+import type { RoomState } from '../../../packages/server/src/room.ts';
+
 interface Env {
-  POKER: DurableObjectNamespace;
-  ALLOWED_ORIGINS: string;
-  MAX_ROOMS: string;
-  MAINTENANCE: string;
+  ROOMS: DurableObjectNamespace;
+  LOBBY: DurableObjectNamespace;
+  ASSETS: Fetcher;
 }
+
+const lobbyStub = (env: Env) => env.LOBBY.get(env.LOBBY.idFromName('main'));
+const roomStub = (env: Env, id: string) => env.ROOMS.get(env.ROOMS.idFromName(id));
+
+/** Um Worker serve o site e a API: mesmo domínio, sem CORS. */
 export default {
-  async fetch(request: Request, env: Env) {
-    const origin = request.headers.get('origin');
-    const allowed = (env.ALLOWED_ORIGINS ?? '').split(',');
-    if (origin && !allowed.includes(origin)) return new Response('Forbidden', { status: 403 });
-    const headers = {
-      'Access-Control-Allow-Origin': origin ?? allowed[0] ?? '',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      Vary: 'Origin',
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
+
+    const ws = url.pathname.match(/^\/api\/rooms\/([A-Za-z0-9]+)\/ws$/);
+    if (ws) {
+      const id = ws[1].toUpperCase();
+      if (!ROOM_CODE_PATTERN.test(id)) return json({ error: 'ROOM_NOT_FOUND' }, 404);
+      if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket')
+        return new Response(null, { status: 426 });
+      const origin = request.headers.get('origin');
+      if (origin && new URL(origin).host !== url.host) return new Response(null, { status: 403 });
+      return roomStub(env, id).fetch(new Request('https://room/ws', request));
+    }
+
+    const backend: Backend = {
+      async createRoom(id: string, init: RoomInit) {
+        const res = await roomStub(env, id).fetch('https://room/init', {
+          method: 'POST',
+          body: JSON.stringify({ id, init }),
+        });
+        return res.status === 201;
+      },
+      async roomInfo(id: string) {
+        const res = await roomStub(env, id).fetch('https://room/info');
+        return res.ok ? ((await res.json()) as LobbyEntry) : null;
+      },
+      async lobby() {
+        const res = await lobbyStub(env).fetch('https://lobby/list');
+        return (await res.json()) as LobbyEntry[];
+      },
     };
-    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
-    const response = await env.POKER.get(env.POKER.idFromName('highlords-v1')).fetch(request);
-    if (response.status === 101) return response;
-    const copy = new Response(response.body, response);
-    for (const [k, v] of Object.entries(headers)) copy.headers.set(k, v);
-    return copy;
+    return handleApi(request, backend, request.headers.get('CF-Connecting-IP') ?? 'unknown');
   },
 };
-/** One bounded coordinator provides atomic multi-table transfers and durable sessions. */
-export class PokerCoordinator {
-  private service: PokerService;
+
+/** Uma mesa por Durable Object: isolamento total entre salas. */
+export class PokerRoom {
+  private runtime: RoomRuntime;
   private ready: Promise<void>;
   constructor(
     private ctx: DurableObjectState,
     env: Env,
   ) {
-    this.service = new PokerService(
-      {
-        load: async () => (await ctx.storage.get<State>('state')) ?? null,
-        save: async (s) => {
-          await ctx.storage.put('state', s);
+    this.runtime = new RoomRuntime({
+      storage: {
+        load: async () => (await ctx.storage.get<RoomState>('state')) ?? null,
+        save: async (state) => {
+          await ctx.storage.put('state', state);
+        },
+        remove: async () => {
+          await ctx.storage.deleteAll();
         },
       },
-      { maxRooms: Number(env.MAX_ROOMS ?? 30), maintenance: env.MAINTENANCE === 'true' },
-    );
-    this.ready = ctx.blockConcurrencyWhile(async () => {
-      await this.service.init();
-      await ctx.storage.setAlarm(Date.now() + 5000);
+      hub: {
+        sockets: () =>
+          ctx.getWebSockets().map((socket) => ({
+            socket: socket as unknown as Socket,
+            id: (socket.deserializeAttachment() as { id?: string } | null)?.id,
+          })),
+        bind: (socket, id) => (socket as unknown as WebSocket).serializeAttachment({ id }),
+      },
+      scheduler: {
+        set: async (at) => {
+          if (at === null) await ctx.storage.deleteAlarm();
+          else await ctx.storage.setAlarm(at);
+        },
+      },
+      lobby: {
+        put: (entry) => {
+          ctx.waitUntil(
+            lobbyStub(env).fetch('https://lobby/put', {
+              method: 'POST',
+              body: JSON.stringify(entry),
+            }),
+          );
+        },
+        remove: (id) => {
+          ctx.waitUntil(
+            lobbyStub(env).fetch('https://lobby/remove', {
+              method: 'POST',
+              body: JSON.stringify({ id }),
+            }),
+          );
+        },
+      },
     });
+    ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', '{"type":"PONG"}'));
+    this.ready = ctx.blockConcurrencyWhile(() => this.runtime.load());
   }
-  async fetch(req: Request) {
+
+  async fetch(request: Request): Promise<Response> {
     await this.ready;
-    const url = new URL(req.url);
-    if (url.pathname === '/api/ws') {
-      if (req.headers.get('upgrade')?.toLowerCase() !== 'websocket')
-        return new Response(null, { status: 426 });
-      if (this.ctx.getWebSockets().length >= 300) return new Response(null, { status: 503 });
+    const url = new URL(request.url);
+    if (url.pathname === '/init' && request.method === 'POST') {
+      const { id, init } = (await request.json()) as { id: string; init: RoomInit };
+      return new Response(null, { status: (await this.runtime.create(id, init)) ? 201 : 409 });
+    }
+    if (url.pathname === '/info') {
+      const info = this.runtime.info();
+      return info ? json(info) : json({ error: 'ROOM_NOT_FOUND' }, 404);
+    }
+    if (url.pathname === '/ws') {
+      if (!this.runtime.engine) return json({ error: 'ROOM_NOT_FOUND' }, 404);
+      if (this.ctx.getWebSockets().length >= 60) return json({ error: 'CAPACITY' }, 503);
       const pair = new WebSocketPair();
       this.ctx.acceptWebSocket(pair[1]);
-      pair[1].serializeAttachment({ opened: Date.now() });
       return new Response(null, { status: 101, webSocket: pair[0] });
     }
-    const response = await handleApi(
-      this.service,
-      req,
-      req.headers.get('CF-Connecting-IP') ?? 'unknown',
-    );
-    if (req.method === 'POST' && response.ok) await this.ctx.storage.setAlarm(Date.now() + 5000);
-    return response;
+    return new Response(null, { status: 404 });
   }
   async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer) {
-    try {
-      if (typeof message !== 'string' || message.length > 16384) {
-        ws.close(1009);
-        return;
-      }
-      const m = JSON.parse(message);
-      if (m.type === 'AUTH') {
-        await this.service.heartbeat(m.token, typeof m.roomId === 'string' ? m.roomId : undefined);
-        ws.serializeAttachment({ token: m.token, roomId: m.roomId, opened: Date.now() });
-        await this.send(ws);
-      } else if (m.type === 'PING') {
-        const a = ws.deserializeAttachment();
-        if (a?.token) await this.service.heartbeat(a.token, a.roomId);
-      }
-    } catch {
-      ws.close(1008);
-    }
+    await this.ready;
+    await this.runtime.message(ws as unknown as Socket, message);
   }
-  async send(ws: WebSocket) {
-    const a = ws.deserializeAttachment();
-    if (!a?.token) {
-      if (Date.now() - a.opened > 5000) ws.close(1008);
-      return;
-    }
-    try {
-      const data = a.roomId
-        ? await this.service.snapshot(a.roomId, a.token)
-        : { rooms: this.service.lobby() };
-      ws.send(JSON.stringify({ type: 'SNAPSHOT', data }));
-    } catch {
-      ws.send(JSON.stringify({ type: 'REFRESH' }));
-    }
+  async webSocketClose(ws: WebSocket) {
+    await this.ready;
+    await this.runtime.close(ws as unknown as Socket);
+  }
+  async webSocketError(ws: WebSocket) {
+    await this.ready;
+    await this.runtime.close(ws as unknown as Socket);
   }
   async alarm() {
     await this.ready;
-    try {
-      await this.service.tick();
-      await Promise.all(this.ctx.getWebSockets().map((ws) => this.send(ws)));
-    } finally {
-      const active =
-        this.ctx.getWebSockets().length > 0 ||
-        this.service.state.rooms.some((r) => r.status === 'RUNNING');
-      await this.ctx.storage.setAlarm(Date.now() + (active ? 5000 : 60000));
+    await this.runtime.alarm();
+  }
+}
+
+/** Lista as salas públicas. Salas renovam a entrada a cada minuto enquanto têm gente. */
+export class Lobby {
+  private registry = new LobbyRegistry();
+  private ready: Promise<void>;
+  constructor(private ctx: DurableObjectState) {
+    this.ready = ctx.blockConcurrencyWhile(async () => {
+      this.registry = new LobbyRegistry((await ctx.storage.get<LobbyEntry[]>('entries')) ?? []);
+    });
+  }
+  async fetch(request: Request): Promise<Response> {
+    await this.ready;
+    const path = new URL(request.url).pathname;
+    if (path === '/list') return json(this.registry.list());
+    if (request.method === 'POST' && path === '/put') {
+      this.registry.put((await request.json()) as LobbyEntry);
+      await this.ctx.storage.put('entries', this.registry.snapshot());
+      return json({ ok: true });
     }
+    if (request.method === 'POST' && path === '/remove') {
+      this.registry.remove(((await request.json()) as { id: string }).id);
+      await this.ctx.storage.put('entries', this.registry.snapshot());
+      return json({ ok: true });
+    }
+    return new Response(null, { status: 404 });
   }
 }

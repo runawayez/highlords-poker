@@ -1,14 +1,21 @@
-# Ambiente de desenvolvimento
+# Desenvolvimento
 
-**Português** | [English — detailed reference](./development.en.md)
+Requisitos: Node 22.13+, pnpm 11.
 
-Para trabalhar no código, use Node.js 24 LTS e pnpm 11.25.0. Na raiz do repositório, execute:
-
-```sh
-pnpm install --frozen-lockfile
-pnpm dev
+```bash
+pnpm install
+pnpm dev        # http://localhost:5173 (Vite) com a API em http://localhost:3001
 ```
 
-Abra o endereço exibido pelo Vite. Use dois perfis de navegador para simular jogadores diferentes. A API local usa SQLite em `.data/poker.sqlite`. Execute apenas um processo por banco. Copie `.env.example` para `.env` para personalizar a configuração.
+O servidor local usa o mesmo `RoomRuntime` do Worker, com estado em memória. Para testar o Worker de verdade:
+`pnpm worker:dev` (compila o site e roda `wrangler dev`).
 
-A interface fica em `apps/web`, os servidores em `apps/local-server` e `apps/worker`, e as regras compartilhadas em `packages`.
+## Testes
+
+| Comando         | O que cobre                                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------------------- |
+| `pnpm test`     | Motor (incluindo fuzz de 3000 mãos), sala, bots, transporte WebSocket, i18n                               |
+| `pnpm test:e2e` | Fluxos no navegador (desktop e celular). Rode `pnpm build` antes; use `CI=1` para usar o Chrome instalado |
+| `pnpm check`    | typecheck + lint + testes + build                                                                         |
+
+Ao alterar o motor, o teste `tests/engine-fuzz.test.ts` precisa continuar verde (conservação de fichas, término, sigilo).

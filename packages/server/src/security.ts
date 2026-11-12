@@ -1,27 +1,21 @@
-export async function hash(value: string) {
+/** SHA-256 em hexadecimal. */
+export async function sha256(value: string) {
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))]
     .map((n) => n.toString(16).padStart(2, '0'))
     .join('');
 }
-export function secret() {
-  return [...crypto.getRandomValues(new Uint8Array(32))]
+/** O id público de um jogador é derivado da chave secreta; a chave nunca fica no servidor. */
+export async function playerIdFromKey(key: string) {
+  return (await sha256('player:' + key)).slice(0, 16);
+}
+export function newSalt() {
+  return [...crypto.getRandomValues(new Uint8Array(12))]
     .map((n) => n.toString(16).padStart(2, '0'))
     .join('');
 }
-export async function passwordHash(password: string, salt: string) {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(password),
-    'PBKDF2',
-    false,
-    ['deriveBits'],
-  );
-  const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: new TextEncoder().encode(salt), iterations: 100000, hash: 'SHA-256' },
-    key,
-    256,
-  );
-  return [...new Uint8Array(bits)].map((n) => n.toString(16).padStart(2, '0')).join('');
+/** Senha de sala é uma barreira social, não credencial: um hash salgado rápido basta e cabe no CPU grátis. */
+export function roomPasswordHash(password: string, salt: string) {
+  return sha256(`${salt}:${password}`);
 }
 export function equal(a: string, b: string) {
   let diff = a.length ^ b.length;

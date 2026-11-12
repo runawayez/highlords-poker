@@ -1,11 +1,40 @@
 # Arquitetura
 
-**Português** | [English — detailed reference](./architecture.en.md)
+## Visão geral
 
-O navegador envia comandos de jogo. O servidor valida a sessão, a cadeira, a vez e a versão da sala antes de aplicar cada comando. Cada mesa tem baralho, pote e relógio próprios. A resposta de cada jogador contém apenas as cartas que ele pode ver.
+```
+navegador ──HTTPS──► Worker ──┬─► Lobby (Durable Object único: lista de mesas públicas)
+    │                         └─► PokerRoom (um Durable Object por mesa)
+    └────WebSocket /api/rooms/:id/ws ─────────────┘
+```
 
-O coordenador processa uma alteração por vez e grava o resultado antes de confirmar a ação. Entre mãos, distribui os participantes pelas mesas do torneio em uma única transação. Se a gravação falhar, a versão anterior continua válida.
+- **Um Worker, um domínio.** Os assets do site (`apps/web/dist`) e `/api/*` saem do mesmo Worker. Sem CORS, sem segundo host.
+- **Uma mesa = um Durable Object.** Mesas são isoladas: nenhum estado global entre elas, nenhuma fila compartilhada.
+- **Servidor autoritativo.** `RoomEngine` aplica cada comando, valida a vez e envia a cada conexão a `view()` dela
+  (cartas alheias e baralho nunca saem antes do showdown).
+- **Sem contas.** O navegador gera uma chave secreta (`localStorage`). O servidor guarda apenas `sha256("player:"+chave)`
+  truncado como id do jogador.
 
-O perfil fica no navegador e pode ser editado a partir da home mesmo com o multiplayer indisponível. O lobby público lista salas. Cada conversa pertence a uma sala e exige participação nela.
+## Camadas
 
-A presença é registrada por sala, com detecção de ausência em até 60 segundos. Sem humanos, a partida pausa e a sala expira após 30 minutos de ausência. Bots e broadcasts do servidor não renovam o prazo. O resultado de torneio expira uma hora após o término, sem renovação por chat ou visitas. O anfitrião pode encerrar a sala com confirmação; sessões e outras salas continuam intactas. Os prazos também são verificados ao acessar a sala, mesmo antes da próxima rotina de limpeza.
+| Camada     | Arquivo                            | Responsabilidade                                                                  |
+| ---------- | ---------------------------------- | --------------------------------------------------------------------------------- |
+| Regras     | `packages/poker-engine`            | Mão de NLHE pura e determinística (recebe o baralho)                              |
+| Sala       | `packages/server/src/room.ts`      | Assentos, bots, relógio de vez, pausa, expiração, Sit & Go, chat, vistas          |
+| Runtime    | `packages/server/src/runtime.ts`   | Valida mensagens, persiste, transmite, agenda alarmes; independente de plataforma |
+| API        | `packages/server/src/api.ts`       | `POST /api/rooms`, `GET /api/lobby`, `GET /api/rooms/:id`                         |
+| Plataforma | `apps/worker`, `apps/local-server` | Cloudflare DO ou Node `ws`                                                        |
+
+## Ciclo de vida da mesa
+
+1. `POST /api/rooms` gera um código (6 caracteres sem 0/O/1/I) e inicializa o Durable Object.
+2. Cliente abre o WebSocket e envia `HELLO {key, profile, password?}`; recebe `STATE` a cada mudança.
+3. Cash: a mão começa sozinha com 2+ jogadores. Sit & Go: começa com a mesa cheia ou quando o anfitrião inicia.
+4. Tempo de vez esgotado: check/fold; dois seguidos colocam o jogador em pausa.
+5. Sem humanos conectados por 60 s a mesa pausa; após 30 min sem ninguém ela é apagada. Sit & Go encerrado some em 1 h.
+6. O Lobby só lista mesas públicas e esquece as que não renovam a entrada em 3 min.
+
+## Orçamento do plano gratuito
+
+Mensagens são pequenas, o estado é salvo uma vez por comando, bots limitam as simulações por decisão e a senha de sala usa
+SHA-256 salgado (barato) em vez de PBKDF2.
