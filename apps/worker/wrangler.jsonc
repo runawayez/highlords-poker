@@ -1,15 +1,21 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "highlords-poker-api",
+  "name": "highlords-poker",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-09",
   "workers_dev": true,
-  "vars": {
-    "ALLOWED_ORIGINS": "https://highlords-poker.vercel.app,https://highlords-poker-highlords.vercel.app",
-    "MAX_ROOMS": "30",
-    "MAINTENANCE": "false",
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
   },
-  "durable_objects": { "bindings": [{ "name": "POKER", "class_name": "PokerCoordinator" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PokerCoordinator"] }],
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOMS", "class_name": "PokerRoom" },
+      { "name": "LOBBY", "class_name": "Lobby" },
+    ],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PokerRoom", "Lobby"] }],
   "observability": { "enabled": false },
 }

@@ -1,81 +1,48 @@
 # Highlords Poker ♠
 
-**Português (Brasil)** | [English](README.en.md)
+**Poker com a galera, direto no navegador.** Texas Hold'em sem cadastro: escolha um nome, abra uma mesa e mande o link.
+Fichas 100% virtuais — não há dinheiro real, depósitos ou prêmios.
 
-**Poker com os amigos, direto pelo navegador.** O Highlords Poker é um site gratuito de Texas Hold'em, disponibilizado e mantido por [Matheus Martins (Berkas)](https://github.com/runawayez). Você escolhe um nickname, personaliza seu perfil e reúne a galera em uma mesa, sem cadastro ou instalação.
+## Como jogar
 
-### [Acessar o Highlords Poker →](https://highlords-poker.vercel.app)
+1. Abra o site, escolha seu nome e retrato.
+2. **Criar mesa** (ou **Jogar contra bots** para uma mesa pronta em um clique).
+3. Toque em **Convidar** para copiar o link. Quem abrir entra na hora e senta em uma cadeira vazia.
 
-> **Status:** multiplayer publicado e conectado. Criação de sala, partida com duas sessões independentes, chat e reconexão verificados no endereço público.
+- **Formatos:** cash game (entre e saia quando quiser, com recompra) e Sit & Go (uma mesa, blinds que sobem, até sobrar um).
+- **Bots** fáceis, médios e difíceis para treinar ou completar a mesa. Eles só enxergam as próprias cartas.
+- **Mesas com senha**, lista de mesas abertas e entrada por código de 6 caracteres.
+- **Chat, emotes, sons e animações** de cartas, fichas e vitórias. Funciona no celular e no computador.
+- **Aprender:** guia de como jogar, ranking de mãos, ajuda e regras da casa (português e inglês), além de uma dica opcional da sua mão atual.
 
-## Como funciona
+## Arquitetura em uma linha
 
-Para jogar:
+Um único **Cloudflare Worker** serve o site e a API. Cada mesa é um **Durable Object** (WebSocket hibernável, estado
+persistido, relógio por alarme). O servidor é a autoridade: embaralha, guarda as cartas e só envia a cada jogador o
+que ele pode ver. Detalhes em [docs/architecture.md](docs/architecture.md).
 
-1. Acesse o site e escolha seu nickname e avatar.
-2. Crie uma mesa ou entre em uma sala do lobby.
-3. Compartilhe o link da sala com seus amigos.
-4. Jogue e converse pelo chat da mesa.
+## Desenvolvimento
 
-A hospedagem e a operação do site ficam a cargo do criador do projeto. **Os jogadores acessam o endereço oficial pelo navegador.**
+```bash
+pnpm install
+pnpm dev          # servidor local (3001) + Vite com proxy
+pnpm check        # typecheck, lint, testes e build
+pnpm test:e2e     # Playwright (rode pnpm build antes)
+pnpm worker:dev   # o Worker de verdade via wrangler
+```
 
-## A experiência
+Veja [docs/development.md](docs/development.md) e [docs/deployment.md](docs/deployment.md).
 
-A home apresenta o clube, as mesas abertas e os guias; **Mesas** abre a busca dedicada. A sala ocupa a tela com uma mesa proporcional, cartas dentro do feltro e controles na base. **Gerenciar sala** reúne participantes, estrutura, recargas e histórico; **Chat** abre somente a conversa daquela sala.
+## Estrutura
 
-- **Texas Hold'em No-Limit:** mesas de 2 a 9 jogadores, blinds, antes, all-in, side pots e divisão de potes.
-- **Diferentes formatos:** cash game com fichas virtuais, Sit & Go e torneios multimesa.
-- **Mesas do seu jeito:** senha opcional, stacks, buy-ins, rebuys, add-on, níveis de blinds e intervalos configuráveis.
-- **Jogue com bots:** o anfitrião pode adicionar até oito bots antes de começar, escolher dificuldade fácil, média ou difícil e misturar amigos e bots na mesma sala.
-- **Poker entre amigos:** lobby público, convites por link, espectadores, chat restrito a cada sala e reações.
-- **Perfil personalizável:** nickname, avatar, moldura, cor, frase, tema da mesa e verso das cartas.
-- **Sessões retomáveis:** recuperação da cadeira e das cartas no mesmo navegador, enquanto a sessão e a credencial local permanecerem válidas.
-- **Português e inglês:** português do Brasil na primeira visita, com seletor de idioma e preferência salva.
-- **Desktop e celular:** interface responsiva, com controles acessíveis por teclado.
+| Pasta                   | Conteúdo                                            |
+| ----------------------- | --------------------------------------------------- |
+| `packages/poker-engine` | Regras puras do NLHE (apostas, side pots, showdown) |
+| `packages/poker-bot`    | Decisão dos bots                                    |
+| `packages/contracts`    | Schemas zod e protocolo                             |
+| `packages/server`       | Sala (`room.ts`), runtime, lobby e API HTTP         |
+| `apps/worker`           | Cloudflare Worker + Durable Objects                 |
+| `apps/local-server`     | Mesmo runtime em Node, para dev e testes            |
+| `apps/web`              | React + Vite                                        |
 
-**Todas as fichas e premiações são fictícias.** Não há depósitos, saques, apostas monetárias ou prêmios reais.
-
-## Aprenda e acompanhe a partida
-
-- [Como jogar](https://highlords-poker.vercel.app/como-jogar): guia visual das etapas e decisões de uma mão.
-- [Ranking de mãos](https://highlords-poker.vercel.app/ranking-de-maos): dez combinações ilustradas, empates e kickers.
-- [Ajuda](https://highlords-poker.vercel.app/ajuda): perguntas frequentes e glossário com busca.
-- Ajuda opcional na mesa: descreve sua melhor mão usando somente suas cartas e as comunitárias; preferência salva no navegador. Consulte o ranking sem sair da sala.
-- Mesa imersiva adaptada à tela: cartas próprias dentro do feltro, assentos com avatares e ações de pagar/aumentar com valores explícitos. Gerenciamento e chat abrem em painel lateral; menus disponíveis em desktop e celular.
-- Torneios com acompanhamento de jogadores restantes, próximos blinds, janela de rebuy e pódio final com premiações virtuais.
-
-## Sobre este repositório
-
-Este é o **código público do site Highlords Poker**, mantido aqui para consulta, transparência e acompanhamento do desenvolvimento. A experiência principal para quem quer jogar acontece no site oficial.
-
-Sugestões e relatos de problemas podem ser enviados pelas [issues do projeto](https://github.com/runawayez/highlords-poker/issues). Descreva o que aconteceu, o comportamento esperado e, quando possível, como reproduzir o problema. Nunca inclua credenciais de sessão ou cartas privadas de uma mão em andamento.
-
-## Documentação técnica
-
-Para quem deseja estudar o código ou contribuir com o desenvolvimento:
-
-- [Ambiente de desenvolvimento](docs/development.md)
-- [Arquitetura](docs/architecture.md)
-- [Regras da casa](docs/game-rules.md)
-- [Testes e validação](docs/testing.md)
-- [Internacionalização](docs/i18n.md)
-- [Segurança](docs/threat-model.md)
-- [Operação e publicação pelo mantenedor](docs/deployment.md)
-
-Os guias técnicos abrem em português e incluem links para as referências detalhadas em inglês. O documento original do produto permanece em [PROJECT.md](PROJECT.md).
-
-## Bots
-
-Na sala, abra **Gerenciar sala → Jogadores** antes de distribuir as cartas, escolha a dificuldade e use **Adicionar bot** ou **Completar com bots**. O anfitrião também pode remover bots antes do início. Eles seguem as mesmas regras e enxergam apenas suas próprias cartas e a mesa. As dificuldades usam estratégias e simulações locais no servidor, sem serviços de IA pagos; o nível difícil não é um jogador profissional.
-
-Bots usam fichas virtuais e podem participar dos três formatos. Não fazem rebuy ou add-on automaticamente. Quando todos os humanos ficam desconectados, a partida pausa; bots não mantêm salas jogando sozinhas. O recurso exige a atualização do Worker além do frontend.
-
-Consulte [Interface e experiência de jogo](docs/interface.md) para criação com prévia, organização da sala e referências visuais.
-
-## Organização das salas
-
-Não é necessário criar uma conta. O lobby separa **pessoas online**, **pessoas ausentes**, **bots**, **espectadores online** e **assentos ocupados**. A presença pertence à sala: ficar no lobby ou em outra mesa não mantém uma sala antiga aberta.
-
-Após até um minuto sem sinal de conexão de nenhum humano, uma partida em andamento pausa. A sala fica reservada por **30 minutos de ausência** para reconectar e retomar. Bots não mantêm salas abertas. Isso também vale para salas em espera ou pausadas manualmente. Se um humano voltar antes do prazo, a reserva é renovada; o anfitrião pode retomar a partida.
-
-Torneios encerrados mantêm os resultados por **1 hora**, mesmo que alguém continue visitando ou conversando na sala. O anfitrião também pode usar **Encerrar sala**, com confirmação, para removê-la do lobby para todos. Perfis e credenciais de outras salas são preservados. Não há painel administrativo global nem login obrigatório.
+Sugestões e bugs: [issues do projeto](https://github.com/runawayez/highlords-poker/issues). Nunca inclua cartas privadas de uma mão em andamento.

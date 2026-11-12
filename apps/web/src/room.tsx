@@ -1,0 +1,262 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useTableFx } from './fx.ts';
+import { LearningCenter, type LearningSection } from './learning.tsx';
+import { useRoom } from './net.ts';
+import { Modal, SidePanel, type Tab } from './panels.tsx';
+import { ActionBar, Table } from './table.tsx';
+import { playSound } from './audio.ts';
+import { prefsStore, useStore } from './store.ts';
+
+export function RoomPage({ code, navigate }: { code: string; navigate: (path: string) => void }) {
+  const { t } = useTranslation();
+  const room = useRoom(code);
+  const { state } = room;
+  const fx = useTableFx(state);
+  const prefs = useStore(prefsStore);
+  const [panel, setPanel] = useState<Tab | null>(null);
+  const [learning, setLearning] = useState<LearningSection | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState('');
+  const [password, setPassword] = useState('');
+  const [seenChat, setSeenChat] = useState(0);
+  const bootstrapped = useRef(false);
+
+  // O criador senta sozinho; "jogar contra bots" também enche a mesa.
+  useEffect(() => {
+    if (!state || bootstrapped.current || !state.host || state.players.length > 0) return;
+    bootstrapped.current = true;
+    room.send({ type: 'SIT' });
+    const quick = sessionStorage.getItem(`highlords.quick.${code}`);
+    if (quick) {
+      sessionStorage.removeItem(`highlords.quick.${code}`);
+      for (let i = 0; i < Number(quick); i++) room.send({ type: 'ADD_BOT', difficulty: 'MEDIUM' });
+    }
+  }, [state, room, code]);
+
+  useEffect(() => {
+    if (!room.lastError) return;
+    setToast(t(`errors:${room.lastError.code}`));
+    const timer = setTimeout(() => setToast(''), 3200);
+    return () => clearTimeout(timer);
+  }, [room.lastError, t]);
+
+  const chatCount = state?.chat.filter((m) => m.text).length ?? 0;
+  useEffect(() => {
+    if (panel === 'chat') setSeenChat(chatCount);
+  }, [panel, chatCount]);
+
+  const invite = async () => {
+    const url = `${location.origin}/mesa/${code}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      /* o navegador pode bloquear a área de transferência */
+    }
+    playSound('click');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
+  if (room.fatal)
+    return (
+      <main className="notice">
+        <h1>{room.fatal === 'KICKED' ? t('game:kicked') : t('game:roomGone')}</h1>
+        <button className="primary" onClick={() => navigate('/')}>
+          {t('game:backHome')}
+        </button>
+      </main>
+    );
+
+  const unread = Math.max(0, chatCount - seenChat);
+  return (
+    <div className={`room ${panel ? 'with-panel' : ''}`}>
+      <header className="room-bar">
+        <button
+          className="logo-button"
+          onClick={() => navigate('/')}
+          aria-label={t('game:backHome')}
+        >
+          <img src="/highlords-torch.png" alt="" />
+        </button>
+        <div className="room-title">
+          <strong>{state?.config.title ?? '…'}</strong>
+          {state && (
+            <small>
+              {t('game:code', { code })} ·{' '}
+              {state.config.mode === 'CASH' ? t('home:CASH') : t('home:SIT_AND_GO')} ·{' '}
+              {t('game:blindsNow', { small: state.level.small, big: state.level.big })}
+              {state.level.ante > 0 && ` · ${t('game:ante', { ante: state.level.ante })}`}
+            </small>
+          )}
+        </div>
+        <div className="room-tools">
+          <button className="primary small" onClick={invite}>
+            {copied ? t('game:inviteCopied') : t('game:invite')}
+          </button>
+          <button
+            className="icon-button"
+            aria-pressed={prefs.sound}
+            aria-label={prefs.sound ? t('game:soundOn') : t('game:soundOff')}
+            title={prefs.sound ? t('game:soundOn') : t('game:soundOff')}
+            onClick={() => {
+              prefsStore.set({ sound: !prefs.sound });
+              if (!prefs.sound) setTimeout(() => playSound('click'), 30);
+            }}
+          >
+            {prefs.sound ? '🔊' : '🔇'}
+          </button>
+          <button
+            className="icon-button"
+            aria-label={t('game:rankings')}
+            title={t('game:rankings')}
+            onClick={() => setLearning('hands')}
+          >
+            ?
+          </button>
+          <button
+            className="icon-button chat-toggle"
+            aria-label={t('game:tabChat')}
+            aria-pressed={panel === 'chat'}
+            onClick={() => setPanel(panel === 'chat' ? null : 'chat')}
+          >
+            💬{unread > 0 && panel !== 'chat' && <i className="badge">{unread}</i>}
+          </button>
+          <button
+            className="icon-button"
+            aria-label={t('game:menu')}
+            aria-pressed={panel === 'table'}
+            onClick={() => setPanel(panel === 'table' ? null : 'table')}
+          >
+            ☰
+          </button>
+        </div>
+      </header>
+
+      {room.connection === 'reconnecting' && (
+        <div className="banner-bar">{t('game:reconnecting')}</div>
+      )}
+
+      {!state ? (
+        <main className="notice">
+          <div className="spinner" aria-hidden />
+          <p>{t('game:connecting')}</p>
+        </main>
+      ) : (
+        <>
+          <main className="room-main">
+            <Table
+              state={state}
+              labels={fx.labels}
+              sweeps={fx.sweeps}
+              emotes={fx.emotes}
+              serverNow={room.serverNow}
+              send={room.send}
+              onPick={() => setPanel('table')}
+            />
+            <ActionBar state={state} send={room.send} serverNow={room.serverNow} />
+          </main>
+          {panel && (
+            <SidePanel
+              state={state}
+              send={room.send}
+              tab={panel}
+              onTab={setPanel}
+              onClose={() => setPanel(null)}
+              onClosed={() => navigate('/')}
+              unread={unread}
+            />
+          )}
+          {state.standings.length > 0 && state.status === 'FINISHED' && (
+            <Podium state={state} onHome={() => navigate('/')} />
+          )}
+          {panel === 'table' && (
+            <button
+              className="leave-link"
+              onClick={() => {
+                room.send({ type: 'LEAVE' });
+                navigate('/');
+              }}
+            >
+              {t('game:leave')}
+            </button>
+          )}
+        </>
+      )}
+
+      {toast && (
+        <div className="toast" role="alert">
+          {toast}
+        </div>
+      )}
+
+      {room.needsPassword && (
+        <Modal title={t('game:passwordTitle')} onClose={() => navigate('/')}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              room.submitPassword(password);
+            }}
+          >
+            <p>{t('game:passwordPrompt')}</p>
+            <input
+              type="password"
+              autoFocus
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              aria-label={t('home:password')}
+            />
+            {room.wrongPassword && <p className="error">{t('game:wrongPassword')}</p>}
+            <div className="modal-actions">
+              <button type="button" onClick={() => navigate('/')}>
+                {t('common:cancel')}
+              </button>
+              <button className="primary" type="submit">
+                {t('game:enter')}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {learning && (
+        <Modal title={t('common:learn')} wide onClose={() => setLearning(null)}>
+          <LearningCenter section={learning} onSection={setLearning} />
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function Podium({
+  state,
+  onHome,
+}: {
+  state: NonNullable<ReturnType<typeof useRoom>['state']>;
+  onHome: () => void;
+}) {
+  const { t } = useTranslation();
+  const champion = state.standings[0];
+  return (
+    <div className="podium-overlay">
+      <div className="podium">
+        <span className="trophy" aria-hidden>
+          ♛
+        </span>
+        <p className="eyebrow">{t('game:champion')}</p>
+        <h2>{champion?.nickname}</h2>
+        <ol>
+          {state.standings.slice(0, 3).map((s) => (
+            <li key={s.id} data-rank={s.rank}>
+              <b>{s.rank}º</b>
+              <span>{s.nickname}</span>
+            </li>
+          ))}
+        </ol>
+        <button className="primary" onClick={onHome}>
+          {t('game:backHome')}
+        </button>
+      </div>
+    </div>
+  );
+}

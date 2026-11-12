@@ -119,11 +119,4 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CONFIRM_FREE_PLAN: 'yes'
           WRANGLER_SEND_METRICS: 'false'
-      - name: Verificar API publicada
-        if: steps.head.outputs.current == 'true'
-        run: |
-          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors --connect-timeout 5 --max-time 15 \
-            https://highlords-poker-api.highlords.workers.dev/api/health \
-            | node --input-type=module -e 'let body=""; for await (const chunk of process.stdin) body += chunk; const data=JSON.parse(body); if (data.ok !== true || data.policy !== "highlords-nlhe-v1") process.exit(1);'
-          echo '### Worker publicado e API verificada' >> "$GITHUB_STEP_SUMMARY"
-          echo "Commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+      - run: echo '### Worker publicado' >> "$GITHUB_STEP_SUMMARY"

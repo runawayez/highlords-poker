@@ -21,7 +21,11 @@ export function decide(view: BotView, difficulty: Difficulty): { action: Action;
   if (!options.actions.length) throw new Error('Bot has no legal turn');
   const random = crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
   let equity = 0;
-  const samples = difficulty === 'HARD' ? 32 : difficulty === 'MEDIUM' ? 12 : 0;
+  // Limita o trabalho por decisão: cabe no orçamento de CPU do plano gratuito do Worker.
+  const samples = Math.min(
+    difficulty === 'HARD' ? 32 : difficulty === 'MEDIUM' ? 12 : 0,
+    Math.floor(300 / (view.opponents + 1)),
+  );
   const unknown = deck().filter((card) => !view.cards.includes(card) && !view.board.includes(card));
   for (let trial = 0; trial < samples; trial++) {
     const remaining = shuffle(unknown);
@@ -47,7 +51,9 @@ export function decide(view: BotView, difficulty: Difficulty): { action: Action;
     equity > (difficulty === 'EASY' ? 0.85 : 0.65) &&
     random < 0.6
   ) {
-    const bet = Math.min(options.max, Math.max(options.min, view.bigBlind * 3));
+    // Aposta entre meio pote e pote, nunca abaixo do mínimo legal.
+    const target = options.call + Math.round(view.pot * (0.5 + random * 0.5));
+    const bet = Math.min(options.max, Math.max(options.min, target, view.bigBlind * 2));
     return { action: 'RAISE', amount: bet };
   }
   return { action: options.actions.includes('CHECK') ? 'CHECK' : 'CALL' };
