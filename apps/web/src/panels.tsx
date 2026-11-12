@@ -23,16 +23,21 @@ export function Modal({
 }) {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
+  // O Escape usa sempre a versão mais recente de onClose, sem refazer o efeito a cada render:
+  // refazer o efeito devolvia o foco ao diálogo e tirava o cursor dos campos de texto.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
-    ref.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    // Só foca o diálogo se nenhum campo dentro dele já pediu foco (autoFocus).
+    if (!ref.current?.contains(document.activeElement)) ref.current?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeRef.current();
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);
       previous?.focus?.();
     };
-  }, [onClose]);
+  }, []);
   return (
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
