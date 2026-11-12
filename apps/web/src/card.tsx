@@ -24,8 +24,8 @@ export function cardLabel(card: string) {
 }
 
 /**
- * Carta com frente e verso: `down` desvira com uma animação de giro.
- * Sem `card` ela só existe como verso (cartas dos adversários).
+ * Carta com um único lado visível: a frente quando `card` é conhecida, senão o verso
+ * (cartas dos adversários). Nunca há duas camadas sobrepostas.
  */
 export function Card({
   card,
@@ -51,34 +51,33 @@ export function Card({
       role="img"
       aria-label={faceDown || !card ? undefined : cardLabel(card)}
     >
-      <div className="card-inner">
-        <div className={`card-face card-front ${card && 'hd'.includes(card[1]) ? 'red' : ''}`}>
-          {card && (
-            <svg viewBox="0 0 100 140" aria-hidden="true" focusable="false">
+      {faceDown || !card ? (
+        <div className="card-face card-back" aria-hidden="true">
+          <span>♠</span>
+        </div>
+      ) : (
+        <div className={`card-face card-front ${'hd'.includes(card[1]) ? 'red' : ''}`}>
+          <svg viewBox="0 0 100 140" aria-hidden="true" focusable="false">
+            <text x="10" y="30" className="card-rank" textAnchor="start">
+              {rank}
+            </text>
+            <g fill="currentColor" transform="translate(10 38) scale(.19)">
+              <Suit suit={card[1]} />
+            </g>
+            <g fill="currentColor" transform="translate(26 58) scale(.48)">
+              <Suit suit={card[1]} />
+            </g>
+            <g transform="rotate(180 50 70)">
               <text x="10" y="30" className="card-rank" textAnchor="start">
                 {rank}
               </text>
               <g fill="currentColor" transform="translate(10 38) scale(.19)">
                 <Suit suit={card[1]} />
               </g>
-              <g fill="currentColor" transform="translate(26 58) scale(.48)">
-                <Suit suit={card[1]} />
-              </g>
-              <g transform="rotate(180 50 70)">
-                <text x="10" y="30" className="card-rank" textAnchor="start">
-                  {rank}
-                </text>
-                <g fill="currentColor" transform="translate(10 38) scale(.19)">
-                  <Suit suit={card[1]} />
-                </g>
-              </g>
-            </svg>
-          )}
+            </g>
+          </svg>
         </div>
-        <div className="card-face card-back" aria-hidden="true">
-          <span>♠</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

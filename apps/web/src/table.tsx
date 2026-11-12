@@ -141,7 +141,7 @@ function Seat({
       data-seat={player.seat}
     >
       {showCards && (
-        <div className="hole">
+        <div className="hole" key={`hole-${hand?.id}`}>
           {[0, 1].map((i) => (
             <Card
               key={`${hand?.id}-${i}`}
@@ -194,7 +194,7 @@ function Seat({
         </span>
       )}
       {award > 0 && (
-        <span className="win-pop" key={hand?.id}>
+        <span className="win-pop" key={`win-${hand?.id}`}>
           +{format(award)}
           {handName && <small>{handName}</small>}
         </span>
