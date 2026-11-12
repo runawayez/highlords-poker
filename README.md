@@ -3,9 +3,11 @@
 **Poker com a galera, direto no navegador.** Texas Hold'em sem cadastro: escolha um nome, abra uma mesa e mande o link.
 Fichas 100% virtuais — não há dinheiro real, depósitos ou prêmios.
 
+### [Jogar agora →](https://highlords-poker.highlords.workers.dev)
+
 ## Como jogar
 
-1. Abra o site, escolha seu nome e retrato.
+1. Abra o [site](https://highlords-poker.highlords.workers.dev), escolha seu nome e retrato.
 2. **Criar mesa** (ou **Jogar contra bots** para uma mesa pronta em um clique).
 3. Toque em **Convidar** para copiar o link. Quem abrir entra na hora e senta em uma cadeira vazia.
 
