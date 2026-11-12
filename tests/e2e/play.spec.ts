@@ -81,7 +81,11 @@ test('cada assento tem no máximo duas cartas ao longo de várias mãos', async 
         [...document.querySelectorAll('.seat')].filter(
           (seat) =>
             seat.querySelectorAll('.hole').length > 1 ||
-            seat.querySelectorAll('.hole-card').length > 2,
+            seat.querySelectorAll('.hole-card').length > 2 ||
+            seat.querySelectorAll('.card').length > 2 ||
+            [...seat.querySelectorAll('.card')].some(
+              (card) => card.querySelectorAll('.card-face').length !== 1,
+            ),
         ).length,
     );
     expect(extra).toBe(0);
