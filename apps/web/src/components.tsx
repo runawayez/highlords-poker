@@ -822,7 +822,9 @@ export function Chat({
           onChange={(e) => setText(e.target.value)}
         />
         <button disabled={disabled || !text.trim()} aria-label={t('chat:send')}>
-          ↑
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m3 10 18-7-7 18-3-8Zm8 3L21 3" />
+          </svg>
         </button>
       </form>
     </aside>
@@ -902,17 +904,34 @@ export function ActionBar({
         >
           <label>
             <span className="raise-label">{t('game:raiseTo')}</span>
-            <input
-              type="number"
-              min={Math.min(opts.min, opts.max)}
-              max={opts.max}
-              step={1}
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-            />
+            <span className="amount-stepper">
+              <button
+                type="button"
+                aria-label={t('club:decreaseBet')}
+                onClick={() => setAmount(Math.max(opts.min, amount - snapshot.level.big))}
+              >
+                −
+              </button>
+              <input
+                type="number"
+                aria-label={t('game:raiseTo')}
+                min={Math.min(opts.min, opts.max)}
+                max={opts.max}
+                step={1}
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
+              />
+              <button
+                type="button"
+                aria-label={t('club:increaseBet')}
+                onClick={() => setAmount(Math.min(opts.max, amount + snapshot.level.big))}
+              >
+                +
+              </button>
+            </span>
           </label>
           <div className="bet-shortcuts">
-            {[0.5, 1, 2].map((factor) => (
+            {[0.5, 1].map((factor) => (
               <button
                 type="button"
                 key={factor}
@@ -950,6 +969,11 @@ export function ActionBar({
           <input
             aria-label={t('game:raiseTo')}
             type="range"
+            style={
+              {
+                '--bet-progress': `${Math.max(0, Math.min(100, ((amount - Math.min(opts.min, opts.max)) / Math.max(1, opts.max - Math.min(opts.min, opts.max))) * 100))}%`,
+              } as React.CSSProperties
+            }
             min={Math.min(opts.min, opts.max)}
             max={opts.max}
             value={amount}

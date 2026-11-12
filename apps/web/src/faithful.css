@@ -139,1730 +139,2543 @@
 .club-features .text-button {
   font-size: 14px;
 }
-.club-lobby-heading {
-  margin: 20px 0 26px;
-  padding: 42px 22px;
-  min-height: 195px;
+/* Public lobby: composition of the supplied 1586 × 992 reference. */
+.header {
+  height: 86px;
+  padding: 8px 3.5%;
+  background: linear-gradient(110deg, #101012, #020203);
+}
+.brand {
+  font-family: Georgia, serif;
+  font-size: 36px;
+  gap: 13px;
+}
+.brand-mark {
+  width: 46px;
+  height: 66px;
+}
+.header .desktop-nav .nav {
+  font-size: 23px;
+  padding: 10px 24px;
+  min-height: 51px;
+  border-radius: 13px;
+}
+.header .profile-trigger {
+  font-size: 22px;
+  gap: 12px;
+  min-height: 58px;
+}
+.header .profile-trigger .portrait {
+  width: 54px;
+  height: 54px;
+  border: 2px solid #e63246;
+  border-radius: 50%;
+}
+.header .language-globe {
+  display: none;
+}
+.header .language select {
+  font-size: 17px;
+  padding: 9px 16px;
+  max-width: 120px;
+}
+.in-lobby.view-lobby > main {
+  max-width: none;
+  padding: 0 8px 0 17px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 370px;
+  column-gap: 26px;
+  position: relative;
+  background: linear-gradient(#26040999, #0d0507 430px, #080809 760px);
+}
+.in-lobby.view-lobby > main:before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 300px;
   background:
-    linear-gradient(90deg, #230913f5, #23091377),
-    url('/club-still-life.webp') center/cover;
+    linear-gradient(90deg, #22030833, #21030744),
+    url('/club-still-life.webp') center 68% / cover;
+  pointer-events: none;
 }
-.club-lobby-heading h1 {
-  font-size: clamp(30px, 3.8vw, 56px);
-}
-.club-lobby-heading p:not(.eyebrow) {
-  font-size: 20px;
-  line-height: 1.6;
+.club-lobby-heading {
+  grid-column: 1;
+  position: relative;
+  margin: 0;
+  padding: 50px 20px 35px 38px;
+  min-height: 197px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border: 0;
+  background: none;
 }
 .club-lobby-heading .eyebrow {
   display: none;
 }
+.club-lobby-heading h1 {
+  font:
+    700 clamp(32px, 3.2vw, 52px)/1.15 Georgia,
+    serif;
+  letter-spacing: -1.5px;
+}
+.club-lobby-heading p:not(.eyebrow) {
+  font-size: 27px;
+  color: #b9b6ba;
+  margin: 6px 0 0;
+  line-height: 1.25;
+}
 .club-lobby-heading .primary {
-  font-size: 20px;
-  min-height: 60px;
-  padding: 16px 26px;
+  font-size: 26px;
+  min-height: 67px;
+  padding: 15px 28px;
+  flex: none;
+  border-radius: 13px;
 }
 .lobby-layout-premium {
-  grid-template-columns: minmax(0, 1fr) 330px;
-  gap: 26px;
+  display: contents;
+}
+.lobby-layout-premium .rooms {
+  grid-column: 1;
+  position: relative;
+  min-width: 0;
 }
 .lobby-layout-premium .section-heading {
-  margin-bottom: 12px;
-}
-.lobby-layout-premium .section-heading h2 {
-  font-size: 23px;
-}
-.lobby-layout-premium .section-heading p {
   display: none;
+}
+.lobby-layout-premium .filters {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin: 6px 16px 38px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.lobby-layout-premium .filters > input {
+  flex: 1;
+  min-width: 140px;
+  font-size: 21px;
+  height: 60px;
+  padding: 14px 22px;
+  background: #100d0ed9;
+  border: 1px solid #6f666b;
+  border-radius: 12px;
 }
 .format-chips {
   display: flex;
-  gap: 10px;
-  margin: 0 0 15px;
-  flex-wrap: wrap;
+  gap: 16px;
+  flex: none;
+  margin: 0;
 }
 .format-chips button {
-  min-height: 46px;
-  padding: 10px 22px;
-  border-radius: 24px;
-  font-size: 16px;
-  background: #160f16;
-  border-color: #94707d;
+  font-size: 19px;
+  min-height: 47px;
+  padding: 9px 24px;
+  background: #0e080a88;
+  border: 1px solid #8c7e84;
+  border-radius: 25px;
+  white-space: nowrap;
 }
 .format-chips button[aria-pressed='true'] {
-  background: linear-gradient(#ec2d48, #a40d28);
-  border-color: #ff677e;
+  background: linear-gradient(#e72843, #9e0c20);
+  border-color: #ef3d55;
 }
-.filters {
-  padding: 14px;
-  gap: 10px;
+.advanced-filters {
+  position: relative;
+  flex: none;
+  margin-left: -17px;
 }
-.filters input,
-.filters select {
-  min-height: 46px;
-  font-size: 14px;
+.advanced-filters summary {
+  list-style: none;
+  font-size: 16px;
+  padding: 6px;
+  cursor: pointer;
+  color: #b69ca6;
 }
-.filters > select:first-of-type {
-  display: none;
+.advanced-filters > div {
+  position: absolute;
+  right: 0;
+  top: 32px;
+  display: grid;
+  gap: 12px;
+  width: 260px;
+  background: #171015;
+  border: 1px solid #76505d;
+  padding: 16px;
+  z-index: 20;
+  border-radius: 10px;
 }
-.filters .check {
-  font-size: 12px;
+.lobby-table {
+  border: 1px solid #6a535b;
+  border-radius: 15px;
+  overflow: hidden;
+  background: linear-gradient(115deg, #1b0d10eb, #110a0dcf);
 }
 .lobby-table-head,
-.room-card {
-  grid-template-columns: minmax(210px, 1.6fr) 0.8fr 0.7fr 0.9fr 0.8fr 110px;
-  gap: 15px;
-  padding-inline: 20px;
+.lobby-table .room-card {
+  display: grid;
+  grid-template-columns:
+    minmax(240px, 2.4fr) minmax(110px, 1.1fr) minmax(90px, 0.9fr) 85px minmax(150px, 1.5fr)
+    minmax(100px, 1fr) 110px;
+  gap: 14px;
+  align-items: center;
+  padding: 17px 20px;
 }
 .lobby-table-head {
-  min-height: 52px;
-  font-size: 14px;
-  text-transform: none;
-  letter-spacing: 0;
+  min-height: 57px;
+  background: linear-gradient(#33262c, #241a1f);
+  font-size: 17px;
+  color: #f1e8eb;
 }
-.room-card {
-  min-height: 116px;
+.lobby-table .room-card {
+  min-height: 94px;
+  border: 0;
+  border-top: 1px solid #6b535c;
+  border-radius: 0;
+  background: none;
+  margin: 0;
+  box-shadow: none;
 }
 .room-title-cell {
-  gap: 16px;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  min-width: 0;
 }
 .room-symbol {
-  width: 90px;
-  height: 60px;
+  display: block;
+  flex: none;
+  width: 130px;
+  height: 70px;
+  position: relative;
   background: url('/table-surface.webp') center/contain no-repeat;
+  filter: drop-shadow(0 6px 3px #000);
+  border: 0;
+}
+.room-symbol:before {
+  content: '';
+  position: absolute;
+  width: 32px;
+  height: 24px;
+  left: 43%;
+  top: 22%;
+  background: repeating-linear-gradient(45deg, #a91638 0 2px, #d28b9b 2px 3px);
+  border: 2px solid #f2e6e8;
+  border-radius: 3px;
+  transform: rotate(5deg);
+}
+.room-symbol:after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 0;
+  width: 58px;
+  height: 43px;
+  background: url('/chip-pile.webp') center/contain no-repeat;
 }
 .room-mini-felt {
   display: none;
 }
 .room-info h3 {
-  font-size: 18px;
+  font:
+    700 23px/1.13 Arial,
+    sans-serif;
+  overflow-wrap: normal;
 }
 .room-presence {
-  font-size: 12px;
+  display: none;
+}
+.room-host-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+  min-width: 0;
+}
+.room-host-cell .portrait {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid #e3d1d2;
+  flex: none;
 }
 .room-mode-cell,
-.room-blinds-cell,
-.room-players-cell,
-.room-status-cell {
-  font-size: 15px;
+.room-blinds-cell {
+  font-size: 18px;
+  font-weight: 400;
 }
-.room-buttons .primary {
-  font-size: 16px;
-  min-height: 44px;
-  min-width: 105px;
+.room-players-cell {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
-.room-buttons .text-button {
-  font-size: 12px;
+.room-players-cell strong {
+  font-size: 18px;
+  font-weight: 400;
+  white-space: nowrap;
 }
-.lobby-side-card {
-  padding: 28px;
+.room-avatar-cluster {
+  display: flex;
 }
-.lobby-side-card h2 {
-  font-size: 32px;
-}
-.lobby-step strong {
-  font-size: 17px;
-}
-.lobby-step p {
-  font-size: 14px;
-}
-.lobby-step > b {
+.room-avatar-cluster .portrait {
   width: 38px;
   height: 38px;
-  font-size: 18px;
+  border: 1px solid #efe3dd;
+  border-radius: 50%;
+  margin-left: -12px;
 }
-.lobby-side-card > .text-button {
+.room-avatar-cluster .portrait:first-child {
+  margin-left: 0;
+}
+.room-occupancy {
+  display: none;
+}
+.room-status-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+  padding: 5px 11px;
+  background: linear-gradient(#474144, #282326);
+  border-radius: 22px;
+  color: #fff;
   font-size: 16px;
 }
+.room-status-cell i {
+  display: none;
+}
+.room-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.room-buttons .primary {
+  width: 102px;
+  min-height: 43px;
+  font-size: 19px;
+  border-radius: 10px;
+  padding: 8px;
+}
+.room-buttons .text-button {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.room-card:hover .room-buttons .text-button,
+.room-buttons .text-button:focus-visible {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  font-size: 12px;
+}
+.lobby-retention {
+  font-size: 11px;
+  color: #a2939a;
+  margin: 14px 0;
+}
+.lobby-companion {
+  grid-column: 2;
+  grid-row: 1/3;
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  align-self: start;
+  position: relative;
+}
+.lobby-side-card,
+.resume-card {
+  padding: 23px 27px;
+  background: linear-gradient(135deg, #240b0eaa, #120b0de6);
+  border: 1px solid #82505a;
+  border-radius: 16px;
+}
+.lobby-side-card .eyebrow,
+.lobby-side-note {
+  display: none;
+}
+.lobby-side-card h2,
+.resume-card h2 {
+  font:
+    700 32px/1.1 Georgia,
+    serif;
+  margin: 0 0 12px;
+}
+.lobby-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin: 26px 0;
+}
+.lobby-step > b {
+  flex: none;
+  width: 39px;
+  height: 39px;
+  font-size: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(#df2a42, #8e0d22);
+}
+.lobby-step strong {
+  font-size: 22px;
+}
+.lobby-step p {
+  font-size: 17px;
+  line-height: 1.25;
+  color: #d8cbcf;
+  margin: 4px 0;
+}
+.lobby-side-card > .text-button {
+  font-size: 20px;
+  color: #ff3654;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+.resume-card > p {
+  font-size: 18px;
+  color: #dccbd1;
+  margin: 0 0 16px;
+}
+.resume-room {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.resume-room .room-symbol {
+  width: 130px;
+  height: 95px;
+  background-color: #2d1013;
+  border: 1px solid #6c313f;
+  border-radius: 12px;
+}
+.resume-room > div {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+.resume-room strong {
+  font-size: 22px;
+  line-height: 1.12;
+}
+.resume-room span {
+  font-size: 17px;
+}
+.resume-card > button {
+  width: 100%;
+  min-height: 51px;
+  background: #0b0809;
+  border: 1px solid #efdfdf;
+  font-size: 21px;
+}
 .in-lobby > footer {
-  margin-top: 22px;
-  min-height: 150px;
+  margin: 14px 0 0;
+  min-height: 152px;
   background:
-    linear-gradient(90deg, #1c091358, #190b11b0),
-    url('/club-still-life.webp') center/cover;
+    linear-gradient(90deg, #22070b30, #18060930),
+    url('/club-still-life.webp') center 65% / cover;
+}
+.in-lobby > footer > span {
+  display: none;
 }
 .in-lobby > footer p {
-  font-family: Georgia, serif;
-  font-size: clamp(18px, 2vw, 28px);
-  color: #f1e4e6;
+  font:
+    32px Georgia,
+    serif;
+  color: #f7edf0;
+  text-align: center;
+}
+/* The live table uses the reference's 80 / 684 / 228 desktop bands. */
+.in-room .club-room {
+  font-family: Arial, sans-serif;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #050506;
 }
 .club-room .room-heading {
-  height: 82px;
-  min-height: 82px;
+  height: 80px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 8px 13px 8px 32px;
   flex-wrap: nowrap;
-  padding: 9px 22px;
-  gap: 18px;
+  background: linear-gradient(110deg, #101012, #020203);
+  border-bottom: 1px solid #3c383c;
 }
 .room-heading:before {
   display: none;
 }
 .club-room .room-brand {
-  padding: 8px;
-  min-height: 38px;
+  position: absolute;
+  left: 2px;
+  top: 25px;
+  width: 26px;
+  min-height: 30px;
+  padding: 0;
   border: 0;
-  width: 30px;
+  background: none;
+  color: #aaa;
 }
 .room-brand b {
   display: none;
 }
 .room-brand > span {
-  font-size: 25px;
-  color: #eee;
+  font-size: 22px;
 }
 .room-wordmark {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #fff;
+  color: #f4f3f4;
   text-decoration: none;
-  border-right: 1px solid #fff2;
-  padding-right: 24px;
-  flex: none;
+  border-right: 1px solid #4a454b;
+  min-width: 370px;
+  padding-right: 30px;
 }
 .room-wordmark img {
-  width: 42px;
-  height: 58px;
+  width: 50px;
+  height: 67px;
   object-fit: contain;
 }
 .room-wordmark > span {
   font:
-    700 clamp(24px, 2.2vw, 36px)/1 Georgia,
-    serif;
+    800 37px/1 Arial,
+    sans-serif;
   letter-spacing: 1px;
 }
 .room-wordmark small {
   display: block;
   font:
-    600 10px/1.5 Arial,
+    600 12px/1.5 Arial,
     sans-serif;
-  letter-spacing: 6px;
+  letter-spacing: 7px;
+  text-align: center;
   margin-top: 5px;
 }
 .club-room .room-name {
-  flex-basis: auto;
+  flex: 1;
+  min-width: 0;
 }
 .club-room .room-name h1 {
-  font-size: clamp(17px, 1.65vw, 26px);
+  font-size: 29px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .club-room .room-name p {
-  font-size: 14px;
-  margin-top: 5px;
+  font-size: 21px;
+  margin: 4px 0 0;
+  color: #e6dfe4;
+  white-space: nowrap;
 }
 .club-room .room-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   width: auto;
+  flex: none;
 }
-.club-room .room-controls button,
-.club-room .room-options summary {
-  font-size: 15px;
-  min-height: 48px;
-}
-.club-room .room-controls .invite-button {
+.club-room .invite-button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 23px;
   padding: 12px 20px;
+  min-height: 58px;
+  border: 1px solid #f12b4e;
+  border-radius: 15px;
+  background: linear-gradient(#6f1021, #38080f);
 }
-.club-room .room-controls .panel-trigger {
-  width: 48px;
-  height: 48px;
+.invite-button svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+  stroke: currentColor;
+}
+.club-room .room-controls .panel-trigger,
+.club-room .room-options > summary {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 58px;
+  min-height: 58px;
   padding: 12px;
-  justify-content: center;
+  border: 1px solid #4b4a50;
+  border-radius: 14px;
+  background: linear-gradient(#292a2e, #090a0c);
 }
-.club-room .room-controls .panel-trigger svg {
-  width: 23px;
-  height: 23px;
-}
-.club-room .room-controls .button-label {
+.club-room .panel-trigger .button-label,
+.club-room .room-options > summary > span {
   display: none;
 }
+.club-room .room-controls .panel-trigger svg,
+.club-room .room-options > summary svg {
+  width: 35px;
+  height: 35px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.8;
+}
+.room-options > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.room-options > summary:before {
+  display: none;
+}
+.room-options > div {
+  z-index: 80;
+}
+.room-options > div > .panel-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+.room-options > div .button-label {
+  display: inline !important;
+}
+.club-room .game-layout,
 .club-room .game-layout.chat-visible {
-  grid-template-columns: minmax(0, 1fr) 320px;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 20.5vw, 340px);
+  gap: 0;
 }
 .club-room .game-stage {
-  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
   background:
-    linear-gradient(#0c070b20, #0a040b44),
-    url('/lounge.webp') center/cover;
+    linear-gradient(#0b030500, #0b030510),
+    url('/room-backdrop.webp') center/cover;
 }
 .club-room .table-tabs {
   position: absolute;
-  top: 8px;
-  left: 12px;
-  min-height: 28px;
-  z-index: 8;
+  z-index: 12;
+  top: 86px;
+  left: 8px;
+  height: 25px;
+  min-height: 0;
 }
-.club-room .table-tabs button {
-  font-size: 11px;
-  min-height: 28px;
-}
-.club-room .table-chat-dock {
-  background: linear-gradient(110deg, #151016, #09090e);
-}
-.table-chat-topline {
-  padding: 20px;
-}
-.table-chat-topline strong {
-  font-size: 20px;
-}
-.table-chat-topline small {
-  font-size: 12px;
-}
-.table-chat-dock .message {
-  padding: 16px 0;
-}
-.table-chat-dock .message-heading strong {
-  font-size: 15px;
-}
-.table-chat-dock .message-heading .portrait {
-  width: 38px;
-  height: 38px;
-}
-.table-chat-dock .message p {
-  font-size: 16px;
-  line-height: 1.6;
-  background: #2a252d;
-  border-radius: 9px;
-  padding: 9px 12px;
-  margin-left: 43px;
-}
-.table-chat-dock .system-message {
-  font-size: 12px;
-  line-height: 1.6;
-  color: #a99ba5;
-}
-.table-chat-dock .chat-form input {
-  min-height: 48px;
-  font-size: 15px;
-}
-.table-chat-dock .chat-form button {
-  min-height: 48px;
-  width: 48px;
-  background: linear-gradient(#a82b45, #4f1023);
-}
-.poker-table {
-  background: url('/table-surface.webp') center/100% 100% no-repeat !important;
-  border: 0 !important;
-  border-radius: 0;
-  box-shadow: none !important;
-  overflow: visible;
-}
-.poker-table:before,
-.felt-border,
-.table-watermark {
+.club-room .table-tabs:has(button:only-child) {
   display: none;
 }
-[data-theme='midnight'] .poker-table {
-  filter: saturate(0.12) brightness(0.72);
+.club-room .table-tabs button {
+  min-height: 24px;
+  font-size: 10px;
 }
-[data-theme='crimson'] .poker-table {
-  filter: saturate(1.3);
+.club-room .scene-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  container-type: size;
 }
-.table-center {
-  z-index: 3;
+.club-room .scene-canvas {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  transform: none;
 }
-.community .playing-card,
-.own-hand .playing-card {
-  border-radius: 7px;
-  background: linear-gradient(145deg, #fffdf9, #e9e3df);
-  box-shadow: 0 3px 4px #0007;
+.club-room .table-shell,
+.club-room .table-shell:has(.own-hand) {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  container-type: size;
+  transform: none;
 }
-.pot {
-  background: #370c18dd;
-  border-color: #ad53646b;
-  border-radius: 50px;
-  color: #f5e5e7;
-  font-size: 18px;
-  padding: 8px 25px;
+.club-room .poker-table {
+  position: absolute;
+  inset: 8% -0.3% -1%;
+  border: 0;
+  border-radius: 50%;
+  background: url('/table-surface.webp') center/100% 100% no-repeat;
+  box-shadow: none;
+  transform: none;
+}
+.club-room .poker-table:before,
+.club-room .poker-table:after,
+.club-room .felt-border,
+.club-room .table-watermark {
+  display: none;
+}
+.club-room .table-center {
+  position: absolute;
+  left: 52%;
+  top: 45%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: 66%;
+}
+.club-room .pot {
+  display: flex;
+  align-items: center;
   gap: 14px;
-  margin: 0 auto 18px;
-}
-.pot strong {
-  font-size: 37px;
+  justify-content: center;
+  width: max-content;
+  padding: 6px 25px 7px 6px;
+  margin: 0 auto 20px;
+  border: 1px solid #8d465555;
+  background: #30020cbd;
+  border-radius: 50px;
+  font-size: 21px;
   line-height: 1.1;
 }
-.chip-stack {
-  width: 65px;
-  height: 55px;
+.club-room .pot strong {
+  display: block;
+  font-size: 38px;
+}
+.club-room .chip-stack {
+  display: block;
+  flex: none;
+  width: 102px;
+  height: 78px;
   background: url('/chip-pile.webp') center/contain no-repeat;
+  transform: none;
 }
 .chip-stack i {
   display: none;
 }
-.seat-profile {
-  min-height: 88px;
-  padding: 10px 12px 10px 67px;
-  background: linear-gradient(#27252b, #0c0b10);
-  border: 1px solid #8d7e87;
-  border-radius: 15px;
-  box-shadow:
-    0 5px 10px #0009,
-    inset 0 1px #fff2;
+.club-room .community {
+  display: flex;
+  gap: 9px;
+  justify-content: center;
 }
-.seat-avatar {
-  width: 108px;
-  height: 108px;
-  left: -51px;
-  border: 3px solid #c1aeb7;
-  background: #110d13;
-  box-shadow:
-    0 0 0 5px #110d13,
-    0 5px 14px #0008;
+.club-room .community .playing-card {
+  width: min(7.7cqw, 14cqh);
+  height: auto;
+  aspect-ratio: 100/144;
+  min-height: 0;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #fffefb, #e8e5e2);
+  border: 1px solid #b7afb0;
+  box-shadow: 0 3px 4px #000a;
+  transform: none;
 }
-.seat-identity strong {
-  font-size: 21px;
-  font-weight: 750;
+.club-room .community .card-empty {
+  background: #32040d20;
+  border: 1px dashed #9b4d5e25;
+  color: #a1576620;
+  box-shadow: none;
 }
-.seat-identity small {
-  font-size: 24px;
-  font-weight: 650;
-}
-.seat.self .seat-profile {
-  background: linear-gradient(#28232c, #0c0b10);
-}
-.seat.acting .seat-avatar {
-  border-color: #fc3458;
-  box-shadow:
-    0 0 0 5px #a60e2e,
-    0 0 20px #e4335c99;
-}
-.seat-status {
-  font-size: 15px;
-  padding: 5px 17px;
-  margin-top: 6px;
-  background: linear-gradient(#59535b, #26212a);
-  border-color: #8e808945;
-}
-.seat.folded {
-  opacity: 0.62;
-}
-.hole-cards {
-  top: -54px;
-  left: 64%;
-}
-.hole-cards .playing-card {
-  width: 43px;
-  height: 62px;
-}
-.bot-tag {
+.club-room .street {
   font-size: 8px;
+  letter-spacing: 2px;
+  color: #be9ba5;
+  margin: 9px 0 0;
 }
-.turn-indicator {
-  font-size: 14px;
-  padding: 7px 16px;
-  border-radius: 30px;
-}
-.turn-indicator strong {
-  font-size: 13px;
-}
-.turn-indicator.your-turn {
-  background: linear-gradient(#fa3658, #b20a30);
-  color: white;
-}
-.seat-bet {
-  font-size: 15px;
-  gap: 8px;
-}
-.tiny-chip {
-  width: 20px;
-  height: 16px;
-}
-.empty-seat button {
-  border: 1px solid #8d7e8759;
-  border-radius: 14px;
-  background: linear-gradient(#241e27e8, #0b0b10d9);
-  padding: 12px 20px 12px 65px;
-  min-height: 83px;
-  font-size: 16px;
-  position: relative;
-}
-.empty-seat-avatar {
+.club-room .own-hand {
   position: absolute;
-  width: 86px;
-  height: 86px;
-  border-radius: 50%;
-  left: -34px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 2px solid #83737d;
-  background: #211a24;
-  display: grid;
-  place-items: center;
+  left: 52%;
+  top: 71%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
 }
-.empty-seat-avatar svg {
-  width: 50%;
-  height: 50%;
-  fill: none;
-  stroke: #ad9eaa;
-  stroke-width: 2;
+.club-room .own-hand .playing-card {
+  width: min(6.5cqw, 11cqh);
+  height: auto;
+  aspect-ratio: 100/144;
+  border-radius: 9px;
+  border: 1px solid #b3a8a8;
+  background: linear-gradient(#fffdf9, #eae5e1);
+  box-shadow: 0 3px 4px #0009;
 }
-.empty-seat-avatar b {
-  position: absolute;
-  right: -4px;
-  bottom: 0;
-  border-radius: 50%;
-  background: #8d1938;
-  width: 28px;
-  height: 28px;
-  font-size: 19px;
+.club-room .own-hand .playing-card:first-child {
+  transform: rotate(-7deg);
 }
-.empty-seat button small {
-  font-size: 14px;
+.club-room .own-hand .playing-card:last-child {
+  transform: rotate(7deg);
 }
-.table-waiting-center {
-  max-width: 440px;
+.club-room .decision-cards {
+  gap: 4px;
 }
-.table-waiting-center h2 {
-  font-size: 30px;
-}
-.table-waiting-center p {
-  font-size: 17px;
-  line-height: 1.6;
-  max-width: 360px;
-}
-.table-waiting-center .primary {
-  min-height: 54px;
-  font-size: 17px;
-  padding: 12px 25px;
-}
-.table-waiting-center .quick-bot {
-  font-size: 15px;
-  min-height: 42px;
-}
-.table-waiting-center > small {
-  font-size: 13px;
-}
-.club-room .decision-zone {
-  max-width: none;
-  border-radius: 12px;
-  background: linear-gradient(110deg, #121016, #07080b);
-  padding: 0;
-}
-.club-room .decision-dock {
-  padding: 10px 20px;
-  gap: 12px;
-  border-color: #88737d55;
-}
-.club-room .decision-summary {
-  gap: 12px;
-}
-.club-room .decision-summary > .badge {
+.club-room .own-hand > small {
   display: none;
 }
-.club-room .decision-summary > strong {
-  font-size: 18px;
+.club-room .seat {
+  width: clamp(140px, 16.5cqw, 220px);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 5;
 }
-.club-room .decision-summary > small {
-  font-size: 14px;
+.club-room .seat.self {
+  top: 88.5% !important;
+  left: 52% !important;
 }
-.club-room .current-hand {
-  font-size: 17px;
-  color: #eee3e7;
+.club-room .seat-profile {
+  display: flex;
+  align-items: center;
+  min-height: min(90px, 13cqh);
+  width: 100%;
+  padding: 9px 12px 9px min(75px, 5.7cqw);
+  border: 1px solid #726c6f;
+  border-radius: 17px;
+  background: linear-gradient(#121314, #050506);
+  box-shadow: 0 3px 5px #000a;
+  text-align: left;
+  overflow: visible;
 }
-.coach-controls button,
-.coach-controls .text-button {
-  font-size: 12px;
+.club-room .seat-avatar {
+  position: absolute;
+  left: max(-55px, -4.3cqw);
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(9.4cqw, 17.5cqh);
+  height: min(9.4cqw, 17.5cqh);
+  border: 3px solid #a99c95;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #151011;
+  box-shadow: 0 2px 5px 3px #000b;
 }
-.club-room .coach-explanation {
+.seat-avatar > .portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.club-room .seat-identity strong {
+  font-size: clamp(12px, 1.9cqw, 25px);
+  line-height: 1.05;
+  font-weight: 700;
+  max-width: 100%;
+}
+.club-room .seat-identity small {
+  font-size: clamp(13px, 1.9cqw, 25px);
+  line-height: 1.15;
+  margin-top: 5px;
+  color: #fff;
+}
+.club-room .seat.folded {
+  opacity: 0.78;
+}
+.club-room .seat-status {
+  font-size: clamp(10px, 1.25cqw, 17px);
+  line-height: 1.1;
+  display: table;
+  margin: 0 auto;
+  padding: 5px 17px;
+  color: #f4f0f1;
+  border: 1px solid #7772;
+  border-radius: 20px;
+  background: linear-gradient(#4b494a, #252325);
+  white-space: nowrap;
+}
+.club-room .seat.acting .seat-avatar {
+  border: 3px solid #ff335b;
+  box-shadow:
+    0 0 0 5px #8c0d24,
+    0 0 17px 6px #d90a32aa;
+}
+.club-room .seat.self .seat-profile {
+  padding-left: min(90px, 6.5cqw);
+}
+.club-room .seat.self .seat-avatar {
+  width: min(11.2cqw, 20cqh);
+  height: min(11.2cqw, 20cqh);
+  left: max(-78px, -5.5cqw);
+}
+.club-room .seat-timer {
+  height: 3px;
+  bottom: 0;
+  opacity: 0.6;
+}
+.club-room .hole-cards {
+  left: 58%;
+  top: max(-58px, -8cqh);
+  width: max-content;
+  display: flex;
+  gap: 4px;
+  transform: translateX(-50%);
+  z-index: -1;
+}
+.club-room .hole-cards .playing-card {
+  width: min(4cqw, 7.5cqh);
+  height: auto;
+  aspect-ratio: 100/144;
+  min-height: 0;
+  border-radius: 5px;
+}
+.card-back {
+  background: repeating-linear-gradient(45deg, #8f1530 0 2px, #b64a60 2px 3px) !important;
+  border: 3px solid #e7e1df !important;
+}
+.club-room .hole-cards .card-back > span {
+  font-size: 15px;
+}
+.club-room .bot-tag {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 7px;
+  opacity: 0.35;
+}
+.club-room .dealer {
+  width: 19px;
+  height: 19px;
   font-size: 11px;
 }
+.club-room .seat-bet {
+  font-size: 13px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  z-index: 4;
+}
+.club-room .tiny-chip {
+  width: 23px;
+  height: 23px;
+  background: radial-gradient(circle, #eee 0 26%, #a4122f 28% 48%, #eee 49% 60%, #9e1230 63%);
+  border: 2px dashed white;
+  box-shadow: 0 4px #850c25;
+  border-radius: 50%;
+}
+.club-room .turn-indicator {
+  position: absolute;
+  left: 52%;
+  top: auto;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-size: 14px;
+  min-height: 25px;
+  padding: 4px 12px;
+  z-index: 6;
+  background: #270a13d9;
+  border-color: #7f243c;
+}
+.club-room .turn-indicator.your-turn {
+  background: linear-gradient(#ea2143, #a50723);
+  color: #fff;
+  border: 1px solid #ff5a75;
+  font-weight: 700;
+}
+.club-room .seat.self .seat-status {
+  visibility: hidden;
+}
+.club-room .decision-zone {
+  position: relative;
+  flex: none;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  height: clamp(175px, 23dvh, 230px);
+  border: 1px solid #4d454a;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(110deg, #141417, #050506);
+  padding: 0 17px;
+}
+.club-room .decision-dock {
+  position: absolute;
+  left: 18px;
+  top: 8px;
+  width: 33%;
+  height: 92px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0 12px 0 16px;
+  border: 0;
+  border-right: 1px solid #7774;
+  background: none;
+  z-index: 3;
+}
+.club-room .decision-summary {
+  flex-wrap: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.hand-icon {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  font-size: 35px;
+  line-height: 1;
+  color: #e8cbd1;
+}
+.club-room .current-hand {
+  font-size: 21px;
+  line-height: 1.2;
+  margin: 0;
+  color: #fff;
+  font-weight: 400;
+}
+.club-room .current-hand strong {
+  font-weight: 700;
+}
+.coach-menu {
+  position: relative;
+  margin-left: auto;
+  align-self: start;
+  margin-top: 9px;
+}
+.coach-menu > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.5;
+  width: 22px;
+  text-align: center;
+}
+.coach-menu[open] {
+  opacity: 1;
+}
+.coach-menu[open] > .coach-controls {
+  position: absolute;
+  left: 0;
+  bottom: 30px;
+  display: flex;
+  gap: 8px;
+  padding: 14px;
+  background: #1c151b;
+  border: 1px solid #6f4d59;
+  border-radius: 10px;
+  width: max-content;
+}
+.coach-menu .coach-explanation {
+  position: absolute;
+  bottom: 110px;
+  left: 0;
+}
+.coach-menu .coach-controls button {
+  font-size: 12px;
+  white-space: nowrap;
+}
 .club-room .action-bar {
-  padding: 12px 20px 18px;
-  gap: 14px 18px;
+  height: 100%;
+  padding: 10px 10px 20px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: minmax(65px, 1fr) minmax(58px, 80px);
+  gap: 20px 18px;
+  align-items: stretch;
+}
+.club-room .action-context {
+  display: none;
 }
 .club-room .raise-controls {
-  grid-template-columns: 150px minmax(0, 1fr);
-  gap: 10px 18px;
+  grid-row: 1;
+  grid-column: 1/-1;
+  margin-left: 38%;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(230px, 0.88fr) minmax(220px, 1fr);
+  grid-template-rows: 46px 20px;
+  align-content: start;
+  padding-top: 3px;
+  gap: 7px 24px;
+  align-items: center;
+  border: 0;
 }
-.club-room .raise-controls input[type='number'] {
-  height: 48px;
-  min-height: 48px;
-  font-size: 22px;
-  padding-top: 18px;
+.club-room .raise-controls > label {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  grid-column: 1;
+  grid-row: 1;
 }
 .club-room .raise-label {
-  font-size: 10px;
+  position: static;
+  font-size: 21px;
+  line-height: 1.1;
+  white-space: nowrap;
+  color: #eee;
+}
+.amount-stepper {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+}
+.amount-stepper > button {
+  display: none;
+}
+.club-room .raise-controls input[type='number'] {
+  width: 100%;
+  min-width: 80px;
+  height: 46px;
+  min-height: 46px;
+  padding: 3px 14px;
+  font-size: 27px;
+  line-height: 1.2;
+  border: 1px solid #666875;
+  border-radius: 10px;
+  background: #090a0b;
+  color: #fff;
+}
+.club-room .raise-controls .bet-shortcuts {
+  display: flex;
+  gap: 14px;
+  grid-column: 2;
+  grid-row: 1;
 }
 .club-room .bet-shortcuts button {
-  min-height: 43px;
-  font-size: 16px;
+  flex: 1;
+  min-height: 42px;
+  padding: 6px 15px;
+  font-size: 21px;
+  white-space: nowrap;
+  border: 1px solid #73717a;
+  border-radius: 12px;
+  background: linear-gradient(#292a30, #101114);
+}
+.club-room .raise-controls > input[type='range'] {
+  width: 100%;
+  grid-row: 2;
+  grid-column: 1/-1;
+  margin: 0;
+  height: 20px;
+  accent-color: #f4f4f4;
 }
 .club-room .action-buttons {
+  grid-column: 1/3;
+  grid-row: 2;
+  display: flex;
   gap: 18px;
+  align-items: stretch;
+  align-self: stretch;
 }
 .club-room .action-buttons button,
 .club-room .raise-submit {
-  min-height: 68px;
-  font-size: 23px;
-  border-radius: 12px;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  padding: 10px;
+  font-size: clamp(19px, 2.25vw, 32px);
   font-weight: 700;
+  border-radius: 16px;
+  line-height: 1.12;
+  align-self: stretch;
+  margin: 0;
+}
+.club-room .raise-submit {
+  grid-column: 3;
+  grid-row: 2;
+  background: linear-gradient(#ed294a, #9e061f);
+  border-color: #f25470;
+}
+.club-room .action-buttons .fold {
+  background: linear-gradient(#2c2e35, #0d0f12);
+  border-color: #777780;
+}
+.club-room .action-buttons .call,
+.club-room .action-buttons .call:hover {
+  background: linear-gradient(#5d6373, #343946);
+  border-color: #8b91a1;
 }
 .club-room .action-placeholder {
-  min-height: 88px;
+  height: 100%;
+  min-height: 0;
+  padding: 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-size: 17px;
+  color: #b8aeb4;
+}
+.club-room .table-chat-dock {
+  min-height: 0;
+  margin: 12px 3px 0 0;
+  border: 1px solid #38383c;
+  border-radius: 19px;
+  background: linear-gradient(110deg, #111214, #040506);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.table-chat-topline {
+  height: 65px;
+  min-height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  border-bottom: 1px solid #5554;
+}
+.table-chat-topline > div {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.chat-heading-icon {
+  width: 31px;
+  height: 31px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+}
+.table-chat-topline strong {
+  font-size: 25px;
+}
+.table-chat-topline small,
+.table-chat-topline .live-indicator {
+  display: none;
+}
+.table-chat-topline .mobile-chat-toggle {
+  min-height: 24px;
+  font-size: 14px;
+  opacity: 0.35;
+  padding: 0;
+}
+.club-room .table-chat-dock .chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.table-chat-dock .chat-heading {
+  display: none;
+}
+.table-chat-dock .messages {
+  padding: 20px 15px;
+  flex: 1;
+  overflow: auto;
+}
+.table-chat-dock .system-message {
+  font-size: 9px;
+  opacity: 0.35;
+  line-height: 1.3;
+  padding: 3px 0;
+}
+.table-chat-dock .message {
+  position: relative;
+  padding: 0 0 18px 64px;
+  min-height: 80px;
+  margin: 7px 0;
+}
+.table-chat-dock .message-heading {
+  display: flex;
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 12px;
+}
+.table-chat-dock .message-heading > span {
+  display: contents;
+  color: #fff !important;
+}
+.table-chat-dock .message-heading .portrait {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid #d8c0ad;
+}
+.table-chat-dock .message-heading strong {
+  font-size: 18px;
+  color: white;
+}
+.table-chat-dock .message-heading time {
+  font-size: 14px;
+  color: #ccc;
+}
+.table-chat-dock .message p {
+  font-size: 17px;
+  line-height: 1.3;
+  color: #fff;
+  margin: 7px 0 0;
+  padding: 9px 10px;
+  background: linear-gradient(#292b30, #1d1e21);
+  border: 1px solid #45454b;
+  border-radius: 11px;
+}
+.table-chat-dock .reactions {
+  display: none;
+}
+.table-chat-dock .message:hover .reactions {
+  display: flex;
+}
+.table-chat-dock .chat-form {
+  display: flex;
+  gap: 8px;
+  margin: 10px 13px 15px;
+  padding: 0;
+  border: 0;
+}
+.table-chat-dock .chat-form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 51px;
+  padding: 12px;
+  font-size: 17px;
+  border-radius: 10px;
+  border-color: #77727e;
+  background: linear-gradient(#25282e, #111317);
+}
+.table-chat-dock .chat-form button {
+  width: 46px;
+  min-height: 48px;
+  padding: 9px;
+  background: linear-gradient(#a81732, #50091a);
+  border-color: #e03752;
+  border-radius: 10px;
+}
+.chat-form button svg {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+.chat-virtual {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 20px;
+  min-height: 85px;
+  padding: 20px 0;
   font-size: 16px;
+  color: #bdb8c0;
+  border-top: 1px solid #7773;
 }
-@media (min-width: 701px) {
-  .club-room .scene-canvas {
-    top: 0;
-    height: 100%;
-    transform: none;
-    padding: 0;
-  }
-  .club-room .table-shell,
-  .club-room .table-shell:has(.own-hand) {
-    width: 100%;
-    max-width: none;
-    height: 100%;
-    margin: 0;
-  }
-  .club-room .poker-table {
-    inset: 9% 0 6%;
-  }
-  .club-room .table-center {
-    top: 47%;
-    max-width: 65%;
-  }
-  .club-room .own-hand {
-    top: 74%;
-  }
-  .club-room .community .playing-card {
-    width: clamp(48px, 7.5cqw, 100px);
-    height: auto;
-    aspect-ratio: 100/144;
-  }
-  .club-room .own-hand .playing-card {
-    width: clamp(46px, 6.6cqw, 87px);
-    height: auto;
-    aspect-ratio: 100/144;
-  }
-  .club-room .seat {
-    width: clamp(134px, 16cqw, 218px);
-  }
-  .club-room .seat-profile {
-    min-height: clamp(55px, 7.3cqw, 90px);
-    padding-left: clamp(40px, 5.4cqw, 70px);
-  }
-  .club-room .seat-avatar {
-    width: clamp(62px, 8.8cqw, 118px);
-    height: clamp(62px, 8.8cqw, 118px);
-    left: clamp(-56px, -4.1cqw, -26px);
-  }
-  .club-room .seat-identity strong {
-    font-size: clamp(12px, 1.6cqw, 23px);
-  }
-  .club-room .seat-identity small {
-    font-size: clamp(15px, 1.9cqw, 26px);
-  }
-  .club-room .seat-status {
-    font-size: clamp(10px, 1.2cqw, 16px);
-  }
-  .club-room .turn-indicator {
-    top: 1%;
-  }
+.empty-seat button {
+  width: 100%;
+  min-height: 70px;
+  padding: 9px 12px;
+  border: 1px solid #61585c;
+  border-radius: 13px;
+  background: #111014dd;
+  color: #aaa;
 }
-@media (max-width: 1200px) {
+.empty-seat-avatar {
+  display: none;
+}
+.table-waiting-center h2 {
+  font-size: 28px;
+}
+.table-waiting-center p {
+  font-size: 17px;
+  line-height: 1.4;
+}
+.table-waiting-center button {
+  font-size: 16px;
+  min-height: 43px;
+}
+.table-waiting-center small {
+  font-size: 12px;
+}
+@media (min-width: 701px) and (max-width: 1200px) {
   .room-wordmark {
-    padding-right: 14px;
-    gap: 8px;
+    min-width: 260px;
+    padding-right: 18px;
+    gap: 9px;
   }
   .room-wordmark > span {
-    font-size: 23px;
+    font-size: 25px;
+  }
+  .room-wordmark small {
+    font-size: 9px;
+    letter-spacing: 5px;
   }
   .room-wordmark img {
-    width: 32px;
-    height: 44px;
+    width: 37px;
+    height: 52px;
   }
   .club-room .room-heading {
-    gap: 12px;
-    padding-inline: 12px;
-  }
-  .club-room .room-name p {
-    font-size: 11px;
-  }
-  .club-room .game-layout.chat-visible {
-    grid-template-columns: minmax(0, 1fr) 260px;
-  }
-  .lobby-layout-premium {
-    grid-template-columns: minmax(0, 1fr) 260px;
-    gap: 18px;
-  }
-  .lobby-table-head,
-  .room-card {
-    grid-template-columns: minmax(180px, 1.5fr) 0.7fr 0.6fr 0.8fr 100px;
-    gap: 12px;
-    padding-inline: 14px;
-  }
-  .room-status-cell,
-  .lobby-table-head > span:nth-child(5) {
-    display: none;
-  }
-  .room-symbol {
-    width: 66px;
-  }
-  .room-info h3 {
-    font-size: 16px;
-  }
-  .room-mode-cell,
-  .room-blinds-cell,
-  .room-players-cell {
-    font-size: 12px;
-  }
-  .lobby-side-card {
-    padding: 20px;
-  }
-  .lobby-side-card h2 {
-    font-size: 27px;
-  }
-  .lobby-step strong {
-    font-size: 15px;
-  }
-  .lobby-step p {
-    font-size: 12px;
-  }
-  .club-room .current-hand {
-    font-size: 14px;
-  }
-  .club-room .action-buttons button,
-  .club-room .raise-submit {
-    font-size: 20px;
-    min-height: 60px;
-  }
-  .club-room .bet-shortcuts button {
-    font-size: 14px;
-  }
-  .pot {
-    font-size: 14px;
-    padding: 6px 17px;
-    margin-bottom: 13px;
-  }
-  .pot strong {
-    font-size: 29px;
-  }
-  .chip-stack {
-    width: 48px;
-    height: 43px;
-  }
-}
-@media (max-width: 1000px) and (min-width: 701px) {
-  .room-wordmark {
-    display: none;
+    gap: 14px;
+    padding-left: 27px;
   }
   .club-room .room-name h1 {
-    font-size: 18px;
+    font-size: 22px;
   }
-  .club-room .room-controls button,
-  .club-room .room-options summary {
-    font-size: 12px;
+  .club-room .room-name p {
+    font-size: 14px;
   }
-  .club-room .room-heading {
-    min-height: 68px;
-    height: 68px;
-  }
-  .club-room .game-layout.chat-visible {
-    grid-template-columns: minmax(0, 1fr) 230px;
-  }
-  .club-room .seat-avatar {
-    width: 60px;
-    height: 60px;
-    left: -24px;
-  }
-  .club-room .seat-profile {
-    padding-left: 41px;
-    min-height: 57px;
-  }
-  .club-room .seat {
-    width: 132px;
-  }
-  .club-room .hole-cards .playing-card {
-    width: 26px;
-    height: 37px;
-  }
-  .club-room .hole-cards {
-    top: -30px;
-  }
-  .club-room .seat-identity strong {
-    font-size: 12px;
-  }
-  .club-room .seat-identity small {
+  .club-room .invite-button {
     font-size: 16px;
+    padding: 9px 12px;
+    min-height: 44px;
   }
-  .lobby-layout-premium {
-    grid-template-columns: 1fr;
+  .club-room .invite-button svg {
+    width: 21px;
+    height: 21px;
   }
-  .lobby-companion {
-    grid-template-columns: 1fr 1fr;
+  .club-room .room-controls {
+    gap: 9px;
+  }
+  .club-room .room-controls .panel-trigger,
+  .club-room .room-options > summary {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+  .club-room .room-controls .panel-trigger svg,
+  .club-room .room-options > summary svg {
+    width: 26px;
+    height: 26px;
+  }
+  .club-room .game-layout,
+  .club-room .game-layout.chat-visible {
+    grid-template-columns: minmax(0, 1fr) 250px;
+  }
+  .club-room .raise-controls {
+    grid-template-columns: minmax(140px, 1fr) minmax(150px, 1fr);
+    gap: 6px 9px;
+  }
+  .club-room .raise-controls > label {
+    gap: 8px;
+  }
+  .club-room .raise-label {
+    font-size: 13px;
+  }
+  .club-room .raise-controls input[type='number'] {
+    height: 36px;
+    min-height: 36px;
+    font-size: 20px;
+    padding: 4px 8px;
+    min-width: 60px;
+  }
+  .club-room .bet-shortcuts button {
+    font-size: 13px;
+    padding: 5px;
+    min-height: 34px;
+  }
+  .club-room .raise-controls .bet-shortcuts {
+    gap: 6px;
+  }
+  .club-room .current-hand {
+    font-size: 15px;
+  }
+  .hand-icon {
+    font-size: 24px;
+  }
+  .table-chat-topline {
+    padding: 14px;
+  }
+  .table-chat-topline strong {
+    font-size: 20px;
+  }
+  .table-chat-dock .message {
+    padding-left: 45px;
+  }
+  .table-chat-dock .message-heading .portrait {
+    width: 38px;
+    height: 38px;
+  }
+  .table-chat-dock .message-heading strong {
+    font-size: 14px;
+  }
+  .table-chat-dock .message p {
+    font-size: 14px;
+  }
+  .table-chat-dock .chat-form input {
+    font-size: 13px;
+  }
+  .chat-virtual {
+    font-size: 12px;
   }
 }
 @media (max-width: 700px) {
   .header {
     height: 72px;
-    padding: 10px 12px;
+    padding: 8px 13px;
+    gap: 10px;
   }
   .brand {
-    font-size: 16px;
-    gap: 8px;
+    font-size: 19px;
+    gap: 7px;
   }
   .brand-mark {
-    width: 30px;
-    height: 41px;
+    width: 25px;
+    height: 42px;
   }
   .brand small {
-    font-size: 6px;
-    letter-spacing: 3px;
-  }
-  .header .profile-trigger > .portrait {
-    width: 28px;
-    height: 28px;
+    font-size: 7px;
+    letter-spacing: 4px;
   }
   .header .language select {
-    font-size: 11px;
+    font-size: 12px;
+    padding: 5px;
+    width: 76px;
+  }
+  .header .profile-trigger {
+    font-size: 12px;
+    padding: 5px;
+    min-height: 35px;
+  }
+  .header .profile-trigger .portrait {
+    width: 30px;
+    height: 30px;
+  }
+  .header .profile-trigger > span {
+    max-width: 60px;
+  }
+  .header .desktop-nav {
+    display: none;
   }
   .in-lobby > main {
-    padding: 0 12px 24px;
+    padding: 0 14px 20px;
   }
   .hero {
-    min-height: 410px;
-    padding: 26px 22px;
-    margin-top: 14px;
-    align-items: start;
+    padding: 25px 22px;
+    min-height: 420px;
+    margin: 18px 0 0;
   }
   .hero-copy {
     width: 100%;
   }
   .hero h1 {
-    font-size: 35px;
-    letter-spacing: -1px;
+    font-size: 34px;
   }
   .hero-intro {
-    font-size: 15px;
-    max-width: 30ch;
+    font-size: 16px;
+    margin: 20px 0;
   }
   .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    gap: 9px;
   }
   .hero-actions button {
-    min-height: 49px;
-    font-size: 13px;
-    padding: 10px 13px;
-  }
-  .home-still-life {
-    opacity: 0.4;
-    object-position: 73% center;
-  }
-  .hero:after {
-    background: linear-gradient(90deg, #1b0913f5, #1b0913a0);
+    font-size: 12px;
+    min-height: 46px;
+    padding: 10px;
   }
   .hero-trust {
     font-size: 8px;
-    letter-spacing: 1px;
   }
   .club-features {
-    gap: 14px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 15px 0;
   }
-  .club-features > div {
+  .club-features > div,
+  .club-features > div:first-child,
+  .club-features > div:last-child {
     padding: 20px;
-  }
-  .club-features h3 {
-    font-size: 18px;
+    border: 1px solid #59313e;
   }
   .club-features p {
     font-size: 14px;
   }
+  .in-lobby.view-lobby > main {
+    display: block;
+    padding: 0 12px 15px;
+  }
+  .in-lobby.view-lobby > main:before {
+    height: 220px;
+  }
   .club-lobby-heading {
-    padding: 26px 18px;
-    min-height: 210px;
+    padding: 26px 6px 23px;
+    min-height: 190px;
+    display: block;
   }
   .club-lobby-heading h1 {
-    font-size: 32px;
+    font-size: 29px;
+    letter-spacing: -0.7px;
   }
   .club-lobby-heading p:not(.eyebrow) {
     font-size: 16px;
+    line-height: 1.4;
+    margin: 10px 0 17px;
   }
   .club-lobby-heading .primary {
-    min-height: 48px;
+    min-height: 44px;
     font-size: 16px;
+    padding: 9px 17px;
+  }
+  .lobby-layout-premium {
+    display: block;
+  }
+  .lobby-layout-premium .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 12px 0 20px;
+  }
+  .lobby-layout-premium .filters > input {
+    flex-basis: 85%;
+    height: 46px;
+    font-size: 16px;
+    padding: 10px 14px;
   }
   .format-chips {
-    gap: 6px;
+    order: 2;
+    gap: 7px;
+    width: 100%;
   }
   .format-chips button {
-    font-size: 12px;
-    min-height: 38px;
-    padding: 8px 12px;
+    flex: 1;
+    min-width: 0;
+    font-size: 11px;
+    padding: 7px 9px;
+    min-height: 35px;
   }
-  .filters {
-    padding: 12px;
-  }
-  .filters input,
-  .filters select {
-    font-size: 12px;
-    min-height: 42px;
+  .advanced-filters {
+    margin-left: 0;
   }
   .lobby-table-head {
     display: none;
   }
-  .room-card {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    min-height: 160px;
-    gap: 12px;
-    padding: 18px;
+  .lobby-table .room-card {
+    grid-template-columns: minmax(0, 1fr) 85px;
+    padding: 15px 12px;
+    gap: 10px;
+    position: relative;
   }
   .room-title-cell {
-    grid-column: 1/-1;
+    grid-column: 1;
+    gap: 9px;
+  }
+  .room-symbol {
+    width: 66px;
+    height: 48px;
+  }
+  .room-symbol:before {
+    width: 19px;
+    height: 15px;
+  }
+  .room-symbol:after {
+    width: 36px;
+    height: 26px;
   }
   .room-info h3 {
     font-size: 18px;
   }
-  .room-presence {
-    font-size: 11px;
-  }
-  .room-mode-cell,
-  .room-blinds-cell,
-  .room-players-cell {
+  .room-host-cell {
     font-size: 13px;
+    grid-column: 1;
+    grid-row: 2;
+    margin-left: 75px;
+  }
+  .room-host-cell .portrait {
+    width: 24px;
+    height: 24px;
   }
   .room-mode-cell {
-    display: block;
+    grid-column: 1;
+    font-size: 12px;
+    margin-left: 75px;
+  }
+  .room-blinds-cell {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 14px;
+  }
+  .room-players-cell {
+    grid-column: 1;
+    font-size: 12px;
+  }
+  .room-avatar-cluster .portrait {
+    width: 26px;
+    height: 26px;
+    margin-left: -7px;
+  }
+  .room-players-cell strong {
+    font-size: 13px;
+  }
+  .room-status-cell {
+    font-size: 12px;
+    grid-column: 2;
+    grid-row: 3;
+    padding: 4px;
   }
   .room-buttons {
     grid-column: 2;
-    grid-row: 3;
+    grid-row: 1;
   }
   .room-buttons .primary {
-    min-width: 110px;
-    font-size: 14px;
+    width: 80px;
+    min-height: 37px;
+    font-size: 15px;
+  }
+  .room-buttons .text-button {
+    display: none;
   }
   .lobby-companion {
-    grid-template-columns: 1fr;
+    margin-top: 18px;
+  }
+  .lobby-side-card,
+  .resume-card {
+    padding: 21px;
+  }
+  .lobby-side-card h2,
+  .resume-card h2 {
+    font-size: 28px;
+  }
+  .lobby-step {
+    margin: 20px 0;
+  }
+  .lobby-step strong {
+    font-size: 18px;
+  }
+  .lobby-step p {
+    font-size: 15px;
+  }
+  .lobby-side-card > .text-button {
+    font-size: 17px;
   }
   .in-lobby > footer {
     min-height: 125px;
-    padding: 22px;
   }
   .in-lobby > footer p {
     font-size: 20px;
+    padding: 20px;
   }
   .club-room .room-heading {
-    height: 96px;
-    min-height: 96px;
-    flex-wrap: wrap;
-    gap: 5px 10px;
-    padding: 7px 10px;
-  }
-  .room-wordmark {
-    display: none;
+    position: relative;
+    min-height: 66px;
+    height: 66px;
+    padding: 0 12px;
+    gap: 0;
   }
   .club-room .room-brand {
-    width: 26px;
-    min-height: 28px;
+    left: 12px;
+    top: 17px;
+    width: 27px;
+    min-height: 25px;
+  }
+  .room-brand > span {
+    font-size: 26px;
+  }
+  .room-wordmark {
+    position: absolute;
+    left: 50%;
+    top: 3px;
+    transform: translateX(-50%);
+    min-width: 0;
     padding: 0;
-  }
-  .club-room .room-name {
-    flex-basis: calc(100% - 50px);
-  }
-  .club-room .room-name h1 {
-    font-size: 16px;
-  }
-  .club-room .room-name p {
-    font-size: 11px;
-    margin-top: 3px;
-  }
-  .club-room .room-controls {
-    width: 100%;
+    border: 0;
     gap: 8px;
   }
-  .club-room .room-controls button,
-  .club-room .room-options summary {
-    min-height: 35px;
+  .room-wordmark img {
+    width: 25px;
+    height: 40px;
+  }
+  .room-wordmark > span {
+    font:
+      700 24px/1 Georgia,
+      serif;
+    letter-spacing: 0;
+  }
+  .room-wordmark small {
+    font-size: 7px;
+    letter-spacing: 5px;
+    margin: 4px 0 0;
+  }
+  .club-room .room-name {
+    position: absolute;
+    top: 46px;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+  .club-room .room-name h1 {
     font-size: 12px;
-    padding: 7px 10px;
+    font-weight: 500;
   }
-  .club-room .room-controls .panel-trigger {
-    width: 35px;
-    height: 35px;
-    padding: 7px;
+  .club-room .room-name p {
+    display: none;
   }
-  .club-room .room-controls .invite-button {
-    margin-right: auto;
-    padding: 7px 12px;
+  .club-room .room-controls {
+    position: absolute;
+    right: 11px;
+    top: 16px;
+    gap: 10px;
+    width: auto;
   }
-  .club-room .game-layout.chat-visible,
-  .club-room .game-layout {
-    grid-template-columns: minmax(0, 1fr);
+  .club-room .invite-button {
+    display: none;
+  }
+  .club-room .room-controls .panel-trigger,
+  .club-room .room-options > summary {
+    width: 28px;
+    height: 30px;
+    min-height: 30px;
+    padding: 1px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+  .club-room .room-controls .panel-trigger svg,
+  .club-room .room-options > summary svg {
+    width: 27px;
+    height: 27px;
+  }
+  .club-room .room-options > div {
+    position: fixed;
+    top: 60px;
+    right: 8px;
+    width: 260px;
+    max-height: calc(100dvh - 80px);
+    overflow: auto;
+  }
+  .room-options > div > .panel-trigger {
+    width: 100%;
+    padding: 10px;
+    min-height: 38px;
+    background: #24151e;
+  }
+  .club-room .game-layout,
+  .club-room .game-layout.chat-visible {
+    display: flex;
+    position: relative;
+    flex-direction: column;
   }
   .club-room .game-stage {
-    padding: 0 8px 8px;
-  }
-  .club-room .table-tabs button {
-    min-height: 24px;
-    font-size: 9px;
-    padding: 4px 9px;
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+    background: #070609;
   }
   .club-room .table-shell,
   .club-room .table-shell:has(.own-hand) {
-    height: clamp(345px, calc(100cqh - 45px), 540px);
-  }
-  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) {
-    height: clamp(440px, calc(100cqh - 45px), 590px);
+    height: 100%;
+    min-height: 0;
+    width: 100%;
+    inset: 0;
+    transform: none;
   }
   .club-room .poker-table {
-    inset: 6% 1% 6%;
+    inset: -1% -0.7% 1.5%;
+    background-size: 100% 100%;
   }
   .club-room .table-center {
-    top: 39%;
-  }
-  .club-room .own-hand {
-    top: 68%;
-  }
-  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .table-center {
-    top: 43%;
-  }
-  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .own-hand {
-    top: 72%;
-  }
-  .club-room .community .playing-card {
-    width: 42px;
-    height: 60px;
-  }
-  .club-room .own-hand .playing-card {
-    width: 46px;
-    height: 66px;
+    left: 50%;
+    top: 40.5%;
+    max-width: 90%;
   }
   .club-room .pot {
     font-size: 12px;
-    padding: 6px 16px;
+    line-height: 1;
+    gap: 10px;
+    padding: 2px 24px;
     margin-bottom: 12px;
-    gap: 8px;
+    border-radius: 35px;
   }
   .club-room .pot strong {
-    font-size: 28px;
+    font-size: 22px;
   }
   .club-room .chip-stack {
-    width: 43px;
-    height: 36px;
-    transform: none;
+    width: 48px;
+    height: 33px;
+  }
+  .club-room .community {
+    gap: 5px;
+  }
+  .club-room .community .playing-card {
+    width: min(11.7cqw, 15.2cqh);
+    height: auto;
+    border-radius: 5px;
+  }
+  .club-room .street {
+    display: none;
+  }
+  .club-room .own-hand {
+    left: 50%;
+    top: 69%;
+  }
+  .club-room .own-hand .playing-card {
+    width: min(10cqw, 12.4cqh);
+    height: auto;
+    border-radius: 5px;
   }
   .club-room .seat {
-    width: 100px;
-  }
-  .club-room .seat.self {
-    width: 110px;
+    width: 25.5cqw;
+    --seat-left-inset: 53px;
+    --seat-right-inset: 53px;
   }
   .club-room .seat-profile {
-    min-height: 48px;
-    padding: 6px 5px 6px 34px;
-    border-radius: 9px;
-  }
-  .club-room .seat-avatar {
-    width: 49px;
-    height: 49px;
-    left: -18px;
-    border-width: 2px;
-    box-shadow: 0 0 0 3px #110d13;
+    min-height: 36px;
+    height: auto;
+    padding: 7px 5px 5px;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    border-radius: 10px;
   }
   .club-room .seat-identity strong {
-    font-size: 9px;
+    font-size: clamp(11px, 3.15cqw, 15px);
+    font-weight: 700;
+    line-height: 1.05;
   }
   .club-room .seat-identity small {
-    font-size: 12px;
+    font-size: clamp(11px, 3.3cqw, 15px);
+    margin: 4px 0 0;
+    line-height: 1;
+  }
+  .club-room .seat-avatar {
+    left: 50%;
+    top: 0;
+    width: min(16cqw, 16cqh);
+    height: min(16cqw, 16cqh);
+    transform: translate(-50%, -97%);
+    border: 2px solid #ab9b92;
+    box-shadow: 0 2px 3px #000;
+    z-index: -1;
+  }
+  .club-room .seat.self {
+    left: 50% !important;
+    top: 88% !important;
+    width: 25.5cqw;
+  }
+  .club-room .seat.self .seat-profile {
+    padding: 7px 6px 6px;
+    min-height: 38px;
+  }
+  .club-room .seat.self .seat-avatar {
+    left: 50%;
+    width: min(17cqw, 17cqh);
+    height: min(17cqw, 17cqh);
+    transform: translate(-50%, -59%);
+  }
+  .club-room .seat.self .seat-status {
+    display: none;
   }
   .club-room .seat-status {
-    font-size: 8px;
-    padding: 3px 8px;
+    display: none;
+  }
+  .club-room .seat-timer {
+    display: none;
+  }
+  .club-room .hole-cards {
+    left: 72%;
+    top: -20px;
+    gap: 3px;
+    z-index: 0;
+  }
+  .club-room .hole-cards .playing-card {
+    width: 21px;
+    height: 30px;
+    border-width: 1.5px !important;
+    border-radius: 3px;
+  }
+  .club-room .hole-cards .card-back > span {
+    font-size: 9px;
+  }
+  .club-room .seat[data-slot='1'] {
+    left: 15% !important;
+    top: 68% !important;
+  }
+  .club-room .seat[data-slot='2'] {
+    left: 15% !important;
+    top: 25% !important;
+  }
+  .club-room .seat[data-slot='3'] {
+    left: 50% !important;
+    top: 16% !important;
+  }
+  .club-room .seat[data-slot='4'] {
+    left: 85% !important;
+    top: 25% !important;
+  }
+  .club-room .seat[data-slot='5'] {
+    left: 85% !important;
+    top: 68% !important;
   }
   .club-room .seat-bet {
     font-size: 9px;
+    gap: 2px;
   }
   .club-room .tiny-chip {
+    width: 15px;
+    height: 15px;
+  }
+  .club-room .dealer {
+    position: absolute;
+    bottom: 0;
+    left: -8px;
     width: 13px;
-    height: 11px;
-  }
-  .club-room .hole-cards .playing-card {
-    width: 23px;
-    height: 33px;
-  }
-  .club-room .hole-cards {
-    top: -25px;
-    left: 65%;
-  }
-  .club-room .bot-tag {
-    font-size: 6px;
-  }
-  .club-room .turn-indicator {
-    font-size: 10px;
-    top: -2%;
-    padding: 5px 11px;
-  }
-  .club-room .turn-indicator strong {
-    font-size: 10px;
-  }
-  .club-room .table-waiting-center {
-    max-width: 220px;
-  }
-  .club-room .table-waiting-center h2 {
-    font-size: 21px;
-  }
-  .club-room .table-waiting-center p {
-    font-size: 12px;
-    max-width: 210px;
-  }
-  .club-room .table-waiting-center .primary {
-    min-height: 43px;
-    font-size: 13px;
-    padding: 9px 16px;
-  }
-  .club-room .table-waiting-center .quick-bot {
-    font-size: 11px;
-    min-height: 30px;
-  }
-  .club-room .table-waiting-center > small {
-    font-size: 10px;
-  }
-  .club-room .empty-seat {
-    width: 95px;
-  }
-  .club-room .empty-seat button {
-    min-height: 47px;
-    padding: 6px 4px 6px 26px;
-    border-radius: 9px;
-  }
-  .empty-seat-avatar {
-    width: 44px;
-    height: 44px;
-    left: -15px;
-  }
-  .empty-seat-avatar b {
-    width: 18px;
-    height: 18px;
-    font-size: 13px;
-  }
-  .empty-seat button small {
-    font-size: 9px;
-  }
-  .club-room .decision-dock {
-    padding: 7px 10px;
-    gap: 5px;
-  }
-  .club-room .decision-summary > strong {
-    font-size: 12px;
-  }
-  .club-room .decision-summary > small {
-    font-size: 10px;
-  }
-  .club-room .current-hand {
-    font-size: 10px;
-  }
-  .club-room .coach-controls button,
-  .club-room .coach-controls .text-button {
-    font-size: 9px;
-    min-height: 25px;
-  }
-  .club-room .coach-explanation {
-    font-size: 9px;
-  }
-  .club-room .action-bar {
-    padding: 8px 10px 10px;
-    gap: 8px;
-  }
-  .club-room .raise-controls {
-    grid-template-columns: 88px minmax(0, 1fr);
-    gap: 6px;
-  }
-  .club-room .raise-controls input[type='number'] {
-    min-height: 40px;
-    height: 40px;
-    font-size: 16px;
-  }
-  .club-room .raise-label {
+    height: 13px;
     font-size: 8px;
   }
-  .club-room .bet-shortcuts button {
-    min-height: 32px;
-    font-size: 10px;
-    padding: 5px;
+  .club-room .bot-tag {
+    font-size: 5px;
+    right: 2px;
+    top: 2px;
+    opacity: 0.2;
   }
-  .club-room .action-buttons {
-    gap: 8px;
+  .club-room .turn-indicator {
+    left: 50%;
+    bottom: 0;
+    top: auto;
+    min-height: 24px;
+    padding: 4px 22px;
+    min-width: 145px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
   }
-  .club-room .action-buttons button,
-  .club-room .raise-submit {
-    min-height: 49px;
-    font-size: 13px;
-    padding: 7px 5px;
-  }
-  .club-room .action-placeholder {
-    min-height: 48px;
-    font-size: 12px;
-  }
-}
-@media (max-height: 500px) and (orientation: landscape) {
-  .club-room .room-heading {
-    height: 54px;
-    min-height: 54px;
-    padding: 5px 10px;
-    flex-wrap: nowrap;
-  }
-  .room-wordmark {
+  .club-room .turn-indicator .pulse-dot {
     display: none;
   }
-  .club-room .room-name {
-    flex-basis: auto;
-  }
-  .club-room .room-controls {
-    width: auto;
-  }
-  .club-room .room-name h1 {
-    font-size: 15px;
-  }
-  .club-room .room-name p {
-    font-size: 10px;
-  }
-  .club-room .room-controls button,
-  .club-room .room-options summary {
-    min-height: 34px;
-    font-size: 11px;
-    padding: 6px 9px;
-  }
-  .club-room .room-controls .panel-trigger {
-    width: 34px;
-    height: 34px;
-    padding: 6px;
+  .club-room .decision-zone {
+    height: clamp(190px, 28.4dvh, 230px);
+    min-height: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding: 0 5px 5px;
+    background: linear-gradient(#0a090c, #030405);
   }
   .club-room .decision-dock {
-    padding: 4px 9px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    padding: 0 40px;
+    border: 0;
   }
-  .club-room .decision-summary > strong {
+  .club-room .decision-summary {
+    gap: 0;
+  }
+  .hand-icon {
+    display: none;
+  }
+  .club-room .current-hand {
+    font-size: 14px;
+    font-weight: 400;
+    color: #d9d3d7;
+    line-height: 1.1;
+    text-align: center;
+  }
+  .club-room .current-hand > span {
+    display: none;
+  }
+  .club-room .current-hand strong {
+    font-weight: 400;
+  }
+  .coach-menu {
+    position: absolute;
+    right: 7px;
+    top: 0;
+    margin: 0;
+  }
+  .coach-menu > summary {
     font-size: 11px;
   }
-  .club-room .decision-summary > small {
-    font-size: 10px;
+  .coach-menu[open] > .coach-controls {
+    left: auto;
+    right: 0;
+    bottom: 24px;
   }
-  .club-room .coach-controls button,
-  .club-room .coach-controls .text-button {
-    font-size: 9px;
-    min-height: 25px;
+  .coach-menu .coach-explanation {
+    left: auto;
+    right: 0;
   }
   .club-room .action-bar {
-    padding: 5px 9px;
-    gap: 5px;
+    height: 100%;
+    padding: 22px 0 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: minmax(105px, 1fr) 54px;
+    gap: 14px 7px;
   }
   .club-room .raise-controls {
-    grid-template-columns: 90px minmax(0, 1fr) minmax(0, 1fr);
-    gap: 6px;
-  }
-  .club-room .raise-controls > input[type='range'] {
-    grid-column: 3;
+    grid-column: 1/-1;
     grid-row: 1;
+    margin: 0 4px;
+    padding: 6px 13px 10px;
+    grid-template-columns: 1fr;
+    grid-template-rows: 31px 29px 16px;
+    gap: 7px;
+    border: 1px solid #716b74;
+    border-radius: 10px;
+    background: linear-gradient(#23232a, #0c0c10);
   }
-  .club-room .raise-controls input[type='number'] {
-    height: 34px;
-    min-height: 34px;
-    font-size: 13px;
+  .club-room .raise-controls > label {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
   }
   .club-room .raise-label {
-    font-size: 7px;
+    font-size: 15px;
+    min-width: 117px;
+    line-height: 1.1;
+  }
+  .club-room .amount-stepper {
+    display: flex;
+    flex: 1;
+    height: 31px;
+    border: 1px solid #7e7982;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .club-room .amount-stepper > button {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    background: linear-gradient(#33343c, #14151a);
+    padding: 0;
+    font-size: 27px;
+    line-height: 1;
+    color: #fff;
+  }
+  .club-room .raise-controls input[type='number'] {
+    height: 29px;
+    min-height: 0;
+    padding: 0;
+    text-align: center;
+    border: 0;
+    border-radius: 0;
+    font-size: 22px;
+    font-weight: 700;
+    min-width: 30px;
+    background: #08090a;
+    flex: 1;
+    appearance: textfield;
+  }
+  .club-room .raise-controls input::-webkit-inner-spin-button {
+    display: none;
+  }
+  .club-room .raise-controls .bet-shortcuts {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    gap: 9px;
+    width: 100%;
   }
   .club-room .bet-shortcuts button {
     min-height: 28px;
-    font-size: 9px;
-    padding: 4px;
+    font-size: 14px;
+    padding: 3px 10px;
+    border-radius: 9px;
+  }
+  .club-room .raise-controls > input[type='range'] {
+    grid-column: 1;
+    grid-row: 3;
+    height: 18px;
+    margin: 0;
+  }
+  .club-room .action-buttons {
+    grid-column: 1/3;
+    grid-row: 2;
+    gap: 7px;
   }
   .club-room .action-buttons button,
   .club-room .raise-submit {
-    min-height: 37px;
-    font-size: 12px;
-    padding: 5px;
-  }
-  .club-room .action-buttons {
-    gap: 6px;
+    height: 100%;
+    min-height: 0;
+    padding: 7px 5px;
+    border-radius: 13px;
+    font-size: clamp(16px, 5.4vw, 24px);
+    line-height: 1.04;
   }
   .club-room .action-placeholder {
-    min-height: 55px;
-    font-size: 11px;
+    padding: 28px 12px 20px;
+    font-size: 13px;
+    align-items: center;
   }
-  .club-room .community .playing-card,
-  .club-room .own-hand .playing-card {
-    width: 30px;
-    height: 43px;
+  .club-room .table-chat-dock {
+    display: none;
+    position: absolute;
+    inset: 0 0 var(--controls-height, 215px);
+    z-index: 35;
+    margin: 0;
+    border-radius: 0;
+    max-height: none;
+    height: auto;
   }
-  .club-room .pot {
-    padding: 3px 10px;
-    margin-bottom: 6px;
-    font-size: 9px;
+  .club-room .table-chat-dock.chat-expanded {
+    display: flex;
   }
-  .club-room .pot strong {
+  .table-chat-topline {
+    height: 50px;
+    min-height: 50px;
+    padding: 10px 15px;
+  }
+  .table-chat-topline strong {
+    font-size: 19px;
+  }
+  .table-chat-topline .mobile-chat-toggle {
+    width: 28px;
+    font-size: 24px;
+    opacity: 1;
+  }
+  .chat-heading-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .chat-virtual {
+    display: none;
+  }
+  .table-chat-dock .chat-form input {
+    font-size: 15px;
+  }
+  .table-waiting-center h2 {
     font-size: 20px;
   }
-  .club-room .chip-stack {
-    width: 30px;
-    height: 25px;
+  .table-waiting-center p {
+    font-size: 12px;
+    line-height: 1.35;
   }
-  .club-room .seat {
-    width: 88px;
+  .table-waiting-center {
+    max-width: 65cqw;
+  }
+  .table-waiting-center button {
+    font-size: 11px;
+    min-height: 33px;
+    padding: 7px;
+  }
+  .table-waiting-center small {
+    font-size: 9px;
+  }
+  .empty-seat button {
+    min-height: 36px;
+    font-size: 11px;
+    padding: 5px;
+  }
+  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat {
+    width: 21cqw;
+  }
+  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat:not(.self) {
+    left: var(--seat-x) !important;
+    top: var(--seat-y) !important;
+  }
+  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat-profile {
+    min-height: 30px;
+    padding: 4px;
+  }
+  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat-avatar {
+    width: 10cqw;
+    height: 10cqw;
+  }
+  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat-identity strong {
+    font-size: 9px;
+  }
+  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat-identity small {
+    font-size: 10px;
+  }
+}
+@media (min-width: 701px) and (max-height: 500px) {
+  .club-room .room-heading {
+    height: 50px;
+    min-height: 50px;
+    padding-block: 3px;
+  }
+  .room-wordmark {
+    min-width: 220px;
+  }
+  .room-wordmark img {
+    width: 28px;
+    height: 40px;
+  }
+  .room-wordmark > span {
+    font-size: 22px;
+  }
+  .room-wordmark small {
+    font-size: 7px;
+    letter-spacing: 4px;
+  }
+  .club-room .room-name h1 {
+    font-size: 17px;
+  }
+  .club-room .room-name p {
+    font-size: 12px;
+  }
+  .club-room .invite-button {
+    font-size: 13px;
+    min-height: 34px;
+    padding: 6px 10px;
+  }
+  .club-room .room-controls .panel-trigger,
+  .club-room .room-options > summary {
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 6px;
+  }
+  .club-room .decision-zone {
+    height: 125px;
+    min-height: 0;
+  }
+  .club-room .decision-dock {
+    height: 55px;
+    top: 0;
+  }
+  .club-room .current-hand {
+    font-size: 11px;
+  }
+  .hand-icon {
+    font-size: 17px;
+  }
+  .club-room .action-bar {
+    grid-template-rows: 47px 43px;
+    gap: 10px 9px;
+    padding: 6px 10px 10px;
+  }
+  .club-room .raise-controls {
+    grid-template-columns: minmax(130px, 1fr) minmax(140px, 1fr);
+    gap: 2px 8px;
+    margin-left: 35%;
+  }
+  .club-room .raise-label {
+    font-size: 11px;
+  }
+  .club-room .raise-controls > label {
+    gap: 7px;
+  }
+  .club-room .raise-controls input[type='number'] {
+    height: 29px;
+    min-height: 29px;
+    font-size: 16px;
+    min-width: 50px;
+  }
+  .club-room .raise-controls .bet-shortcuts {
+    gap: 5px;
+  }
+  .club-room .bet-shortcuts button {
+    min-height: 25px;
+    font-size: 11px;
+    padding: 3px;
+  }
+  .club-room .raise-controls > input[type='range'] {
+    height: 12px;
+    grid-column: 1/-1;
+    grid-row: 2;
+  }
+  .club-room .action-buttons button,
+  .club-room .raise-submit {
+    font-size: 19px;
+    padding: 5px;
+    border-radius: 10px;
+  }
+  .club-room .pot {
+    font-size: 9px;
+    padding: 2px 8px;
+    margin-bottom: 6px;
+    gap: 5px;
+  }
+  .club-room .pot strong {
+    font-size: 18px;
+  }
+  .club-room .chip-stack {
+    width: 29px;
+    height: 23px;
   }
   .club-room .seat-profile {
-    min-height: 35px;
-    padding-left: 28px;
-    border-radius: 7px;
-  }
-  .club-room .seat-avatar {
-    width: 36px;
-    height: 36px;
-    left: -12px;
-    border-width: 2px;
+    min-height: 29px;
+    padding-block: 3px;
   }
   .club-room .seat-identity strong {
-    font-size: 8px;
+    font-size: 9px;
   }
   .club-room .seat-identity small {
-    font-size: 10px;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .club-room .seat-avatar {
+    width: 17cqh;
+    height: 17cqh;
+  }
+  .club-room .seat.self .seat-avatar {
+    width: 20cqh;
+    height: 20cqh;
   }
   .club-room .seat-status {
     font-size: 7px;
-    padding: 3px 6px;
+    padding: 2px 8px;
   }
   .club-room .hole-cards {
-    top: -18px;
+    top: -25px;
   }
   .club-room .hole-cards .playing-card {
     width: 17px;
     height: 24px;
   }
   .club-room .turn-indicator {
-    font-size: 8px;
-    top: 0;
-    padding: 4px 8px;
+    font-size: 9px;
+    min-height: 18px;
+    padding: 3px 10px;
+  }
+  .club-room .street {
+    display: none;
+  }
+  .club-room .table-center {
+    top: 44%;
+  }
+  .club-room .own-hand {
+    top: 70%;
+  }
+  .club-room .community .playing-card {
+    width: 14cqh;
+  }
+  .club-room .own-hand .playing-card {
+    width: 10cqh;
+  }
+  .club-room .table-chat-topline {
+    height: 45px;
+    min-height: 45px;
+    padding: 9px;
+  }
+  .table-chat-topline strong {
+    font-size: 17px;
+  }
+  .chat-virtual {
+    display: none;
+  }
+  .table-chat-dock .chat-form {
+    margin: 5px;
+  }
+  .table-chat-dock .chat-form input {
+    min-height: 34px;
+    padding: 6px;
+    font-size: 12px;
+  }
+  .table-chat-dock .chat-form button {
+    min-height: 34px;
+    width: 34px;
+    padding: 5px;
   }
 }
 @media (min-width: 701px) {
   .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat {
-    width: clamp(120px, 13cqw, 180px);
+    width: 14cqw;
   }
   .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat-avatar {
-    width: clamp(52px, 7cqw, 90px);
-    height: clamp(52px, 7cqw, 90px);
-    left: clamp(-42px, -3.2cqw, -24px);
+    width: min(7cqw, 14cqh);
+    height: min(7cqw, 14cqh);
+    left: -3cqw;
   }
   .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat-profile {
-    min-height: clamp(50px, 5.8cqw, 74px);
-    padding-left: clamp(35px, 4.3cqw, 54px);
+    padding-left: 4.5cqw;
+    min-height: 11cqh;
   }
   .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat-identity strong {
-    font-size: clamp(11px, 1.3cqw, 18px);
+    font-size: 1.4cqw;
   }
   .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat-identity small {
-    font-size: clamp(13px, 1.5cqw, 21px);
-  }
-  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .seat-status {
-    font-size: clamp(9px, 1cqw, 13px);
-  }
-  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .hole-cards {
-    top: -38px;
-  }
-  .club-room .table-shell:is([data-seats='8'], [data-seats='9']) .hole-cards .playing-card {
-    width: 32px;
-    height: 46px;
+    font-size: 1.6cqw;
   }
 }
-@media (max-width: 700px) {
-  .club-room .room-heading {
-    position: relative;
-    height: 86px;
-    min-height: 86px;
-  }
-  .club-room .room-brand {
-    position: absolute;
-    left: 10px;
-    top: 14px;
-  }
+
+.table-chat-topline > div {
+  min-width: 0;
+  flex: 1;
+}
+.table-chat-topline strong {
+  white-space: nowrap;
+  font-size: clamp(17px, 1.6vw, 25px);
+}
+.table-chat-topline .mobile-chat-toggle {
+  flex: none;
+  width: 16px;
+  padding: 0;
+}
+
+@media (min-width: 701px) and (min-height: 501px) {
   .club-room .room-wordmark {
-    display: flex;
-    position: absolute;
-    left: 43%;
-    top: 7px;
-    transform: translateX(-50%);
-    gap: 6px;
-    padding: 0;
-    border: 0;
-  }
-  .room-wordmark img {
-    width: 25px;
-    height: 36px;
-  }
-  .room-wordmark > span {
-    font-size: 18px;
-  }
-  .room-wordmark small {
-    font-size: 5px;
-    letter-spacing: 3.5px;
-    margin-top: 3px;
-  }
-  .club-room .room-name {
-    margin-top: 40px;
-    flex-basis: 100%;
-    text-align: center;
-  }
-  .club-room .room-name h1 {
-    font-size: 13px;
-  }
-  .club-room .room-name p {
-    display: none;
+    margin-right: 34px;
   }
   .club-room .room-controls {
-    position: absolute;
-    right: 8px;
-    top: 12px;
-    width: auto;
-    gap: 4px;
+    gap: 21px;
   }
-  .club-room .room-controls .invite-button {
-    display: none;
-  }
-  .club-room .room-controls .panel-trigger {
-    width: 29px;
-    height: 32px;
-    min-height: 32px;
-    padding: 6px;
-  }
-  .club-room .room-options summary {
-    width: 29px;
-    height: 32px;
-    min-height: 32px;
-    padding: 5px;
-    font-size: 0;
-    justify-content: center;
-  }
-  .club-room .room-options summary:before {
-    content: '⚙';
-    font-size: 19px;
-  }
-}
-@media (min-width: 701px) {
-  .club-room .table-shell,
-  .club-room .table-shell:has(.own-hand) {
-    position: absolute;
-    top: 50%;
-    height: min(100%, 63cqw);
-    transform: translateY(-50%);
-  }
-}
-.hero .home-still-life {
-  opacity: 1;
-}
-.hero:after {
-  background: linear-gradient(90deg, #1b0913eb 0%, #1b0913b0 40%, #1b091300 80%);
-}
-.club-features {
-  gap: 20px;
-}
-.club-room .community .card-empty {
-  background: #26061330;
-  border: 1px dashed #d88b9a30;
-  box-shadow: none;
-  color: #e6a5b322;
-}
-@media (min-width: 1201px) and (min-height: 501px) {
-  .club-room .decision-zone {
-    min-height: 245px;
-  }
-  .club-room .action-placeholder {
-    flex: 1;
-  }
-  .club-room .own-hand {
-    top: 72%;
-  }
-  .club-room .chip-stack {
-    width: 100px;
-    height: 66px;
-    background-size: 140%;
-  }
-}
-.club-room .game-stage {
-  background:
-    linear-gradient(#0a040b10, #0a040b22),
-    url('/room-backdrop.webp') center/cover;
-}
-.room-host-cell {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  min-width: 0;
-  font-size: 15px;
-}
-.room-host-cell > .portrait {
-  width: 34px;
-  height: 34px;
-  flex: none;
-  border: 1px solid #92737f;
-}
-.room-host-cell > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.room-avatar-cluster {
-  display: flex;
-}
-.room-avatar-cluster .portrait {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #b79fa9;
-  margin-right: -8px;
-}
-.room-players-cell {
-  display: flex;
-  align-items: center;
-  gap: 17px;
-  flex-wrap: wrap;
-}
-.room-players-cell strong {
-  font-size: 14px;
-  white-space: nowrap;
-}
-.room-occupancy {
-  display: none;
-}
-@media (min-width: 1201px) {
-  .lobby-table-head,
-  .room-card {
-    grid-template-columns: minmax(210px, 1.6fr) minmax(95px, 0.8fr) 0.7fr 0.6fr 1fr 0.7fr 105px;
-    gap: 14px;
-  }
-  .lobby-table-head > span:nth-child(5),
-  .room-status-cell {
-    display: block;
-  }
-}
-@media (max-width: 1200px) {
-  .room-host-cell {
-    display: none;
-  }
-  .lobby-table-head > span:nth-child(2) {
-    display: none;
-  }
-  .lobby-table-head > span:nth-child(5) {
-    display: block;
-  }
-  .lobby-table-head > span:nth-child(6) {
-    display: none;
-  }
-}
-@media (max-width: 700px) {
-  .room-avatar-cluster .portrait {
-    width: 25px;
-    height: 25px;
-  }
-  .room-players-cell {
-    gap: 12px;
-  }
-}
-/* Width and height both constrain the game pieces, without scaling the controls. */
-@media (min-width: 701px) and (min-height: 501px) {
-  .club-room .table-shell {
-    container-type: size;
-  }
-  .club-room .table-center {
-    top: 46%;
-  }
-  .club-room .own-hand {
-    top: 71.5%;
-  }
-  .club-room .community .playing-card {
-    width: min(clamp(48px, 7.5cqw, 100px), 14cqh);
-  }
-  .club-room .own-hand .playing-card {
-    width: min(clamp(46px, 6.6cqw, 87px), 10.5cqh);
-  }
-  .club-room .seat-profile {
-    min-height: min(clamp(55px, 7.3cqw, 90px), 14cqh);
-    padding-top: min(10px, 1.3cqh);
-    padding-bottom: min(10px, 1.3cqh);
-  }
-  .club-room .seat-avatar {
-    width: min(clamp(62px, 8.8cqw, 118px), 18cqh);
-    height: min(clamp(62px, 8.8cqw, 118px), 18cqh);
-  }
-  .club-room .seat-identity strong {
-    font-size: min(clamp(12px, 1.6cqw, 23px), 3cqh);
-  }
-  .club-room .seat-identity small {
-    font-size: min(clamp(15px, 1.9cqw, 26px), 3.7cqh);
-  }
-  .club-room .seat-status {
-    font-size: min(clamp(10px, 1.2cqw, 16px), 2.3cqh);
-    padding-block: 3px;
-  }
-  .club-room .pot {
-    padding: 1cqh 22px;
-    font-size: min(18px, 2.7cqh);
-    margin-bottom: 2cqh;
-  }
-  .club-room .pot strong {
-    font-size: min(37px, 5.7cqh);
-  }
-  .club-room .chip-stack {
-    width: min(100px, 16cqh);
-    height: min(66px, 10cqh);
-  }
-  .club-room .street {
-    font-size: min(8px, 1.4cqh);
-    margin-top: 1.4cqh;
-  }
-}
-.lobby-layout-premium .section-heading {
-  display: none;
-}
-.lobby-layout-premium .filters {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto 44px;
-  gap: 15px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  margin-bottom: 26px;
-  align-items: center;
-}
-.filters > input {
-  font-size: 17px;
-  min-height: 54px;
-  border-color: #8b6c79;
-  background: #140d14;
-  border-radius: 10px;
-  padding-left: 20px;
-}
-.filters .format-chips {
-  margin: 0;
-  flex-wrap: nowrap;
-}
-.filters .format-chips button {
-  min-height: 46px;
-  padding: 9px 17px;
-  font-size: 15px;
-  white-space: nowrap;
-}
-.advanced-filters {
-  position: relative;
-}
-.advanced-filters > summary {
-  list-style: none;
-  min-height: 44px;
-  border: 1px solid #765361;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  font-size: 25px;
-}
-.advanced-filters > summary::-webkit-details-marker {
-  display: none;
-}
-.advanced-filters > div {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 270px;
-  padding: 18px;
-  display: grid;
-  gap: 12px;
-  z-index: 20;
-  border: 1px solid #8d6475;
-  border-radius: 12px;
-  background: #1a121c;
-  box-shadow: 0 15px 40px #000b;
-}
-.advanced-filters select {
-  display: block;
-  width: 100%;
-}
-@media (max-width: 1200px) {
-  .lobby-layout-premium .filters {
-    grid-template-columns: minmax(0, 1fr) 44px;
-    gap: 12px;
-  }
-  .filters .format-chips {
-    grid-row: 2;
-    grid-column: 1/-1;
-    flex-wrap: wrap;
-  }
-  .advanced-filters {
-    grid-row: 1;
-    grid-column: 2;
-  }
-}
-@media (max-width: 700px) {
-  .filters > input {
-    font-size: 14px;
-    min-height: 46px;
-  }
-  .filters .format-chips {
-    gap: 6px;
-  }
-  .filters .format-chips button {
-    min-height: 36px;
-    font-size: 11px;
-    padding: 7px 10px;
-  }
-}
-
-@media (max-width: 700px) {
-  .club-room .table-shell {
-    --seat-left-inset: 70px;
-    --seat-right-inset: 55px;
-  }
-}
-
-@media (max-width: 700px) and (min-height: 501px) {
-  .club-room .own-hand {
-    top: 65%;
-  }
-}
-@media (min-width: 701px) and (max-height: 500px) and (orientation: landscape) {
-  .club-room .table-shell {
-    container-type: size;
-  }
-  .club-room .table-center {
+  .club-room .seat.self .seat-avatar {
     top: 40%;
   }
-  .club-room .own-hand {
-    top: 67%;
-  }
-  .club-room .community .playing-card {
-    width: min(30px, 12cqh);
-    height: auto;
-  }
-  .club-room .own-hand .playing-card {
-    width: min(24px, 9cqh);
-    height: auto;
-  }
-  .club-room .pot {
-    padding: 2px 8px;
-    margin-bottom: 3px;
-    font-size: 8px;
-  }
-  .club-room .pot strong {
+  .club-room .turn-indicator {
+    top: calc(88.5% + 7px);
+    left: 56%;
+    bottom: auto;
     font-size: 18px;
+    min-height: 36px;
+    padding: 6px 13px;
   }
-  .club-room .chip-stack {
-    width: 24px;
-    height: 20px;
+  .club-room .decision-zone:after {
+    content: '';
+    position: absolute;
+    left: 17px;
+    right: 17px;
+    bottom: 120px;
+    border-top: 1px solid #7775;
+    pointer-events: none;
   }
-  .club-room .street {
-    font-size: 6px;
-    margin-top: 3px;
+  .club-room .table-chat-dock {
+    position: relative;
+    background: none;
+    border: 0;
+    overflow: visible;
   }
-  .club-room .seat-profile {
-    min-height: min(35px, 12cqh);
-    padding-block: 2px;
+  .club-room .table-chat-topline {
+    background: linear-gradient(110deg, #111214, #040506);
+    border: 1px solid #38383c;
+    border-radius: 19px 19px 0 0;
+  }
+  .club-room .table-chat-dock .chat {
+    flex: none;
+    height: calc(100% - 23dvh - 57px);
+    background: linear-gradient(110deg, #111214, #040506);
+    border: 1px solid #38383c;
+    border-top: 0;
+    border-radius: 0 0 19px 19px;
+  }
+  .club-room .chat-virtual {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    min-height: 66px;
   }
 }
-.club-room .action-buttons,
-.club-room .raise-submit {
-  align-self: stretch;
-  margin-block: 0;
-}
-/* Reserve a visible gap even when the scene is scaled to fractional pixels. */
-.club-room .decision-zone {
-  margin-top: 8px;
-}
-@media (max-height: 500px) and (orientation: landscape) {
-  .club-room .scene-canvas {
-    top: -8px;
+
+@media (max-width: 700px) {
+  .club-room .seat[data-slot='3'] .seat-avatar {
+    width: 14cqw;
+    height: 14cqw;
+    transform: translate(-50%, -86%);
   }
+}
+.club-room .raise-controls > input[type='range'] {
+  appearance: none;
+  background: linear-gradient(
+    90deg,
+    #d80f36 0 var(--bet-progress, 0%),
+    #303036 var(--bet-progress, 0%) 100%
+  );
+  height: 10px;
+  border-radius: 20px;
+  align-self: center;
+}
+.club-room .raise-controls > input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #bcb9bd;
+  background: #f4f4f4;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px #000;
+}
+.club-room .raise-controls > input[type='range']::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #bcb9bd;
+  background: #f4f4f4;
+  border-radius: 50%;
+}
+.card-back .card-back-emblem {
+  width: 30%;
+  height: 48%;
+  object-fit: contain;
+  opacity: 0.55;
 }

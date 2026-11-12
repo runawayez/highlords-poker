@@ -43,7 +43,8 @@ async function enter(page: Page, nickname: string) {
   await expect(page.getByRole('dialog')).not.toBeVisible();
 }
 async function openPlayers(page: Page) {
-  await page.getByRole('button', { name: /^(Gerenciar sala|Manage room)$/, exact: true }).click();
+  const language = await page.locator('html').getAttribute('lang');
+  await roomOption(page, language === 'en' ? 'Manage room' : 'Gerenciar sala');
 }
 async function closePanel(page: Page) {
   const close = page
@@ -100,6 +101,7 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await a.getByRole('button', { name: 'Distribuir cartas', exact: true }).click();
     await expect(a.locator('.decision-cards .playing-card:not(.card-back)')).toHaveCount(2);
     await expect(b.locator('.decision-cards .playing-card:not(.card-back)')).toHaveCount(2);
+    await a.locator('.coach-menu > summary').click();
     await a
       .locator('.coach-controls')
       .getByRole('button', { name: 'Ranking de mãos', exact: true })
@@ -598,7 +600,7 @@ test('home artwork is horizontal and the tables page keeps real navigation', asy
   await expect(page.locator('.hero')).toHaveCount(0);
   await expect(page.locator('.filters')).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Encontre sua próxima partida.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sua próxima mesa está aqui.' })).toBeVisible();
   await changeLanguage(page, 'en');
   await expect(page.getByRole('heading', { name: 'Find your next game.' })).toBeVisible();
   await page.getByRole('button', { name: 'Home', exact: true }).click();
@@ -621,9 +623,7 @@ for (const width of [1440, 390])
     }
 
     await expect(page).toHaveURL(/\/mesas$/);
-    await expect(
-      page.getByRole('heading', { name: 'Encontre sua próxima partida.' }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sua próxima mesa está aqui.' })).toBeVisible();
     await expect(page.locator('.learning-page')).toHaveCount(0);
     await expect(page.locator('.filters')).toBeVisible();
   });
@@ -763,10 +763,14 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
         const number = await page.locator('.raise-controls input[type=number]').boundingBox();
         const slider = await page.locator('.raise-controls input[type=range]').boundingBox();
         const shortcuts = await page.locator('.raise-controls .bet-shortcuts').boundingBox();
-        expect(label!.y).toBeGreaterThanOrEqual(number!.y);
-        expect(label!.y + label!.height).toBeLessThanOrEqual(number!.y + 20);
+        expect(
+          Math.abs(label!.y + label!.height / 2 - (number!.y + number!.height / 2)),
+        ).toBeLessThan(15);
+        expect(label!.x + label!.width).toBeLessThanOrEqual(number!.x);
         if (height > 500) expect(number!.y + number!.height).toBeLessThanOrEqual(slider!.y);
-        if (height > 500) expect(shortcuts!.x).toBeGreaterThanOrEqual(number!.x + number!.width);
+        if (height > 500 && width > 700)
+          expect(shortcuts!.x).toBeGreaterThanOrEqual(number!.x + number!.width);
+        if (width <= 700) expect(shortcuts!.y).toBeGreaterThanOrEqual(number!.y + number!.height);
         const text = await page.locator('.raise-label').evaluate((el) => {
           const r = document.createRange();
           r.selectNodeContents(el);
@@ -988,17 +992,14 @@ test('portrait selection and personal photo survive reload and can be removed', 
 }) => {
   await page.goto('/');
   await expect(page.locator('.profile-trigger .portrait')).toHaveAttribute(
-    'src',
-    /\/avatars\/avatar-[1-4]\.webp$/,
+    'data-portrait',
+    /^[1-6]$/,
   );
   await page.locator('.profile-trigger').click();
   await page.getByRole('button', { name: 'Avatar 3', exact: true }).click();
   await page.getByRole('button', { name: 'Salvar', exact: true }).click();
   await page.reload();
-  await expect(page.locator('.profile-trigger .portrait')).toHaveAttribute(
-    'src',
-    '/avatars/avatar-3.webp',
-  );
+  await expect(page.locator('.profile-trigger .portrait')).toHaveAttribute('data-portrait', '3');
   await page.locator('.profile-trigger').click();
   await page
     .getByLabel('Enviar minha foto', { exact: true })
@@ -1018,14 +1019,11 @@ test('portrait selection and personal photo survive reload and can be removed', 
   await openCreate(page);
   await finishCreate(page);
   await expect(page.locator('.seat.self .portrait')).toHaveAttribute('src', image!);
-  await page.getByRole('button', { name: 'Gerenciar sala', exact: true }).click();
+  await openPlayers(page);
   await closePanel(page);
   await page.locator('.room-options summary').click();
   await page.getByRole('button', { name: 'Meu perfil', exact: true }).click();
   await page.getByRole('button', { name: 'Remover minha foto', exact: true }).click();
   await page.getByRole('button', { name: 'Salvar', exact: true }).click();
-  await expect(page.locator('.seat.self .portrait')).toHaveAttribute(
-    'src',
-    '/avatars/avatar-3.webp',
-  );
+  await expect(page.locator('.seat.self .portrait')).toHaveAttribute('data-portrait', '3');
 });

@@ -36,7 +36,7 @@ export function Card({
       aria-label={hidden ? undefined : card ? `${rank} ${suits[card[1]]}` : undefined}
     >
       {hidden ? (
-        <span>♠</span>
+        <img className="card-back-emblem" src="/highlords-chalice.svg" alt="" draggable={false} />
       ) : card ? (
         <svg className="card-face" viewBox="0 0 100 144" aria-hidden="true" focusable="false">
           <text

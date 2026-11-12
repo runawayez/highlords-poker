@@ -56,7 +56,7 @@
   "options": "Opções da sala",
   "menu": "Menu",
   "turnTitle": "Sua decisão",
-  "callAmount": "Pagar {{amount}} fichas",
+  "callAmount": "Pagar {{amount}}",
   "raiseAmount": "Aumentar para {{amount}}",
   "betAmount": "Apostar {{amount}}",
   "allinAmount": "All-in · {{amount}} fichas",

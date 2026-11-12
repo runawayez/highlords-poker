@@ -305,57 +305,52 @@ export function DecisionDock({
   onRankings: () => void;
 }) {
   const { t, i18n } = useTranslation();
+  const num = (n: number) => new Intl.NumberFormat(i18n.language).format(n);
   const h = table.hand!;
   const own = h.players.find((p) => p.id === snapshot.me);
   if (!own || own.cards.length !== 2) return null;
   const hand = visibleHand(own.cards, h.board);
-  const num = (n: number) => new Intl.NumberFormat(i18n.language).format(n);
   return (
     <section className="decision-dock" aria-label={t('learn:yourCards')}>
       <div className="decision-summary">
-        <span className="badge">{t('learn:yourCards')}</span>
-        <strong>
-          {own.folded
-            ? t('game:folded')
-            : h.actor === snapshot.me && !h.done
-              ? t('game:yourTurn')
-              : t('learn:watchAction')}
-        </strong>
-        <small>
-          {t('game:stack')}: {num(own.stack)}
-        </small>
+        <svg className="hand-icon" viewBox="0 0 40 40" aria-hidden="true">
+          <g stroke="#eee" strokeWidth="1.5" fill="#711029">
+            <rect x="5" y="9" width="15" height="26" rx="2" transform="rotate(-15 12 22)" />
+            <rect x="20" y="6" width="15" height="26" rx="2" transform="rotate(14 27 19)" />
+          </g>
+        </svg>
+        <p className="current-hand" role="status">
+          <span>{t('club:yourHandLabel')} </span>
+          <strong>{hand ? t(`learn:rank${hand.category}`) : t('club:beforeBoard')}</strong>
+        </p>
+      </div>
+      <details className="coach-menu">
+        <summary aria-label={t('learn:tableHelp')}>?</summary>
+        <div className="coach-controls">
+          <button aria-pressed={coach} onClick={onCoach}>
+            ? {t('learn:tableHelp')}
+          </button>
+          <button className="text-button" onClick={onRankings}>
+            {t('learn:handsNav')}
+          </button>
+        </div>
         {coach && (
-          <p className="current-hand" role="status">
-            {hand
-              ? t('learn:currentHand', { hand: t(`learn:rank${hand.category}`) })
-              : t('learn:beforeFlop')}
-          </p>
+          <details className="coach-explanation">
+            <summary>{t('club:tip')}</summary>
+            <p className="coach-tip">
+              {own.folded
+                ? t('learn:foldedTip')
+                : h.done
+                  ? t('learn:handOverTip')
+                  : h.actor === snapshot.me
+                    ? h.legal.call
+                      ? t('learn:callTip', { amount: num(h.legal.call) })
+                      : t('learn:checkTip')
+                    : t('learn:watchTip')}
+            </p>
+          </details>
         )}
-      </div>
-      <div className="coach-controls">
-        <button aria-pressed={coach} onClick={onCoach}>
-          ? {t('learn:tableHelp')}
-        </button>
-        <button className="text-button" onClick={onRankings}>
-          {t('learn:handsNav')}
-        </button>
-      </div>
-      {coach && (
-        <details className="coach-explanation">
-          <summary>{t('club:tip')}</summary>
-          <p className="coach-tip">
-            {own.folded
-              ? t('learn:foldedTip')
-              : h.done
-                ? t('learn:handOverTip')
-                : h.actor === snapshot.me
-                  ? h.legal.call
-                    ? t('learn:callTip', { amount: num(h.legal.call) })
-                    : t('learn:checkTip')
-                  : t('learn:watchTip')}
-          </p>
-        </details>
-      )}
+      </details>
     </section>
   );
 }

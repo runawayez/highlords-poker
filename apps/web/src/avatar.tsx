@@ -3,19 +3,40 @@ import { useTranslation } from 'react-i18next';
 import type { Profile } from '../../../packages/contracts/src/index.ts';
 
 // Keep saved profiles compatible; the existing identifiers now select portraits.
-export const portraitChoices = ['♠', '♥', '♣', '♦'] as const;
+export const portraitChoices = ['♠', '♥', '♣', '♦', '☠', '♜'] as const;
 const legacy = ['♠', '♥', '♣', '♦', '☠', '♜', '⚔', '☾'];
 export function Avatar({ profile, seed = '' }: { profile?: Partial<Profile>; seed?: string }) {
   const index = profile?.avatar
-    ? Math.max(0, legacy.indexOf(profile.avatar)) % 4
-    : [...seed].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 4;
+    ? Math.max(0, legacy.indexOf(profile.avatar)) % 6
+    : [...seed].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 6;
+  if (profile?.avatarImage)
+    return <img className="portrait" src={profile.avatarImage} alt="" draggable={false} />;
+  // Reuse the approved portraits as a sprite; the game UI remains live components.
+  const [cx, cy, diameter] = [
+    [566, 170, 102],
+    [155, 260, 104],
+    [989, 260, 102],
+    [126, 524, 106],
+    [991, 524, 102],
+    [550, 660, 122],
+  ][index];
+  const scale = 100 / diameter;
   return (
-    <img
+    <svg
       className="portrait"
-      src={profile?.avatarImage || `/avatars/avatar-${index + 1}.webp`}
-      alt=""
-      draggable={false}
-    />
+      data-portrait={index + 1}
+      viewBox="0 0 100 100"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <image
+        href="/portrait-reference.png"
+        x={50 - cx * scale}
+        y={50 - cy * scale}
+        width={1586 * scale}
+        height={992 * scale}
+      />
+    </svg>
   );
 }
 

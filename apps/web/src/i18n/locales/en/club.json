@@ -40,5 +40,17 @@
   "playBody": "Take your seat and enjoy the game.",
   "resumeTitle": "Back to your table?",
   "host": "Host",
-  "filters": "More filters"
+  "filters": "More filters",
+  "waitingAction": "Waiting",
+  "decreaseBet": "Decrease bet",
+  "increaseBet": "Increase bet",
+  "yourHandLabel": "Your hand:",
+  "resumeIntro": "Pick up where you left off.",
+  "resumeGame": "Resume game",
+  "beforeBoard": "Waiting for the flop",
+  "allFilter": "All",
+  "tournamentFilter": "Tournaments",
+  "searchHost": "Find a table or host",
+  "virtualChips": "Virtual chips",
+  "virtualFooter": "No signup. Virtual chips only."
 }

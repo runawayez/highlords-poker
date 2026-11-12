@@ -111,6 +111,13 @@ function App() {
     window.scrollTo(0, 0);
   };
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [lastRoomId, setLastRoomId] = useState(() => read<string>('highlords.lastRoom', ''));
+  useEffect(() => {
+    if (roomId && snapshot) {
+      setLastRoomId(roomId);
+      write('highlords.lastRoom', roomId);
+    }
+  }, [roomId, !!snapshot]);
   const [lobby, setLobby] = useState<{ rooms: Lobby }>({ rooms: [] });
   const [connected, setConnected] = useState(false);
   const [connectionChecked, setConnectionChecked] = useState(false);
@@ -401,7 +408,7 @@ function App() {
   const filteredRooms = lobby.rooms.filter(
     (r) =>
       homeScreen !== 'lobby' ||
-      (r.title.toLowerCase().includes(filter.toLowerCase()) &&
+      (`${r.title} ${r.hostProfile?.nickname ?? ''}`.toLowerCase().includes(filter.toLowerCase()) &&
         (!mode || r.mode === mode) &&
         (!status || r.status === status) &&
         (!vacancies || r.players < r.capacity) &&
@@ -531,7 +538,7 @@ function App() {
                 navigate();
               }}
             >
-              <img className="brand-mark" src="/highlords-torch.png" alt="" />
+              <img className="brand-mark" src="/highlords-chalice.svg" alt="" />
               <span>
                 HIGHLORDS<small>POKER CLUB</small>
               </span>
@@ -701,7 +708,7 @@ function App() {
                     <div className="filters" hidden={homeScreen !== 'lobby'}>
                       <input
                         aria-label={t('lobby:search')}
-                        placeholder={'⌕ ' + t('lobby:search')}
+                        placeholder={'⌕ ' + t('club:searchHost')}
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
                       />
@@ -712,7 +719,11 @@ function App() {
                             aria-pressed={mode === value}
                             onClick={() => setMode(value)}
                           >
-                            {value ? t(`game:${value}`) : t('lobby:all')}
+                            {value === 'TOURNAMENT'
+                              ? t('club:tournamentFilter')
+                              : value
+                                ? t(`game:${value}`)
+                                : t('club:allFilter')}
                           </button>
                         ))}
                       </div>
@@ -892,6 +903,24 @@ function App() {
                     <p className="lobby-retention">{t('lobby:retentionHint')}</p>
                   </section>
                   <aside className="lobby-companion">
+                    {lobby.rooms
+                      .filter((r) => r.id === lastRoomId)
+                      .map((r) => (
+                        <div className="resume-card" key={r.id}>
+                          <h2>{t('club:resumeTitle')}</h2>
+                          <p>{t('club:resumeIntro')}</p>
+                          <div className="resume-room">
+                            <span className="room-symbol" aria-hidden="true" />
+                            <div>
+                              <strong>{r.title}</strong>
+                              <span>
+                                {t(`game:${r.mode}`)} · {num(r.small)} / {num(r.big)}
+                              </span>
+                            </div>
+                          </div>
+                          <button onClick={() => navigate(r.id)}>{t('club:resumeGame')}</button>
+                        </div>
+                      ))}
                     <div className="lobby-side-card">
                       <p className="eyebrow">HIGHLORDS POKER CLUB</p>
                       <h2>{t('club:startTitle')}</h2>
@@ -909,7 +938,7 @@ function App() {
                       </button>
                     </div>
                     <div className="lobby-side-note">
-                      <img src="/highlords-torch.png" alt="" />
+                      <img src="/highlords-chalice.svg" alt="" />
                       <p>{t('virtual')}</p>
                     </div>
                   </aside>
@@ -937,7 +966,7 @@ function App() {
                         openLobby();
                       }}
                     >
-                      <img src="/highlords-torch.png" alt="" />
+                      <img src="/highlords-chalice.svg" alt="" />
                       <span>
                         HIGHLORDS<small>POKER CLUB</small>
                       </span>
@@ -959,23 +988,11 @@ function App() {
                             .catch(() => fail(new Error('INTERNAL')));
                         }}
                       >
-                        {t('club:invite')} <span aria-hidden>↗</span>
-                      </button>
-                      <button
-                        className="panel-trigger"
-                        aria-label={t('game:manageRoom')}
-                        onClick={() => {
-                          setRailTab('players');
-                          setDirectorOpen(true);
-                        }}
-                      >
-                        <span className="button-label">{t('game:manageRoom')}</span>
                         <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M4 6h16M4 12h16M4 18h16" />
-                          <circle cx="9" cy="6" r="2" />
-                          <circle cx="15" cy="12" r="2" />
-                          <circle cx="9" cy="18" r="2" />
+                          <circle cx="10" cy="7" r="4" />
+                          <path d="M2 21v-3a8 8 0 0 1 16 0v3M18 3a4 4 0 0 1 0 8m2 3a8 8 0 0 1 2 7" />
                         </svg>
+                        {t('club:invite')}
                       </button>
                       <button
                         className="panel-trigger chat-shortcut"
@@ -998,11 +1015,33 @@ function App() {
                             e.currentTarget.open = false;
                         }}
                       >
-                        <summary>⚙ {t('game:tableMenu')}</summary>
+                        <summary aria-label={t('game:tableMenu')}>
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m10 2-1 3-3 1-3-1-2 4 2 2v3l-2 2 2 4 3-1 3 1 1 3h4l1-3 3-1 3 1 2-4-2-2v-3l2-2-2-4-3 1-3-1-1-3Z" />
+                            <circle cx="12" cy="12" r="4" />
+                          </svg>
+                          <span>{t('game:tableMenu')}</span>
+                        </summary>
                         <div>
                           <span className={`connection ${connected ? 'live' : ''}`}>
                             ● {t(connected ? 'online' : 'offline')}
                           </span>
+                          <button
+                            className="panel-trigger"
+                            aria-label={t('game:manageRoom')}
+                            onClick={() => {
+                              setRailTab('players');
+                              setDirectorOpen(true);
+                            }}
+                          >
+                            <span className="button-label">{t('game:manageRoom')}</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <path d="M4 6h16M4 12h16M4 18h16" />
+                              <circle cx="9" cy="6" r="2" />
+                              <circle cx="15" cy="12" r="2" />
+                              <circle cx="9" cy="18" r="2" />
+                            </svg>
+                          </button>
                           <button
                             className="sound-toggle"
                             aria-pressed={prefs.sound}
@@ -1165,7 +1204,9 @@ function App() {
                     >
                       <div className="table-chat-topline">
                         <div>
-                          <span className="live-indicator" />
+                          <svg className="chat-heading-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M21 11c0 5-4 8-9 8H7l-5 3 2-7a8 8 0 0 1-1-4C3 6 7 3 12 3s9 3 9 8Z" />
+                          </svg>
                           <strong>{t('club:liveChat')}</strong>
                           <small>{t('club:chatHint')}</small>
                         </div>
@@ -1185,6 +1226,7 @@ function App() {
                         onSend={(text) => run('CHAT', { text })}
                         onReact={(messageId, emoji) => run('REACT', { messageId, emoji })}
                       />
+                      <p className="chat-virtual">◉ {t('club:virtualChips')}</p>
                     </aside>
                   </div>
                 </div>
@@ -1203,7 +1245,7 @@ function App() {
         {!roomId && (
           <footer>
             <span>♠ HIGHLORDS POKER</span>
-            <p>{t('virtual')}</p>
+            <p>{t('club:virtualFooter')}</p>
             <span>{t('tagline')}</span>
           </footer>
         )}

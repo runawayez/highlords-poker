@@ -71,11 +71,11 @@ export function seatPosition(index: number, count: number) {
     ],
     6: [
       [50, 90],
-      [13, 69],
-      [13, 27],
-      [50, 13],
-      [87, 27],
-      [87, 69],
+      [17.8, 69],
+      [20, 28],
+      [52.5, 15.5],
+      [86.5, 28],
+      [86.5, 69],
     ],
     7: [
       [50, 90],
@@ -110,6 +110,8 @@ export function seatPosition(index: number, count: number) {
   };
   const [x, y] = (positions[count] ?? positions[6])[index % count];
   return {
+    '--seat-x': `${x}%`,
+    '--seat-y': `${y === 13 ? (count >= 8 ? 16 : 18) : y}%`,
     left: `clamp(var(--seat-left-inset, 0px), ${x}%, calc(100% - var(--seat-right-inset, 0px)))`,
     top: `${y === 13 ? (count >= 8 ? 16 : 18) : y}%`,
   };
@@ -279,7 +281,7 @@ export function PokerTable({
       {Array.from({ length: seats }, (_, i) => {
         const p = rotated[i],
           position = seatPosition(i, seats),
-          x = parseFloat(position.left),
+          x = parseFloat(position['--seat-x']),
           y = parseFloat(position.top);
         if (!p)
           return (
@@ -310,6 +312,7 @@ export function PokerTable({
         return (
           <React.Fragment key={p.id}>
             <div
+              data-slot={i}
               data-edge={y > 70 ? 'bottom' : y < 30 ? 'top' : x < 50 ? 'left' : 'right'}
               className={`seat ${acting ? 'acting' : ''} ${p.folded ? 'folded' : ''} ${isSelf ? 'self' : ''}`}
               style={{ ...position, '--accent': '#DC2626' } as React.CSSProperties}
@@ -370,9 +373,7 @@ export function PokerTable({
                           ? t(`game:${last.action}`)
                           : isSelf
                             ? t('game:you')
-                            : p.bot
-                              ? t(difficultyLabels[p.bot.difficulty])
-                              : t('game:ready')}
+                            : t('club:waitingAction')}
                 </span>
               )}
             </div>
