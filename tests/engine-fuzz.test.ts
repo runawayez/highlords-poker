@@ -33,7 +33,20 @@ function playRandomHand(seed: number) {
   const big = 1 + Math.floor(random() * 20);
   const small = Math.max(1, Math.floor(big / 2));
   const cards = shuffle(undefined, (n) => Math.floor(random() * n));
-  const hand: Hand = startHand(seats, seatNumbers[0], small, big, random() < 0.2 ? 1 : 0, cards);
+  const options = {
+    straddle: random() < 0.3,
+    twice: random() < 0.4 ? seats.map((s) => s.id) : [],
+  };
+  const hand: Hand = startHand(
+    seats,
+    seatNumbers[0],
+    small,
+    big,
+    random() < 0.2 ? 1 : 0,
+    cards,
+    undefined,
+    options,
+  );
   let steps = 0;
   while (!hand.done) {
     expect(steps++, `seed ${seed} não terminou`).toBeLessThan(200);

@@ -595,7 +595,7 @@ details label {
 .stage {
   --u: min(1vw, 1.45vh);
   --seat: clamp(46px, calc(var(--u) * 7.4), 92px);
-  --cw: clamp(30px, calc(var(--u) * 5.2), 74px);
+  --cw: calc(clamp(30px, calc(var(--u) * 5.2), 74px) * var(--card-scale, 1));
   position: relative;
   flex: 1;
   min-height: 0;
@@ -620,7 +620,11 @@ details label {
   padding: calc(var(--seat) * 0.2);
 }
 .stage.tall .rail {
-  inset: 12% 10%;
+  inset: 12% 8%;
+  border-radius: 36% / 22%;
+}
+.stage.tall .felt {
+  border-radius: 36% / 22%;
 }
 .felt {
   width: 100%;
@@ -661,7 +665,10 @@ details label {
 .felt-mark {
   display: grid;
   justify-items: center;
-  color: rgb(239 212 139 / 0.12);
+  color: rgb(239 212 139 / 0.22);
+  text-shadow:
+    0 1px 0 rgb(0 0 0 / 0.35),
+    0 0 24px rgb(239 212 139 / 0.18);
   transform: translateY(26%);
 }
 .felt-mark span {
@@ -1822,7 +1829,7 @@ kbd {
   }
   .stage {
     --seat: clamp(42px, 11.5vw, 70px);
-    --cw: clamp(28px, 9.6vw, 56px);
+    --cw: calc(clamp(28px, 9.6vw, 56px) * var(--card-scale, 1));
   }
   .stage.tall .center {
     width: 90%;
@@ -2479,5 +2486,148 @@ button.huge {
 @media (max-width: 520px) {
   .quick {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.qr {
+  width: 132px;
+  margin: 0.5rem auto;
+  padding: 6px;
+  background: #fff;
+  border-radius: 8px;
+}
+.qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+[data-cards='s'] {
+  --card-scale: 0.85;
+}
+[data-cards='l'] {
+  --card-scale: 1.18;
+}
+
+/* fichas voando do centro até quem ganhou */
+.award {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: award-fly 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) 0.35s both;
+}
+@keyframes award-fly {
+  0% {
+    left: 50%;
+    top: 50%;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: var(--x);
+    top: var(--y);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+.seat.allin .avatar {
+  animation: allin-glow 1.4s ease-in-out infinite;
+}
+.seat.allin.acting .avatar {
+  animation-name: allin-glow, allin-shake;
+  animation-duration: 1.4s, 0.4s;
+  animation-iteration-count: infinite, 1;
+}
+@keyframes allin-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(255, 120, 40, 0),
+      0 0 10px 2px rgba(255, 120, 40, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px rgba(255, 120, 40, 0.25),
+      0 0 22px 6px rgba(255, 150, 60, 0.85);
+  }
+}
+@keyframes allin-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+.straddle-tag {
+  position: absolute;
+  left: -4px;
+  bottom: -4px;
+  width: 1.3em;
+  height: 1.3em;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #7a2bd1;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.board-second {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-top: 4px;
+  opacity: 0.92;
+}
+.board-second small {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  margin-right: 4px;
+}
+.board-second .card {
+  --cw: calc(var(--cw-base, var(--cw)) * 0.72);
+}
+@media (prefers-reduced-motion: reduce) {
+  .award,
+  .seat.allin .avatar {
+    animation: none;
+  }
+}
+
+/* celular: controles do anfitrião primeiro no painel */
+.manage {
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 899px) {
+  .manage > section:has(.bot-row) {
+    order: -1;
+  }
+}
+.qr:empty {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .site-bar {
+    padding-inline: 12px;
+  }
+  .brand span {
+    display: none;
+  }
+  .site-bar nav {
+    gap: 10px;
+    font-size: 13px;
   }
 }

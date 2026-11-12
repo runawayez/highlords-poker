@@ -158,5 +158,12 @@
   "replay_BET": "apostou {{amount}}",
   "replay_RAISE": "aumentou para {{amount}}",
   "replay_ALL_IN": "foi all-in com {{amount}}",
-  "shareCode": "Chame a galera com este código"
+  "shareCode": "Chame a galera com este código",
+  "qrLabel": "QR code para entrar na mesa",
+  "straddle": "Straddle",
+  "secondBoard": "2ª rodada",
+  "botHint_BALANCED": "{{name}} joga de forma equilibrada: a aposta tem peso normal.",
+  "botHint_TIGHT": "{{name}} é fechado: aposta só com mão forte. Respeite.",
+  "botHint_LOOSE": "{{name}} é solto: aposta com muita coisa, pode estar blefando.",
+  "botHint_AGGRESSIVE": "{{name}} é agressivo: aposta e aumenta muito, nem sempre tem mão."
 }

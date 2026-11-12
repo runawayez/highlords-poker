@@ -1,3 +1,4 @@
+import { QrCode } from './qr.tsx';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhotosContext } from './avatar.tsx';
@@ -30,6 +31,16 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
   const bootstrapped = useRef(false);
   const statsFrom = useRef<number | null>(null);
   const me = state?.players.find((p) => p.id === state.me);
+
+  // Reaplica no servidor as preferências de showdown quando me sento (valem por conexão/assento).
+  const seatedId = me?.id;
+  const sendRoom = room.send;
+  useEffect(() => {
+    if (!seatedId) return;
+    const { muck, runTwice } = prefsStore.get();
+    if (muck) sendRoom({ type: 'SHOWDOWN', mode: 'MUCK' });
+    if (runTwice) sendRoom({ type: 'RUN_TWICE', value: true });
+  }, [seatedId, sendRoom]);
 
   // Mesas recentes: o atalho na home volta para cá pelo código.
   const title = state?.config.title;
@@ -209,6 +220,7 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
                 <div className="waiting-card">
                   <small>{t('game:shareCode')}</small>
                   <strong>{code}</strong>
+                  <QrCode text={`${location.origin}/mesa/${code}`} label={t('game:qrLabel')} />
                   <button className="primary small" onClick={invite}>
                     {copied ? t('game:inviteCopied') : t('game:invite')}
                   </button>

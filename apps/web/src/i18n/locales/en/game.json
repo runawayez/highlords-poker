@@ -158,5 +158,12 @@
   "replay_BET": "bet {{amount}}",
   "replay_RAISE": "raised to {{amount}}",
   "replay_ALL_IN": "went all-in for {{amount}}",
-  "shareCode": "Call the gang with this code"
+  "shareCode": "Call the gang with this code",
+  "qrLabel": "QR code to join the table",
+  "straddle": "Straddle",
+  "secondBoard": "Run 2",
+  "botHint_BALANCED": "{{name}} plays a balanced game: the bet carries normal weight.",
+  "botHint_TIGHT": "{{name}} is tight: bets only with strong hands. Respect it.",
+  "botHint_LOOSE": "{{name}} is loose: bets with a lot, may be bluffing.",
+  "botHint_AGGRESSIVE": "{{name}} is aggressive: bets and raises often, not always strong."
 }

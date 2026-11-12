@@ -73,6 +73,29 @@ function Shell({
         </a>
         <nav>
           <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/');
+            }}
+          >
+            {t('common:play')}
+          </a>
+          <a
+            href="/#open-tables"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/');
+              setTimeout(
+                () =>
+                  document.getElementById('open-tables')?.scrollIntoView({ behavior: 'smooth' }),
+                60,
+              );
+            }}
+          >
+            {t('common:openTables')}
+          </a>
+          <a
             href={learningPaths.guide}
             onClick={(e) => {
               e.preventDefault();
@@ -140,3 +163,7 @@ function NotFound({ navigate }: { navigate: (path: string) => void }) {
 }
 
 createRoot(document.getElementById('root')!).render(<App />);
+
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  addEventListener('load', () => void navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}

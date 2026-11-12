@@ -62,6 +62,7 @@ export const profileStore = createStore<Profile>('highlords.profile', guestProfi
 export type Theme = 'night' | 'emerald' | 'royal' | 'crimson';
 export type CardBack = 'crimson' | 'azure' | 'onyx';
 export type TextSize = 'm' | 'l' | 'xl';
+export type CardSize = 's' | 'm' | 'l';
 export type Prefs = {
   sound: boolean;
   volume: number;
@@ -77,6 +78,10 @@ export type Prefs = {
   contrast: boolean;
   /** Esconde as cartas ao perder no showdown (muck). */
   muck: boolean;
+  /** Aceita dividir o pote em duas rodadas quando todos em all-in concordam. */
+  runTwice: boolean;
+  /** Tamanho das cartas na mesa. */
+  cardSize: CardSize;
   /** Já viu o passo a passo da primeira mesa. */
   tourDone: boolean;
   /** Jogadores silenciados no chat (só para mim). */
@@ -93,6 +98,8 @@ export const prefsStore = createStore<Prefs>('highlords.prefs', () => ({
   textSize: 'm',
   contrast: false,
   muck: false,
+  runTwice: false,
+  cardSize: 'm',
   tourDone: false,
   muted: [],
 }));
@@ -127,4 +134,5 @@ export function applyPrefs(prefs: Prefs = prefsStore.get()) {
   root.dataset.contrast = String(prefs.contrast);
   root.dataset.fourColor = String(prefs.fourColor);
   root.dataset.back = prefs.cardBack;
+  root.dataset.cards = prefs.cardSize;
 }

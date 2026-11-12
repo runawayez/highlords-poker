@@ -36,6 +36,7 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [filter, setFilter] = useState<'ALL' | 'CASH' | 'SIT_AND_GO'>('ALL');
   const [onlyOpen, setOnlyOpen] = useState(false);
+  const [stakes, setStakes] = useState<'ALL' | 'LOW' | 'MID' | 'HIGH'>('ALL');
   const recent = useStore(recentStore).tables;
 
   useEffect(() => {
@@ -55,6 +56,12 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
   const visibleRooms = (rooms ?? []).filter(
     (room) =>
       (filter === 'ALL' || room.mode === filter) &&
+      (stakes === 'ALL' ||
+        (stakes === 'LOW'
+          ? room.big <= 20
+          : stakes === 'MID'
+            ? room.big > 20 && room.big <= 100
+            : room.big > 100)) &&
       (!onlyOpen || (room.players < room.seats && room.status !== 'FINISHED')),
   );
 
@@ -77,6 +84,7 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
           stack: 2000,
           small: 10,
           big: 20,
+          botPace: 'CALM',
         },
         profile,
       );
@@ -210,6 +218,18 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
                 {value === 'ALL' ? t('home:filterAll') : t(`home:${value}`)}
               </button>
             ))}
+            <select
+              className="small"
+              value={stakes}
+              aria-label={t('home:filterStakes')}
+              onChange={(e) => setStakes(e.target.value as typeof stakes)}
+            >
+              {(['ALL', 'LOW', 'MID', 'HIGH'] as const).map((value) => (
+                <option key={value} value={value}>
+                  {t(`home:stakes_${value}`)}
+                </option>
+              ))}
+            </select>
             <button
               type="button"
               className="small"
@@ -304,6 +324,9 @@ function CreateDialog({
   const [isPublic, setIsPublic] = useState(true);
   const [turnSeconds, setTurnSeconds] = useState(25);
   const [levelMinutes, setLevelMinutes] = useState(5);
+  const [antePercent, setAntePercent] = useState(0);
+  const [straddle, setStraddle] = useState(false);
+  const [botPace, setBotPace] = useState<Config['botPace']>('NORMAL');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -324,6 +347,9 @@ function CreateDialog({
           turnSeconds,
           levelMinutes,
           isPublic,
+          ante: mode === 'CASH' ? Math.round((blinds[1] * antePercent) / 100) : 0,
+          straddle: mode === 'CASH' && straddle,
+          botPace,
         },
         profile,
       );
@@ -428,6 +454,44 @@ function CreateDialog({
               ))}
             </select>
           </label>
+          <label>
+            {t('home:botPace')}
+            <select
+              value={botPace}
+              onChange={(e) => setBotPace(e.target.value as Config['botPace'])}
+            >
+              {(['CALM', 'NORMAL', 'FAST'] as const).map((pace) => (
+                <option key={pace} value={pace}>
+                  {t(`home:pace_${pace}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          {mode === 'CASH' && (
+            <>
+              <label>
+                {t('home:ante')}
+                <select
+                  value={antePercent}
+                  onChange={(e) => setAntePercent(Number(e.target.value))}
+                >
+                  {[0, 10, 25, 50].map((n) => (
+                    <option key={n} value={n}>
+                      {n === 0 ? t('home:anteNone') : t('home:antePercent', { percent: n })}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={straddle}
+                  onChange={(e) => setStraddle(e.target.checked)}
+                />
+                {t('home:straddle')}
+              </label>
+            </>
+          )}
           {mode === 'SIT_AND_GO' && (
             <label>
               {t('home:levelMinutes')}

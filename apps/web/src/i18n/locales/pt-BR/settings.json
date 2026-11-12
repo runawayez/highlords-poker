@@ -28,5 +28,11 @@
   "size_m": "Normal",
   "size_l": "Grande",
   "size_xl": "Maior",
-  "contrast": "Alto contraste"
+  "contrast": "Alto contraste",
+  "runTwice": "Aceitar rodar duas vezes",
+  "runTwiceNote": "Quando todos estão all-in e concordam, o restante do baralho sai duas vezes e o pote é dividido.",
+  "cardSize": "Tamanho das cartas",
+  "cards_s": "Pequenas",
+  "cards_m": "Médias",
+  "cards_l": "Grandes"
 }
