@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  AVATARS,
+  EMBLEMS,
   PHOTO_MAX_LENGTH,
   PROFILE_COLORS,
   ProfileSchema,
   type Profile,
 } from '../../../packages/contracts/src/index.ts';
 import { Avatar } from './avatar.tsx';
+import { randomNickname } from './names.ts';
 import { Modal } from './panels.tsx';
 import { playSound } from './audio.ts';
 import { profileStore, statsStore, useStore } from './store.ts';
@@ -53,7 +54,7 @@ export function AvatarPicker({
   const { t } = useTranslation();
   return (
     <div className="avatar-picker" role="radiogroup" aria-label={t('home:avatar')}>
-      {AVATARS.map((avatar, index) => (
+      {EMBLEMS.map((avatar, index) => (
         <button
           key={avatar}
           type="button"
@@ -81,7 +82,7 @@ export function ProfileModal({
   /** Chamado depois de salvar, para avisar a sala (se houver uma aberta). */
   onSaved?: (profile: Profile) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const saved = useStore(profileStore);
   const stats = useStore(statsStore);
   const [draft, setDraft] = useState<Profile>(saved);
@@ -119,6 +120,15 @@ export function ProfileModal({
             aria-label={t('home:yourName')}
             onChange={(e) => setDraft({ ...draft, nickname: e.target.value })}
           />
+          <button
+            type="button"
+            className="ghost dice"
+            aria-label={t('home:randomName')}
+            title={t('home:randomName')}
+            onClick={() => setDraft({ ...draft, nickname: randomNickname(i18n.language) })}
+          >
+            🎲
+          </button>
         </div>
         {!check.success && <p className="error">{t('home:nameShort')}</p>}
 

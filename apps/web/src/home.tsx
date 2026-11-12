@@ -8,6 +8,8 @@ import {
 } from '../../../packages/contracts/src/index.ts';
 import { ApiError, createRoom, fetchLobby, fetchRoom } from './net.ts';
 import { Avatar } from './avatar.tsx';
+import { Card } from './card.tsx';
+import { randomNickname } from './names.ts';
 import { Modal } from './panels.tsx';
 import { ProfileModal } from './profile.tsx';
 import { playSound } from './audio.ts';
@@ -26,7 +28,7 @@ function useProfileCheck() {
 }
 
 export function Home({ navigate }: { navigate: (path: string) => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { profile, valid } = useProfileCheck();
   const [rooms, setRooms] = useState<LobbyEntry[] | null>(null);
   const [creating, setCreating] = useState(false);
@@ -120,20 +122,36 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
           <p className="eyebrow">{t('home:eyebrow')}</p>
           <h1>{t('home:heroTitle')}</h1>
           <p>{t('home:heroSub')}</p>
+          <HeroTable />
         </div>
 
         <div className="join-card">
           <label htmlFor="nickname">{t('home:yourName')}</label>
-          <input
-            id="nickname"
-            value={profile.nickname}
-            maxLength={20}
-            autoComplete="nickname"
-            onChange={(e) => {
-              setMessage('');
-              profileStore.set({ nickname: e.target.value });
-            }}
-          />
+          <div className="name-row">
+            <input
+              id="nickname"
+              value={profile.nickname}
+              maxLength={20}
+              autoComplete="nickname"
+              onChange={(e) => {
+                setMessage('');
+                profileStore.set({ nickname: e.target.value });
+              }}
+            />
+            <button
+              type="button"
+              className="dice"
+              aria-label={t('home:randomName')}
+              title={t('home:randomName')}
+              onClick={() => {
+                playSound('click');
+                setMessage('');
+                profileStore.set({ nickname: randomNickname(i18n.language) });
+              }}
+            >
+              🎲
+            </button>
+          </div>
           <button
             type="button"
             className="profile-chip"
@@ -207,32 +225,33 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
         <div className="lobby-head">
           <h2 id="open-tables">{t('home:openTables')}</h2>
           <div className="lobby-filters" role="group" aria-label={t('home:filters')}>
-            {(['ALL', 'CASH', 'SIT_AND_GO'] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                className="small"
-                aria-pressed={filter === value}
-                onClick={() => setFilter(value)}
-              >
-                {value === 'ALL' ? t('home:filterAll') : t(`home:${value}`)}
-              </button>
-            ))}
-            <select
-              className="small"
-              value={stakes}
-              aria-label={t('home:filterStakes')}
-              onChange={(e) => setStakes(e.target.value as typeof stakes)}
-            >
-              {(['ALL', 'LOW', 'MID', 'HIGH'] as const).map((value) => (
-                <option key={value} value={value}>
-                  {t(`home:stakes_${value}`)}
-                </option>
+            <div className="segmented-bar" role="group" aria-label={t('home:format')}>
+              {(['ALL', 'CASH', 'SIT_AND_GO'] as const).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={filter === value}
+                  onClick={() => setFilter(value)}
+                >
+                  {value === 'ALL' ? t('home:filterAll') : t(`home:${value}`)}
+                </button>
               ))}
-            </select>
+            </div>
+            <div className="segmented-bar" role="group" aria-label={t('home:filterStakes')}>
+              {(['ALL', 'LOW', 'MID', 'HIGH'] as const).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={stakes === value}
+                  onClick={() => setStakes(value)}
+                >
+                  {t(`home:stakesShort_${value}`)}
+                </button>
+              ))}
+            </div>
             <button
               type="button"
-              className="small"
+              className="toggle-chip"
               aria-pressed={onlyOpen}
               onClick={() => setOnlyOpen(!onlyOpen)}
             >
@@ -249,6 +268,12 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
           </div>
         ) : (
           <ul className="room-list">
+            <li className="room-head" aria-hidden>
+              <span>{t('home:colTable')}</span>
+              <span>{t('home:colBlinds')}</span>
+              <span>{t('home:colSeats')}</span>
+              <span>{t('home:colStatus')}</span>
+            </li>
             {visibleRooms.map((room) => (
               <li key={room.id}>
                 <button
@@ -258,29 +283,32 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
                     if (!needName()) navigate(`/mesa/${room.id}`);
                   }}
                 >
-                  <span className="room-seats" aria-hidden>
-                    {Array.from({ length: room.seats }, (_, i) => (
-                      <i key={i} className={i < room.players ? 'taken' : ''} />
-                    ))}
+                  <span className="room-name">
+                    <strong>
+                      {room.title}
+                      {room.locked && (
+                        <span title={t('home:locked')} aria-label={t('home:locked')}>
+                          {' '}
+                          🔒
+                        </span>
+                      )}
+                    </strong>
+                    <small>
+                      {t(`home:${room.mode}`)}
+                      {room.host && ` · ${t('home:byHost', { name: room.host })}`}
+                    </small>
                   </span>
-                  <strong>
-                    {room.title}
-                    {room.locked && (
-                      <span title={t('home:locked')} aria-label={t('home:locked')}>
-                        {' '}
-                        🔒
-                      </span>
-                    )}
-                  </strong>
-                  <small>
-                    {t(`home:${room.mode}`)} ·{' '}
-                    {t('home:blinds', { small: room.small, big: room.big })}
-                  </small>
-                  <small>
-                    {t('home:seatsOf', { players: room.players, seats: room.seats })}
-                    {room.online > 0 && ` · ${t('home:online', { count: room.online })}`}
-                    {room.host && ` · ${t('home:byHost', { name: room.host })}`}
-                  </small>
+                  <span className="room-blinds">
+                    {room.small}/{room.big}
+                  </span>
+                  <span className="room-seats-cell">
+                    <span className="room-seats" aria-hidden>
+                      {Array.from({ length: room.seats }, (_, i) => (
+                        <i key={i} className={i < room.players ? 'taken' : ''} />
+                      ))}
+                    </span>
+                    <small>{t('home:seatsOf', { players: room.players, seats: room.seats })}</small>
+                  </span>
                   <span className={`status status-${room.status.toLowerCase()}`}>
                     {t(`home:${room.status}`)}
                   </span>
@@ -303,6 +331,36 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
         <p>{t('home:footerNote')}</p>
       </footer>
     </main>
+  );
+}
+
+/** Mesa de vitrine do hero: puramente visual, mostra o clima do jogo antes de entrar. */
+function HeroTable() {
+  const seats = [
+    { avatar: 'g5', style: { left: '50%', top: '4%' } },
+    { avatar: 'g2', style: { left: '88%', top: '30%' } },
+    { avatar: 'g9', style: { left: '80%', top: '82%' } },
+    { avatar: 'g4', style: { left: '20%', top: '82%' } },
+    { avatar: 'g8', style: { left: '12%', top: '30%' } },
+  ];
+  return (
+    <div className="hero-table" aria-hidden>
+      <div className="hero-rail">
+        <div className="hero-felt">
+          <div className="hero-board">
+            {['As', 'Kh', 'Qd', 'Jc', 'Ts'].map((card, i) => (
+              <Card key={card} card={card} className="hero-card" style={{ ['--i' as string]: i }} />
+            ))}
+          </div>
+          <span className="hero-pot">♠ 1.240</span>
+        </div>
+      </div>
+      {seats.map((seat, i) => (
+        <span key={i} className="hero-seat" style={seat.style}>
+          <Avatar avatar={seat.avatar} />
+        </span>
+      ))}
+    </div>
   );
 }
 

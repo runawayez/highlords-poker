@@ -68,5 +68,14 @@
   "stakes_ALL": "All blinds",
   "stakes_LOW": "Low (up to 20)",
   "stakes_MID": "Mid (21–100)",
-  "stakes_HIGH": "High (100+)"
+  "stakes_HIGH": "High (100+)",
+  "randomName": "Roll another name",
+  "stakesShort_ALL": "All",
+  "stakesShort_LOW": "Low",
+  "stakesShort_MID": "Mid",
+  "stakesShort_HIGH": "High",
+  "colTable": "Table",
+  "colBlinds": "Blinds",
+  "colSeats": "Seats",
+  "colStatus": "Status"
 }

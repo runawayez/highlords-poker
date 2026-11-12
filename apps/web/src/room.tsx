@@ -5,7 +5,7 @@ import { PhotosContext } from './avatar.tsx';
 import { useTableFx } from './fx.ts';
 import { LearningCenter, type LearningSection } from './learning.tsx';
 import { useRoom } from './net.ts';
-import { Modal, SidePanel, type Tab } from './panels.tsx';
+import { Chat, ChatStrip, Modal, SidePanel, type Tab } from './panels.tsx';
 import { ProfileModal } from './profile.tsx';
 import { SettingsModal } from './settings.tsx';
 import { ActionBar, Table } from './table.tsx';
@@ -13,13 +13,28 @@ import { Tour } from './tour.tsx';
 import { playSound } from './audio.ts';
 import { prefsStore, rememberTable, statsStore, useStore } from './store.ts';
 
+/** Acompanha uma media query (ex.: tela larga) e reage quando ela muda. */
+function useMedia(query: string) {
+  const [matches, setMatches] = useState(() => matchMedia(query).matches);
+  useEffect(() => {
+    const media = matchMedia(query);
+    const update = () => setMatches(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, [query]);
+  return matches;
+}
+
 export function RoomPage({ code, navigate }: { code: string; navigate: (path: string) => void }) {
   const { t } = useTranslation();
   const room = useRoom(code);
   const { state } = room;
   const fx = useTableFx(state);
   const prefs = useStore(prefsStore);
-  const [panel, setPanel] = useState<Tab | null>(null);
+  const wide = useMedia('(min-width: 900px)');
+  const [panelRequest, setPanel] = useState<Tab | null>(null);
+  // Em tela larga o chat fica fixo ao lado da mesa; o painel só abre Mesa e Mãos.
+  const panel = wide && panelRequest === 'chat' ? null : panelRequest;
   const [learning, setLearning] = useState<LearningSection | null>(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState('');
@@ -126,10 +141,10 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
       </main>
     );
 
-  const unread = Math.max(0, chatCount - seenChat);
+  const unread = wide ? 0 : Math.max(0, chatCount - seenChat);
   return (
     <PhotosContext.Provider value={room.photos}>
-      <div className={`room ${panel ? 'with-panel' : ''}`}>
+      <div className={`room ${wide ? 'wide' : 'compact'} ${panel ? 'with-panel' : ''}`}>
         <header className="room-bar">
           <button
             className="logo-button"
@@ -174,14 +189,16 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
             >
               ?
             </button>
-            <button
-              className="icon-button chat-toggle"
-              aria-label={t('game:tabChat')}
-              aria-pressed={panel === 'chat'}
-              onClick={() => setPanel(panel === 'chat' ? null : 'chat')}
-            >
-              💬{unread > 0 && panel !== 'chat' && <i className="badge">{unread}</i>}
-            </button>
+            {!wide && (
+              <button
+                className="icon-button chat-toggle"
+                aria-label={t('game:tabChat')}
+                aria-pressed={panel === 'chat'}
+                onClick={() => setPanel(panel === 'chat' ? null : 'chat')}
+              >
+                💬{unread > 0 && panel !== 'chat' && <i className="badge">{unread}</i>}
+              </button>
+            )}
             <button
               className="icon-button"
               aria-label={t('game:menu')}
@@ -226,13 +243,41 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
                   </button>
                 </div>
               )}
+              {!wide && <ChatStrip state={state} unread={unread} onOpen={() => setPanel('chat')} />}
               <ActionBar state={state} send={room.send} serverNow={room.serverNow} />
             </main>
+            {wide && (
+              <aside className="dock" aria-label={t('game:tabChat')}>
+                <header>
+                  <h2>{t('game:tabChat')}</h2>
+                  <div className="dock-tabs">
+                    <button
+                      type="button"
+                      className="ghost small"
+                      aria-pressed={panel === 'table'}
+                      onClick={() => setPanel(panel === 'table' ? null : 'table')}
+                    >
+                      {t('game:tabTable')}
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost small"
+                      aria-pressed={panel === 'history'}
+                      onClick={() => setPanel(panel === 'history' ? null : 'history')}
+                    >
+                      {t('game:tabHistory')}
+                    </button>
+                  </div>
+                </header>
+                <Chat state={state} send={room.send} />
+              </aside>
+            )}
             {panel && (
               <SidePanel
                 state={state}
                 send={room.send}
                 tab={panel}
+                hideChat={wide}
                 onTab={setPanel}
                 onClose={() => setPanel(null)}
                 onClosed={() => navigate('/')}
