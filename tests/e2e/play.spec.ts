@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test';
 
+// O passo a passo da primeira mesa cobriria os botões: os testes de jogo o dão por visto.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('highlords.prefs'))
+      localStorage.setItem('highlords.prefs', JSON.stringify({ tourDone: true }));
+  });
+});
+
 test('abrir o site, jogar contra bots e agir na mesa', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -94,4 +102,50 @@ test('cada assento tem no máximo duas cartas ao longo de várias mãos', async 
     await page.waitForTimeout(150);
   }
   expect(handsSeen.size).toBeGreaterThanOrEqual(2);
+});
+
+test('o perfil pode ser editado e aparece na mesa', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Personalizar perfil/ }).click();
+  await page.locator('.modal').getByLabel('Seu nome').fill('Ana Teste');
+  await page.getByRole('radio', { name: 'Azul' }).click();
+  await page.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.locator('.modal')).toHaveCount(0);
+  await page.getByRole('button', { name: /Jogar contra bots/ }).click();
+  await expect(page).toHaveURL(/\/mesa\//);
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await expect(page.locator('.roster')).toContainText('Ana Teste');
+  // Edita de novo já dentro da sala: o novo apelido chega a quem está na mesa.
+  await page.getByRole('button', { name: 'Editar perfil' }).click();
+  await page.locator('.modal').getByLabel('Seu nome').fill('Ana Mudou');
+  await page.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.locator('.roster')).toContainText('Ana Mudou');
+});
+
+test('o passo a passo aparece na primeira mesa e pode ser pulado', async ({ page }) => {
+  await page.addInitScript(() => {
+    // Só na primeira carga: depois de pular o tour, recarregar não pode trazê-lo de volta.
+    if (sessionStorage.getItem('seeded')) return;
+    sessionStorage.setItem('seeded', '1');
+    localStorage.setItem('highlords.prefs', '{}');
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Jogar contra bots/ }).click();
+  const tour = page.getByRole('dialog', { name: 'Passo a passo' });
+  await expect(tour).toBeVisible();
+  await tour.getByRole('button', { name: 'Pular' }).click();
+  await expect(tour).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.seat.me .hole-card').first()).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Passo a passo' })).toHaveCount(0);
+});
+
+test('os ajustes trocam o tema da mesa e persistem', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Ajustes' }).click();
+  await page.getByRole('radio', { name: /Real/ }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'royal');
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'royal');
 });

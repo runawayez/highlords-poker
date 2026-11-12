@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PhotosContext } from './avatar.tsx';
 import { useTableFx } from './fx.ts';
 import { LearningCenter, type LearningSection } from './learning.tsx';
 import { useRoom } from './net.ts';
 import { Modal, SidePanel, type Tab } from './panels.tsx';
+import { ProfileModal } from './profile.tsx';
+import { SettingsModal } from './settings.tsx';
 import { ActionBar, Table } from './table.tsx';
+import { Tour } from './tour.tsx';
 import { playSound } from './audio.ts';
-import { prefsStore, useStore } from './store.ts';
+import { prefsStore, rememberTable, statsStore, useStore } from './store.ts';
 
 export function RoomPage({ code, navigate }: { code: string; navigate: (path: string) => void }) {
   const { t } = useTranslation();
@@ -20,7 +24,50 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
   const [toast, setToast] = useState('');
   const [password, setPassword] = useState('');
   const [seenChat, setSeenChat] = useState(0);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tourOn, setTourOn] = useState(false);
   const bootstrapped = useRef(false);
+  const statsFrom = useRef<number | null>(null);
+  const me = state?.players.find((p) => p.id === state.me);
+
+  // Mesas recentes: o atalho na home volta para cá pelo código.
+  const title = state?.config.title;
+  useEffect(() => {
+    if (title) rememberTable(code, title);
+  }, [code, title]);
+
+  // Estatísticas locais: conta só as mãos que terminam enquanto estou jogando nesta sala.
+  useEffect(() => {
+    if (!state) return;
+    if (statsFrom.current === null) {
+      statsFrom.current = state.handNo - (state.hand?.done ? 0 : 1);
+      return;
+    }
+    const last = state.history[state.history.length - 1];
+    if (!last || last.no <= statsFrom.current) return;
+    statsFrom.current = last.no;
+    const mine = last.players?.find((p) => p.id === state.me);
+    if (!mine) return;
+    const won = last.winners.find((w) => w.id === state.me);
+    const current = statsStore.get();
+    statsStore.set({
+      hands: current.hands + 1,
+      won: current.won + (won ? 1 : 0),
+      folded: current.folded + (mine.folded ? 1 : 0),
+      biggestPot: Math.max(current.biggestPot, won ? won.amount : 0),
+    });
+  }, [state]);
+
+  // Passo a passo na primeira mesa, quando as primeiras cartas chegam.
+  const hasCards = !!me && me.cards.length === 2;
+  useEffect(() => {
+    if (!prefs.tourDone && hasCards) setTourOn(true);
+  }, [prefs.tourDone, hasCards]);
+  const finishTour = () => {
+    prefsStore.set({ tourDone: true });
+    setTourOn(false);
+  };
 
   // O criador senta sozinho; "jogar contra bots" também enche a mesa.
   useEffect(() => {
@@ -70,161 +117,192 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
 
   const unread = Math.max(0, chatCount - seenChat);
   return (
-    <div className={`room ${panel ? 'with-panel' : ''}`}>
-      <header className="room-bar">
-        <button
-          className="logo-button"
-          onClick={() => navigate('/')}
-          aria-label={t('game:backHome')}
-        >
-          <img src="/highlords-torch.png" alt="" />
-        </button>
-        <div className="room-title">
-          <strong>{state?.config.title ?? '…'}</strong>
-          {state && (
-            <small>
-              {t('game:code', { code })} ·{' '}
-              {state.config.mode === 'CASH' ? t('home:CASH') : t('home:SIT_AND_GO')} ·{' '}
-              {t('game:blindsNow', { small: state.level.small, big: state.level.big })}
-              {state.level.ante > 0 && ` · ${t('game:ante', { ante: state.level.ante })}`}
-            </small>
-          )}
-        </div>
-        <div className="room-tools">
-          <button className="primary small" onClick={invite}>
-            {copied ? t('game:inviteCopied') : t('game:invite')}
-          </button>
+    <PhotosContext.Provider value={room.photos}>
+      <div className={`room ${panel ? 'with-panel' : ''}`}>
+        <header className="room-bar">
           <button
-            className="icon-button"
-            aria-pressed={prefs.sound}
-            aria-label={prefs.sound ? t('game:soundOn') : t('game:soundOff')}
-            title={prefs.sound ? t('game:soundOn') : t('game:soundOff')}
-            onClick={() => {
-              prefsStore.set({ sound: !prefs.sound });
-              if (!prefs.sound) setTimeout(() => playSound('click'), 30);
-            }}
+            className="logo-button"
+            onClick={() => navigate('/')}
+            aria-label={t('game:backHome')}
           >
-            {prefs.sound ? '🔊' : '🔇'}
+            <img src="/highlords-torch.png" alt="" />
           </button>
-          <button
-            className="icon-button"
-            aria-label={t('game:rankings')}
-            title={t('game:rankings')}
-            onClick={() => setLearning('hands')}
-          >
-            ?
-          </button>
-          <button
-            className="icon-button chat-toggle"
-            aria-label={t('game:tabChat')}
-            aria-pressed={panel === 'chat'}
-            onClick={() => setPanel(panel === 'chat' ? null : 'chat')}
-          >
-            💬{unread > 0 && panel !== 'chat' && <i className="badge">{unread}</i>}
-          </button>
-          <button
-            className="icon-button"
-            aria-label={t('game:menu')}
-            aria-pressed={panel === 'table'}
-            onClick={() => setPanel(panel === 'table' ? null : 'table')}
-          >
-            ☰
-          </button>
-        </div>
-      </header>
-
-      {room.connection === 'reconnecting' && (
-        <div className="banner-bar">{t('game:reconnecting')}</div>
-      )}
-
-      {!state ? (
-        <main className="notice">
-          <div className="spinner" aria-hidden />
-          <p>{t('game:connecting')}</p>
-        </main>
-      ) : (
-        <>
-          <main className="room-main">
-            <Table
-              state={state}
-              labels={fx.labels}
-              sweeps={fx.sweeps}
-              emotes={fx.emotes}
-              serverNow={room.serverNow}
-              send={room.send}
-              onPick={() => setPanel('table')}
-            />
-            <ActionBar state={state} send={room.send} serverNow={room.serverNow} />
-          </main>
-          {panel && (
-            <SidePanel
-              state={state}
-              send={room.send}
-              tab={panel}
-              onTab={setPanel}
-              onClose={() => setPanel(null)}
-              onClosed={() => navigate('/')}
-              unread={unread}
-            />
-          )}
-          {state.standings.length > 0 && state.status === 'FINISHED' && (
-            <Podium state={state} onHome={() => navigate('/')} />
-          )}
-          {panel === 'table' && (
+          <div className="room-title">
+            <strong>{state?.config.title ?? '…'}</strong>
+            {state && (
+              <small>
+                {t('game:code', { code })} ·{' '}
+                {state.config.mode === 'CASH' ? t('home:CASH') : t('home:SIT_AND_GO')} ·{' '}
+                {t('game:blindsNow', { small: state.level.small, big: state.level.big })}
+                {state.level.ante > 0 && ` · ${t('game:ante', { ante: state.level.ante })}`}
+              </small>
+            )}
+          </div>
+          <div className="room-tools">
+            <button className="primary small" onClick={invite}>
+              {copied ? t('game:inviteCopied') : t('game:invite')}
+            </button>
             <button
-              className="leave-link"
+              className="icon-button sound-toggle"
+              aria-pressed={prefs.sound}
+              aria-label={prefs.sound ? t('game:soundOn') : t('game:soundOff')}
+              title={prefs.sound ? t('game:soundOn') : t('game:soundOff')}
               onClick={() => {
-                room.send({ type: 'LEAVE' });
-                navigate('/');
+                prefsStore.set({ sound: !prefs.sound });
+                if (!prefs.sound) setTimeout(() => playSound('click'), 30);
               }}
             >
-              {t('game:leave')}
+              {prefs.sound ? '🔊' : '🔇'}
             </button>
-          )}
-        </>
-      )}
+            <button
+              className="icon-button"
+              aria-label={t('game:rankings')}
+              title={t('game:rankings')}
+              data-tour="ranking"
+              onClick={() => setLearning('hands')}
+            >
+              ?
+            </button>
+            <button
+              className="icon-button chat-toggle"
+              aria-label={t('game:tabChat')}
+              aria-pressed={panel === 'chat'}
+              onClick={() => setPanel(panel === 'chat' ? null : 'chat')}
+            >
+              💬{unread > 0 && panel !== 'chat' && <i className="badge">{unread}</i>}
+            </button>
+            <button
+              className="icon-button"
+              aria-label={t('game:menu')}
+              aria-pressed={panel === 'table'}
+              onClick={() => setPanel(panel === 'table' ? null : 'table')}
+            >
+              ☰
+            </button>
+          </div>
+        </header>
 
-      {toast && (
-        <div className="toast" role="alert">
-          {toast}
-        </div>
-      )}
+        {room.connection === 'reconnecting' && (
+          <div className="banner-bar">{t('game:reconnecting')}</div>
+        )}
 
-      {room.needsPassword && (
-        <Modal title={t('game:passwordTitle')} onClose={() => navigate('/')}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              room.submitPassword(password);
-            }}
-          >
-            <p>{t('game:passwordPrompt')}</p>
-            <input
-              type="password"
-              autoFocus
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              aria-label={t('home:password')}
-            />
-            {room.wrongPassword && <p className="error">{t('game:wrongPassword')}</p>}
-            <div className="modal-actions">
-              <button type="button" onClick={() => navigate('/')}>
-                {t('common:cancel')}
+        {!state ? (
+          <main className="notice">
+            <div className="spinner" aria-hidden />
+            <p>{t('game:connecting')}</p>
+          </main>
+        ) : (
+          <>
+            <main className="room-main">
+              <Table
+                state={state}
+                labels={fx.labels}
+                sweeps={fx.sweeps}
+                emotes={fx.emotes}
+                serverNow={room.serverNow}
+                send={room.send}
+                onPick={(player) =>
+                  player.id === state.me ? setProfileOpen(true) : setPanel('table')
+                }
+              />
+              {state.status === 'WAITING' && state.players.length < 2 && (
+                <div className="waiting-card">
+                  <small>{t('game:shareCode')}</small>
+                  <strong>{code}</strong>
+                  <button className="primary small" onClick={invite}>
+                    {copied ? t('game:inviteCopied') : t('game:invite')}
+                  </button>
+                </div>
+              )}
+              <ActionBar state={state} send={room.send} serverNow={room.serverNow} />
+            </main>
+            {panel && (
+              <SidePanel
+                state={state}
+                send={room.send}
+                tab={panel}
+                onTab={setPanel}
+                onClose={() => setPanel(null)}
+                onClosed={() => navigate('/')}
+                unread={unread}
+                onProfile={() => setProfileOpen(true)}
+                onSettings={() => setSettingsOpen(true)}
+              />
+            )}
+            {state.standings.length > 0 && state.status === 'FINISHED' && (
+              <Podium state={state} onHome={() => navigate('/')} />
+            )}
+            {panel === 'table' && (
+              <button
+                className="leave-link"
+                onClick={() => {
+                  room.send({ type: 'LEAVE' });
+                  navigate('/');
+                }}
+              >
+                {t('game:leave')}
               </button>
-              <button className="primary" type="submit">
-                {t('game:enter')}
-              </button>
-            </div>
-          </form>
-        </Modal>
-      )}
+            )}
+          </>
+        )}
 
-      {learning && (
-        <Modal title={t('common:learn')} wide onClose={() => setLearning(null)}>
-          <LearningCenter section={learning} onSection={setLearning} />
-        </Modal>
-      )}
-    </div>
+        {toast && (
+          <div className="toast" role="alert">
+            {toast}
+          </div>
+        )}
+
+        {room.needsPassword && (
+          <Modal title={t('game:passwordTitle')} onClose={() => navigate('/')}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                room.submitPassword(password);
+              }}
+            >
+              <p>{t('game:passwordPrompt')}</p>
+              <input
+                type="password"
+                autoFocus
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-label={t('home:password')}
+              />
+              {room.wrongPassword && <p className="error">{t('game:wrongPassword')}</p>}
+              <div className="modal-actions">
+                <button type="button" onClick={() => navigate('/')}>
+                  {t('common:cancel')}
+                </button>
+                <button className="primary" type="submit">
+                  {t('game:enter')}
+                </button>
+              </div>
+            </form>
+          </Modal>
+        )}
+
+        {learning && (
+          <Modal title={t('common:learn')} wide onClose={() => setLearning(null)}>
+            <LearningCenter section={learning} onSection={setLearning} />
+          </Modal>
+        )}
+
+        {profileOpen && (
+          <ProfileModal
+            onClose={() => setProfileOpen(false)}
+            onSaved={(profile) => room.send({ type: 'PROFILE', profile })}
+          />
+        )}
+        {settingsOpen && (
+          <SettingsModal
+            onClose={() => setSettingsOpen(false)}
+            send={room.send}
+            onTour={() => setTourOn(true)}
+          />
+        )}
+        {tourOn && <Tour onDone={finishTour} />}
+      </div>
+    </PhotosContext.Provider>
   );
 }
 

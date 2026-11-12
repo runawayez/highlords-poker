@@ -46,6 +46,7 @@ export type RoomFatal = 'ROOM_NOT_FOUND' | 'KICKED' | null;
 /** Conexão em tempo real com a sala: reconecta sozinha e expõe o estado mais recente. */
 export function useRoom(code: string) {
   const [state, setState] = useState<RoomView | null>(null);
+  const [photos, setPhotos] = useState<Record<string, string>>({});
   const [connection, setConnection] = useState<Connection>('connecting');
   const [needsPassword, setNeedsPassword] = useState(false);
   const [wrongPassword, setWrongPassword] = useState(false);
@@ -93,6 +94,7 @@ export function useRoom(code: string) {
           | { type: 'STATE'; data: RoomView }
           | { type: 'ERROR'; code: ErrorCode }
           | { type: 'CLOSED' }
+          | { type: 'PHOTOS'; data: Record<string, string | null> }
           | { type: 'PONG' };
         if (message.type === 'STATE') {
           offset.current = message.data.serverNow - Date.now();
@@ -107,6 +109,14 @@ export function useRoom(code: string) {
           } else if (message.code === 'KICKED' || message.code === 'ROOM_NOT_FOUND')
             setFatal(message.code);
           else setLastError({ code: message.code, at: Date.now() });
+        } else if (message.type === 'PHOTOS') {
+          setPhotos((current) => {
+            const next = { ...current };
+            for (const [id, photo] of Object.entries(message.data))
+              if (photo) next[id] = photo;
+              else delete next[id];
+            return next;
+          });
         } else if (message.type === 'CLOSED') setFatal('ROOM_NOT_FOUND');
       };
       ws.onclose = () => {
@@ -156,6 +166,7 @@ export function useRoom(code: string) {
   const serverNow = useCallback(() => Date.now() + offset.current, []);
   return {
     state,
+    photos,
     connection,
     needsPassword,
     wrongPassword,

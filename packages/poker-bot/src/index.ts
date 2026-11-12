@@ -7,6 +7,15 @@ import {
   type Action,
 } from '../../poker-engine/src/index.ts';
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD';
+export type Style = 'BALANCED' | 'TIGHT' | 'LOOSE' | 'AGGRESSIVE';
+/** Ajustes por estilo: tolerância para pagar, nível de equity para aumentar, chance de aumentar e de blefar. */
+const STYLES: Record<Style, { call: number; raiseAt: number; raiseChance: number; bluff: number }> =
+  {
+    BALANCED: { call: 0, raiseAt: 0, raiseChance: 0.6, bluff: 0 },
+    TIGHT: { call: -0.04, raiseAt: 0.05, raiseChance: 0.5, bluff: 0 },
+    LOOSE: { call: 0.07, raiseAt: 0.05, raiseChance: 0.35, bluff: 0 },
+    AGGRESSIVE: { call: 0.02, raiseAt: -0.12, raiseChance: 0.8, bluff: 0.12 },
+  };
 // This input deliberately excludes opponents' hole cards and the authoritative deck.
 export type BotView = {
   cards: Card[];
@@ -16,7 +25,12 @@ export type BotView = {
   bigBlind: number;
   legal: { actions: Action[]; call: number; min: number; max: number };
 };
-export function decide(view: BotView, difficulty: Difficulty): { action: Action; amount?: number } {
+export function decide(
+  view: BotView,
+  difficulty: Difficulty,
+  style: Style = 'BALANCED',
+): { action: Action; amount?: number } {
+  const tune = STYLES[style];
   const options = view.legal;
   if (!options.actions.length) throw new Error('Bot has no legal turn');
   const random = crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
@@ -44,13 +58,11 @@ export function decide(view: BotView, difficulty: Difficulty): { action: Action;
   }
   equity = samples ? equity / samples : 0.25 + random * 0.5;
   const price = options.call / Math.max(1, view.pot + options.call);
-  if (options.call && equity + (difficulty === 'EASY' ? 0.2 : 0.03) < price)
+  if (options.call && equity + (difficulty === 'EASY' ? 0.2 : 0.03) + tune.call < price)
     return { action: 'FOLD' };
-  if (
-    options.actions.includes('RAISE') &&
-    equity > (difficulty === 'EASY' ? 0.85 : 0.65) &&
-    random < 0.6
-  ) {
+  const strong = equity > (difficulty === 'EASY' ? 0.85 : 0.65) + tune.raiseAt;
+  const bluff = !options.call && equity > 0.25 && random < tune.bluff;
+  if (options.actions.includes('RAISE') && ((strong && random < tune.raiseChance) || bluff)) {
     // Aposta entre meio pote e pote, nunca abaixo do mínimo legal.
     const target = options.call + Math.round(view.pot * (0.5 + random * 0.5));
     const bet = Math.min(options.max, Math.max(options.min, target, view.bigBlind * 2));

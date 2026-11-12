@@ -23,7 +23,7 @@ export type Hand = {
   done: boolean;
   showdown: boolean;
   awards: Record<string, number>;
-  log: { player: string; action: string; amount: number }[];
+  log: { player: string; action: string; amount: number; street: number }[];
 };
 export class RuleError extends Error {
   constructor(public code: string) {
@@ -98,6 +98,25 @@ export function evaluate(cards: Card[]): number[] {
             if (compare(s, best) > 0) best = s;
           }
   return best;
+}
+/** As cinco cartas que formam a melhor mão (para destacar no showdown). */
+export function bestFive(cards: Card[]): Card[] {
+  demand(cards.length >= 5 && cards.length <= 7, 'INVALID_CARDS');
+  let best: number[] = [];
+  let pick: Card[] = cards.slice(0, 5);
+  for (let a = 0; a < cards.length - 4; a++)
+    for (let b = a + 1; b < cards.length - 3; b++)
+      for (let c = b + 1; c < cards.length - 2; c++)
+        for (let d = c + 1; d < cards.length - 1; d++)
+          for (let e = d + 1; e < cards.length; e++) {
+            const five = [cards[a], cards[b], cards[c], cards[d], cards[e]];
+            const s = score5(five);
+            if (compare(s, best) > 0) {
+              best = s;
+              pick = five;
+            }
+          }
+  return pick;
 }
 function pay(p: HandPlayer, n: number, street = true) {
   n = Math.min(p.stack, n);
@@ -291,7 +310,7 @@ export function act(h: Hand, id: string, action: Action, amount?: number) {
     pay(p, target - p.bet);
   }
   p.actedAt = h.currentBet;
-  h.log.push({ player: id, action, amount: p.bet });
+  h.log.push({ player: id, action, amount: p.bet, street: h.street });
   progress(h, p.seat);
 }
 export function publicHand(h: Hand, id?: string) {

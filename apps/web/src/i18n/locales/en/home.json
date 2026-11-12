@@ -50,5 +50,10 @@
   "creating": "Opening…",
   "createError": "Could not open the table. Try again.",
   "nameShort": "Use 2 to 20 letters or numbers.",
-  "footerNote": "Play chips only. Made by Matheus Martins (Berkas)."
+  "footerNote": "Play chips only. Made by Matheus Martins (Berkas).",
+  "eyebrow": "Texas Hold’em · no sign-up",
+  "recent": "Recent tables",
+  "filters": "Filter tables",
+  "filterAll": "All",
+  "filterOpen": "Open seats"
 }

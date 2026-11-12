@@ -50,5 +50,10 @@
   "creating": "Abrindo…",
   "createError": "Não foi possível abrir a mesa. Tente de novo.",
   "nameShort": "Use de 2 a 20 letras ou números.",
-  "footerNote": "Fichas fictícias. Feito por Matheus Martins (Berkas)."
+  "footerNote": "Fichas fictícias. Feito por Matheus Martins (Berkas).",
+  "eyebrow": "Texas Hold’em · sem cadastro",
+  "recent": "Mesas recentes",
+  "filters": "Filtrar mesas",
+  "filterAll": "Todas",
+  "filterOpen": "Com vaga"
 }

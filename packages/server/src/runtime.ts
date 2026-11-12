@@ -36,7 +36,8 @@ export type RoomInit = {
   profile: Profile;
 };
 
-const MAX_MESSAGE = 4096;
+// Cabe uma foto pequena no HELLO e no PROFILE; o restante das mensagens é curto.
+const MAX_MESSAGE = 12_000;
 const HEARTBEAT_MS = 60_000;
 
 /**
@@ -160,12 +161,15 @@ export class RoomRuntime {
         engine.admit(id, msg.profile, now);
         this.deps.hub.bind(socket, id);
         engine.tick(now, this.online());
+        this.send(socket, { type: 'PHOTOS', data: engine.photos() });
+        this.sharePhoto(engine, id, socket);
       } else {
         const entry = this.deps.hub.sockets().find((c) => c.socket === socket);
         if (!entry?.id) return this.fail(socket, 'FORBIDDEN');
         if (this.limited(entry.id)) return this.fail(socket, 'RATE_LIMIT');
         engine.command(entry.id, msg, now);
         engine.tick(now, this.online());
+        if (msg.type === 'PROFILE') this.sharePhoto(engine, entry.id);
       }
     } catch (e) {
       const code = errorCode(e);
@@ -173,6 +177,13 @@ export class RoomRuntime {
       return this.fail(socket, code);
     }
     await this.commit();
+  }
+
+  /** Avisa os outros que a foto de `id` mudou (a própria conexão já recebeu o mapa completo). */
+  private sharePhoto(engine: RoomEngine, id: string, except?: Socket) {
+    const data = engine.photos(id);
+    for (const c of this.deps.hub.sockets())
+      if (c.id && c.socket !== except) this.send(c.socket, { type: 'PHOTOS', data });
   }
 
   close(socket: Socket) {

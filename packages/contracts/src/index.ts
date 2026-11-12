@@ -1,7 +1,39 @@
 import { z } from 'zod';
 
-/** Presets de retrato; o cliente mapeia cada id para uma imagem. */
-export const AVATARS = ['a1', 'a2', 'a3', 'a4'] as const;
+/** Retratos (a1-a4) e emblemas desenhados no cliente (g1-g12); o cliente mapeia cada id. */
+export const PORTRAITS = ['a1', 'a2', 'a3', 'a4'] as const;
+export const EMBLEMS = [
+  'g1',
+  'g2',
+  'g3',
+  'g4',
+  'g5',
+  'g6',
+  'g7',
+  'g8',
+  'g9',
+  'g10',
+  'g11',
+  'g12',
+] as const;
+export const AVATARS = [...PORTRAITS, ...EMBLEMS] as const;
+/** Cor da moldura do avatar. */
+export const PROFILE_COLORS = [
+  'brass',
+  'crimson',
+  'emerald',
+  'azure',
+  'violet',
+  'amber',
+  'rose',
+  'slate',
+] as const;
+/** Foto pequena (já reduzida no navegador); o servidor só confere o formato e o tamanho. */
+export const PHOTO_MAX_LENGTH = 9000;
+export const PhotoSchema = z
+  .string()
+  .max(PHOTO_MAX_LENGTH)
+  .regex(/^data:image\/(webp|jpeg|png);base64,[A-Za-z0-9+/=]+$/);
 
 export const ProfileSchema = z.object({
   nickname: z
@@ -11,6 +43,8 @@ export const ProfileSchema = z.object({
     .max(20)
     .regex(/^[\p{L}\p{N}_ .-]+$/u),
   avatar: z.enum(AVATARS).default('a1'),
+  color: z.enum(PROFILE_COLORS).optional(),
+  photo: PhotoSchema.optional(),
 });
 export type Profile = z.infer<typeof ProfileSchema>;
 
@@ -36,6 +70,10 @@ export type PublicConfig = Omit<Config, 'password'>;
 
 export const BotDifficultySchema = z.enum(['EASY', 'MEDIUM', 'HARD']);
 export type BotDifficulty = z.infer<typeof BotDifficultySchema>;
+/** Estilo de jogo do bot: ajuda quem está aprendendo a reconhecer perfis de adversário. */
+export const BOT_STYLES = ['BALANCED', 'TIGHT', 'LOOSE', 'AGGRESSIVE'] as const;
+export const BotStyleSchema = z.enum(BOT_STYLES);
+export type BotStyle = z.infer<typeof BotStyleSchema>;
 
 export const ChatTextSchema = z.string().trim().min(1).max(200);
 export const EMOTES = ['👍', '🔥', '😂', '😮', '😡', '🎉'] as const;
@@ -62,7 +100,18 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('SIT_OUT'), value: z.boolean() }),
   z.object({ type: z.literal('REBUY') }),
-  z.object({ type: z.literal('ADD_BOT'), difficulty: BotDifficultySchema }),
+  z.object({
+    type: z.literal('ADD_BOT'),
+    difficulty: BotDifficultySchema,
+    style: BotStyleSchema.optional(),
+  }),
+  z.object({ type: z.literal('PROFILE'), profile: ProfileSchema }),
+  /** Gasta uma ficha de tempo extra na sua vez. */
+  z.object({ type: z.literal('TIME_BANK') }),
+  /** Preferência no showdown: mostrar as cartas ao perder ou escondê-las (muck). */
+  z.object({ type: z.literal('SHOWDOWN'), mode: z.enum(['SHOW', 'MUCK']) }),
+  /** Mostra suas cartas depois que a mão acabou (mesmo se você desistiu). */
+  z.object({ type: z.literal('SHOW') }),
   z.object({ type: z.literal('REMOVE_BOT'), id: z.string().max(40) }),
   z.object({ type: z.literal('KICK'), id: z.string().max(40) }),
   z.object({ type: z.literal('CLOSE') }),

@@ -10,7 +10,7 @@ export default defineConfig({
     command: 'node --import tsx apps/local-server/src/index.ts',
     url: 'http://localhost:4174/api/health',
     reuseExistingServer: !process.env.CI,
-    env: { PORT: '4174' },
+    env: { PORT: '4174', ROOM_CREATE_LIMIT: '1000' },
   },
   projects: [
     {
