@@ -113,7 +113,19 @@ export class RoomRuntime {
     return ++b.n > 60;
   }
 
-  async message(socket: Socket, raw: string | ArrayBuffer) {
+  /** Uma operação por vez: HELLO (assíncrono) nunca é ultrapassado pela mensagem seguinte. */
+  private queue: Promise<void> = Promise.resolve();
+  private serial(task: () => Promise<void>) {
+    const next = this.queue.then(task, task);
+    this.queue = next.catch((error) => console.error('room queue error', error));
+    return next;
+  }
+
+  message(socket: Socket, raw: string | ArrayBuffer) {
+    return this.serial(() => this.handleMessage(socket, raw));
+  }
+
+  private async handleMessage(socket: Socket, raw: string | ArrayBuffer) {
     if (typeof raw !== 'string') return socket.close(1003);
     if (raw === 'ping') return this.send(socket, { type: 'PONG' });
     if (raw.length > MAX_MESSAGE) return socket.close(1009);
@@ -163,13 +175,21 @@ export class RoomRuntime {
     await this.commit();
   }
 
-  async close(socket: Socket) {
+  close(socket: Socket) {
+    return this.serial(() => this.handleClose(socket));
+  }
+
+  private async handleClose(socket: Socket) {
     if (!this.engine) return;
     this.engine.tick(this.now(), this.online(socket));
     await this.commit(socket);
   }
 
-  async alarm() {
+  alarm() {
+    return this.serial(() => this.handleAlarm());
+  }
+
+  private async handleAlarm() {
     const engine = this.engine;
     if (!engine) return;
     const now = this.now();
