@@ -15,7 +15,18 @@ it('keeps all namespaces and interpolation parameters in both languages', () => 
   }
 });
 it('covers static translation keys referenced by components', () => {
-  const source = ['main.tsx', 'home.tsx', 'room.tsx', 'table.tsx', 'panels.tsx', 'learning.tsx']
+  const source = [
+    'main.tsx',
+    'home.tsx',
+    'room.tsx',
+    'table.tsx',
+    'panels.tsx',
+    'learning.tsx',
+    'profile.tsx',
+    'settings.tsx',
+    'tour.tsx',
+    'replay.tsx',
+  ]
     .map((path) => readFileSync('apps/web/src/' + path, 'utf8'))
     .join('\n');
   for (const match of source.matchAll(/\bt\(['"]([\w:]+)['"]/g)) {

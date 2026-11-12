@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { AVATARS, type Profile } from '../../../packages/contracts/src/index.ts';
+import { AVATARS, PROFILE_COLORS, type Profile } from '../../../packages/contracts/src/index.ts';
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -31,7 +31,11 @@ export function playerKey(): string {
 
 export function guestProfile(): Profile {
   const n = crypto.getRandomValues(new Uint32Array(1))[0];
-  return { nickname: 'Highlord' + String(100 + (n % 900)), avatar: AVATARS[n % AVATARS.length] };
+  return {
+    nickname: 'Highlord' + String(100 + (n % 900)),
+    avatar: AVATARS[n % 4],
+    color: PROFILE_COLORS[n % PROFILE_COLORS.length],
+  };
 }
 
 function createStore<T extends object>(key: string, initial: () => T) {
@@ -54,11 +58,73 @@ function createStore<T extends object>(key: string, initial: () => T) {
 }
 
 export const profileStore = createStore<Profile>('highlords.profile', guestProfile);
-export const prefsStore = createStore<{ sound: boolean; volume: number; coach: boolean }>(
-  'highlords.prefs',
-  () => ({ sound: true, volume: 0.7, coach: true }),
-);
+
+export type Theme = 'night' | 'emerald' | 'royal' | 'crimson';
+export type CardBack = 'crimson' | 'azure' | 'onyx';
+export type TextSize = 'm' | 'l' | 'xl';
+export type Prefs = {
+  sound: boolean;
+  volume: number;
+  /** Dicas didáticas: mão atual, chance de vitória, pot odds e sugestão. */
+  coach: boolean;
+  /** Mostra VPIP/PFR dos adversários na placa de nome. */
+  hud: boolean;
+  theme: Theme;
+  /** Naipes em quatro cores (espadas preto, copas vermelho, ouros azul, paus verde). */
+  fourColor: boolean;
+  cardBack: CardBack;
+  textSize: TextSize;
+  contrast: boolean;
+  /** Esconde as cartas ao perder no showdown (muck). */
+  muck: boolean;
+  /** Já viu o passo a passo da primeira mesa. */
+  tourDone: boolean;
+  /** Jogadores silenciados no chat (só para mim). */
+  muted: string[];
+};
+export const prefsStore = createStore<Prefs>('highlords.prefs', () => ({
+  sound: true,
+  volume: 0.7,
+  coach: true,
+  hud: false,
+  theme: 'night',
+  fourColor: false,
+  cardBack: 'crimson',
+  textSize: 'm',
+  contrast: false,
+  muck: false,
+  tourDone: false,
+  muted: [],
+}));
+
+/** Estatísticas só deste navegador: nada disso sobe para o servidor. */
+export type Stats = { hands: number; won: number; biggestPot: number; folded: number };
+export const statsStore = createStore<Stats>('highlords.stats', () => ({
+  hands: 0,
+  won: 0,
+  biggestPot: 0,
+  folded: 0,
+}));
+
+export type RecentTable = { id: string; title: string; at: number };
+export const recentStore = createStore<{ tables: RecentTable[] }>('highlords.recent', () => ({
+  tables: [],
+}));
+export function rememberTable(id: string, title: string) {
+  const others = recentStore.get().tables.filter((t) => t.id !== id);
+  recentStore.set({ tables: [{ id, title, at: Date.now() }, ...others].slice(0, 5) });
+}
 
 export function useStore<T extends object>(store: ReturnType<typeof createStore<T>>): T {
   return useSyncExternalStore(store.subscribe, store.get);
+}
+
+/** Reflete as preferências visuais no <html>: o CSS reage aos atributos data-*. */
+export function applyPrefs(prefs: Prefs = prefsStore.get()) {
+  const root = document.documentElement;
+  root.dataset.theme = prefs.theme;
+  root.dataset.text = prefs.textSize;
+  root.dataset.contrast = String(prefs.contrast);
+  root.dataset.fourColor = String(prefs.fourColor);
+  root.dataset.back = prefs.cardBack;
 }

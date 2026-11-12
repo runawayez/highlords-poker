@@ -56,7 +56,9 @@ export function Card({
           <span>♠</span>
         </div>
       ) : (
-        <div className={`card-face card-front ${'hd'.includes(card[1]) ? 'red' : ''}`}>
+        <div
+          className={`card-face card-front suit-${card[1]} ${'hd'.includes(card[1]) ? 'red' : ''}`}
+        >
           <svg viewBox="0 0 100 140" aria-hidden="true" focusable="false">
             <text x="10" y="30" className="card-rank" textAnchor="start">
               {rank}

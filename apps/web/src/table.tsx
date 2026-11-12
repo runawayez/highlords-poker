@@ -1,15 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ClientMessage } from '../../../packages/contracts/src/index.ts';
+import { bestFive } from '../../../packages/poker-engine/src/index.ts';
+import { Avatar } from './avatar.tsx';
 import { Card } from './card.tsx';
+import { adviseAction, countOuts, estimateEquity, potOdds } from './coach.ts';
 import { useCountdown, type ActionLabel, type Sweep } from './fx.ts';
+import { computeHud, type HudLine } from './hud.ts';
 import type { PlayerView, RoomView } from './net.ts';
 import { visibleHand } from './poker-learning.ts';
 import { playSound } from './audio.ts';
 import { prefsStore, useStore } from './store.ts';
 
 export type Send = (message: ClientMessage) => void;
-export const portrait = (avatar: string) => `/avatars/avatar-${avatar.replace('a', '') || 1}.webp`;
+export { portrait } from './avatar.tsx';
 export const useNumber = () => {
   const { i18n } = useTranslation();
   return (n: number) => new Intl.NumberFormat(i18n.language).format(n);
@@ -19,7 +23,7 @@ export const useNumber = () => {
 function seatPosition(rel: number, count: number, tall: boolean) {
   const angle = Math.PI / 2 + (2 * Math.PI * rel) / count;
   const rx = tall ? 40 : 42;
-  const ry = tall ? 38 : 34;
+  const ry = tall ? 37 : 32;
   return { x: 50 + rx * Math.cos(angle), y: 50 + ry * Math.sin(angle) };
 }
 
@@ -35,20 +39,41 @@ function useTall() {
   return tall;
 }
 
-const chipColors = ['#e9e4d8', '#c8353f', '#2f8a57', '#1e1c22', '#7a4cc2', '#d6a53a'];
-/** Pilha de fichas: a cor reflete a grandeza do valor. */
+/** Fichas de cassino: cada valor tem sua cor (1 branca, 5 vermelha, 25 verde, 100 preta...). */
+const DENOMINATIONS = [
+  { value: 5000, color: '#d6a53a' },
+  { value: 1000, color: '#7a4cc2' },
+  { value: 500, color: '#2a6fb0' },
+  { value: 100, color: '#1e1c22' },
+  { value: 25, color: '#2f8a57' },
+  { value: 5, color: '#c8353f' },
+  { value: 1, color: '#e9e4d8' },
+] as const;
+
+function stacksFor(amount: number) {
+  const stacks: { color: string; count: number }[] = [];
+  let rest = Math.max(0, Math.floor(amount));
+  for (const { value, color } of DENOMINATIONS) {
+    const count = Math.floor(rest / value);
+    if (count > 0) stacks.push({ color, count });
+    rest -= count * value;
+  }
+  // As três maiores pilhas bastam para ler o valor de relance.
+  return stacks.slice(0, 3);
+}
+
+/** Pilhas de fichas por valor ao lado do total. */
 export function Chips({ amount, className = '' }: { amount: number; className?: string }) {
   const format = useNumber();
-  const tier = Math.min(
-    chipColors.length - 1,
-    Math.max(0, Math.floor(Math.log10(Math.max(1, amount)) - 0.7)),
-  );
-  const discs = Math.min(5, 1 + Math.floor(Math.log2(Math.max(1, amount)) / 3));
   return (
     <div className={`chips ${className}`}>
-      <span className="chip-stack" style={{ ['--chip' as string]: chipColors[tier] }}>
-        {Array.from({ length: discs }, (_, i) => (
-          <i key={i} style={{ bottom: `${i * 4}px` }} />
+      <span className="chip-pile" aria-hidden>
+        {stacksFor(amount).map((stack, index) => (
+          <span key={index} className="chip-stack" style={{ ['--chip' as string]: stack.color }}>
+            {Array.from({ length: Math.min(5, stack.count) }, (_, i) => (
+              <i key={i} style={{ bottom: `${i * 3.5}px` }} />
+            ))}
+          </span>
         ))}
       </span>
       <b>{format(amount)}</b>
@@ -91,6 +116,8 @@ function Seat({
   serverNow,
   canKick,
   onPick,
+  hud,
+  fiveCards,
 }: {
   player: PlayerView;
   state: RoomView;
@@ -101,6 +128,9 @@ function Seat({
   serverNow: () => number;
   canKick: boolean;
   onPick: (p: PlayerView) => void;
+  hud?: HudLine;
+  /** As cinco cartas que formaram a mão vencedora deste jogador (só no showdown). */
+  fiveCards?: Set<string>;
 }) {
   const { t } = useTranslation();
   const format = useNumber();
@@ -108,9 +138,14 @@ function Seat({
   const acting = !!hand && !hand.done && hand.actor === player.id;
   const remaining = useCountdown(acting ? hand!.deadline : undefined, serverNow);
   const isMe = player.id === state.me;
+  // Últimos 5 segundos da minha vez: um tique por segundo.
+  const secondsLeft = Math.ceil(remaining / 1000);
+  useEffect(() => {
+    if (isMe && acting && secondsLeft > 0 && secondsLeft <= 5) playSound('tick');
+  }, [isMe, acting, secondsLeft]);
   const award = hand?.done ? (hand.awards[player.id] ?? 0) : 0;
   const allIn = player.inHand && !player.folded && player.stack === 0 && !hand?.done;
-  const showCards = player.inHand && (!hand?.done || !player.folded);
+  const showCards = player.inHand && (!hand?.done || !player.folded || player.shown);
   const labelText = label
     ? label.action === 'FOLD'
       ? t('game:actFold')
@@ -147,7 +182,10 @@ function Seat({
               key={`${hand?.id}-${i}`}
               card={player.cards[i]}
               down={!player.cards[i]}
-              glow={award > 0 && !!player.cards[i]}
+              glow={
+                award > 0 && !!player.cards[i] && (!fiveCards || fiveCards.has(player.cards[i]))
+              }
+              dim={!!fiveCards && award > 0 && !!player.cards[i] && !fiveCards.has(player.cards[i])}
               className="hole-card"
               style={{ ['--i' as string]: i + player.seat * 2 }}
             />
@@ -157,9 +195,16 @@ function Seat({
       <button
         type="button"
         className="avatar"
+        data-frame={player.color ?? 'brass'}
         onClick={() => onPick(player)}
         aria-label={player.nickname}
-        title={canKick || !isMe ? player.nickname : undefined}
+        title={
+          player.botStyle && player.bot
+            ? `${player.nickname} · ${t(`game:style_${player.botStyle}`)}`
+            : canKick || !isMe
+              ? player.nickname
+              : undefined
+        }
       >
         {acting && (
           <TimerRing
@@ -168,7 +213,7 @@ function Seat({
             urgent={isMe && remaining < 6000}
           />
         )}
-        <img src={portrait(player.avatar)} alt="" draggable={false} />
+        <Avatar avatar={player.avatar} id={player.id} />
         {player.isButton && (
           <span className="dealer" title={t('game:dealer')}>
             D
@@ -187,6 +232,12 @@ function Seat({
                 ? t('game:offline')
                 : format(player.stack)}
         </span>
+        {hud && hud.hands >= 4 && (
+          <small className="hud" title={t('game:hudTitle', { hands: hud.hands })}>
+            V{hud.vpip} · P{hud.pfr}
+            {hud.aggression !== null && ` · A${hud.aggression}`}
+          </small>
+        )}
       </div>
       {label && !hand?.done && (
         <span className="act-label" key={label.at}>
@@ -273,6 +324,25 @@ export function Table({
   );
   const bySeat = useMemo(() => new Map(state.players.map((p) => [p.seat, p])), [state.players]);
   const meWon = !!hand?.done && (hand.awards[state.me] ?? 0) > 0;
+  const prefs = useStore(prefsStore);
+  const hud = useMemo(
+    () => (prefs.hud ? computeHud(state.history) : {}),
+    [prefs.hud, state.history],
+  );
+  // No showdown, destaca as cinco cartas da mão vencedora e apaga o resto da mesa.
+  const highlight = useMemo(() => {
+    if (!hand?.done || !hand.showdown || hand.board.length < 5) return null;
+    const board = new Set<string>();
+    const perPlayer: Record<string, Set<string>> = {};
+    for (const [id, amount] of Object.entries(hand.awards)) {
+      const winner = state.players.find((p) => p.id === id);
+      if (amount <= 0 || !winner || winner.cards.length !== 2) continue;
+      const five = bestFive([...winner.cards, ...hand.board]);
+      perPlayer[id] = new Set(five);
+      for (const card of five) if (hand.board.includes(card)) board.add(card);
+    }
+    return board.size || Object.keys(perPlayer).length ? { board, perPlayer } : null;
+  }, [hand, state.players]);
 
   return (
     <div className={`stage ${tall ? 'tall' : ''}`}>
@@ -298,6 +368,8 @@ export function Table({
               <Card
                 key={hand.board[i]}
                 card={hand.board[i]}
+                dim={!!highlight && !highlight.board.has(hand.board[i])}
+                glow={!!highlight && highlight.board.has(hand.board[i])}
                 className={`board-card ${i < 3 ? 'flop' : ''}`}
                 style={{ ['--i' as string]: i < 3 ? i : 0 }}
               />
@@ -353,6 +425,8 @@ export function Table({
             serverNow={serverNow}
             canKick={state.host}
             onPick={onPick}
+            hud={hud[player.id]}
+            fiveCards={highlight?.perPlayer[player.id]}
           />
         ) : (
           <EmptySeat
@@ -465,6 +539,12 @@ export function ActionBar({
     setAmount(min);
   }, [hand?.id, hand?.street, myTurn, min]);
 
+  // Tempo extra: cada ficha vale 15 s.
+  const canBank = myTurn && (me?.bank ?? 0) >= 15_000;
+  const banks = Math.floor((me?.bank ?? 0) / 15_000);
+  // Atalhos 1 a 5 do painel de aumento: mínimo, 1/3, 1/2, 3/4 do pote... e all-in.
+  const quickAmounts = [min, potRaise(1 / 3), potRaise(0.5), potRaise(0.75), potRaise(1), max];
+
   useEffect(() => {
     if (!myTurn) return;
     const onKey = (event: KeyboardEvent) => {
@@ -473,8 +553,11 @@ export function ActionBar({
       if (key === 'f') send({ type: 'ACT', action: 'FOLD' });
       else if (key === 'c') send({ type: 'ACT', action: toCall ? 'CALL' : 'CHECK' });
       else if (key === 'r' && canRaise) setRaising((r) => !r);
+      else if (key === 't' && canBank) send({ type: 'TIME_BANK' });
       else if (key === 'escape') setRaising(false);
       else if (key === 'enter' && raising) confirmRaise();
+      else if (raising && quickAmounts[Number(key) - 1] !== undefined)
+        setAmount(quickAmounts[Number(key) - 1]);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -494,6 +577,24 @@ export function ActionBar({
     setRaising(false);
   };
 
+  const opponents = state.players.filter((p) => p.inHand && !p.folded && p.id !== state.me).length;
+  const holeKey = me?.cards.join('') ?? '';
+  const inPlay = !!me && !!hand && !hand.done && !me.folded && me.cards.length === 2;
+  const [equity, setEquity] = useState<number | null>(null);
+  useEffect(() => {
+    if (!prefs.coach || !inPlay || opponents < 1) return setEquity(null);
+    const timer = setTimeout(
+      () => setEquity(estimateEquity(me!.cards, hand!.board, opponents)),
+      30,
+    );
+    return () => clearTimeout(timer);
+  }, [prefs.coach, inPlay, hand?.id, hand?.board.length, holeKey, opponents]);
+  const outs = useMemo(
+    () => (prefs.coach && inPlay ? countOuts(me!.cards, hand!.board) : null),
+    [prefs.coach, inPlay, hand?.board.length, holeKey],
+  );
+  const advice = equity !== null && myTurn ? adviseAction(equity, toCall, pot) : null;
+
   const coachLine = useMemo(() => {
     if (!prefs.coach || !me || !hand || me.cards.length !== 2 || me.folded) return null;
     const best = visibleHand(me.cards, hand.board);
@@ -501,6 +602,9 @@ export function ActionBar({
       ? t('game:youHave', { hand: t(`learn:rank${best.category}`) })
       : t('game:preflopHint');
   }, [prefs.coach, me, hand, t]);
+
+  // Depois da mão, quem ainda não mostrou as cartas pode revelá-las (útil ao desistir ou ao ganhar sem showdown).
+  const canShowHand = !!me && !!hand?.done && me.inHand && me.cards.length === 2 && !me.shown;
 
   const sitOutToggle = me && (
     <button className="ghost" onClick={() => send({ type: 'SIT_OUT', value: !me.sitOut })}>
@@ -513,11 +617,24 @@ export function ActionBar({
     content = raising ? (
       <div className="raise-panel">
         <div className="quick">
-          <button onClick={() => setAmount(min)}>{t('game:minimum')}</button>
-          <button onClick={() => setAmount(potRaise(0.5))}>{t('game:halfPot')}</button>
-          <button onClick={() => setAmount(potRaise(0.75))}>{t('game:threeQuarterPot')}</button>
-          <button onClick={() => setAmount(potRaise(1))}>{t('game:fullPot')}</button>
-          <button onClick={() => setAmount(max)}>{t('game:allInTag')}</button>
+          <button onClick={() => setAmount(quickAmounts[0])}>
+            {t('game:minimum')} <kbd>1</kbd>
+          </button>
+          <button onClick={() => setAmount(quickAmounts[1])}>
+            {t('game:thirdPot')} <kbd>2</kbd>
+          </button>
+          <button onClick={() => setAmount(quickAmounts[2])}>
+            {t('game:halfPot')} <kbd>3</kbd>
+          </button>
+          <button onClick={() => setAmount(quickAmounts[3])}>
+            {t('game:threeQuarterPot')} <kbd>4</kbd>
+          </button>
+          <button onClick={() => setAmount(quickAmounts[4])}>
+            {t('game:fullPot')} <kbd>5</kbd>
+          </button>
+          <button onClick={() => setAmount(max)}>
+            {t('game:allInTag')} <kbd>6</kbd>
+          </button>
         </div>
         <div className="slider-row">
           <button
@@ -580,6 +697,15 @@ export function ActionBar({
             {t('game:allIn', { amount: format(max) })}
           </button>
         ) : null}
+        {canBank && (
+          <button
+            className="ghost bank"
+            onClick={() => send({ type: 'TIME_BANK' })}
+            title={t('game:timeBankHint')}
+          >
+            {t('game:timeBank', { count: banks })} <kbd>T</kbd>
+          </button>
+        )}
       </div>
     );
   } else if (!me) {
@@ -643,8 +769,35 @@ export function ActionBar({
   return (
     <footer className={`action-bar ${myTurn ? 'my-turn' : ''}`}>
       <div className="action-meta">
-        {coachLine && <span className="coach">{coachLine}</span>}
-        {me && state.config.mode === 'CASH' && me.stack > 0 && sitOutToggle}
+        <div className="coach-group">
+          {coachLine && <span className="coach">{coachLine}</span>}
+          {equity !== null && (
+            <span className="coach-stat" title={t('game:equityHint')}>
+              {t('game:equity', { pct: Math.round(equity * 100) })}
+            </span>
+          )}
+          {inPlay && toCall > 0 && (
+            <span className="coach-stat" title={t('game:potOddsHint')}>
+              {t('game:potOdds', { pct: Math.round(potOdds(toCall, pot) * 100) })}
+            </span>
+          )}
+          {outs !== null && outs > 0 && (
+            <span className="coach-stat" title={t('game:outsHint')}>
+              {t('game:outs', { count: outs })}
+            </span>
+          )}
+          {advice && (
+            <span className={`coach advice advice-${advice}`}>{t(`game:advice_${advice}`)}</span>
+          )}
+        </div>
+        <div className="meta-buttons">
+          {canShowHand && (
+            <button className="ghost small" onClick={() => send({ type: 'SHOW' })}>
+              {t('game:showHand')}
+            </button>
+          )}
+          {me && state.config.mode === 'CASH' && me.stack > 0 && sitOutToggle}
+        </div>
       </div>
       {content}
     </footer>

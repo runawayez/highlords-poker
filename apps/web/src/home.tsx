@@ -7,9 +7,11 @@ import {
   type LobbyEntry,
 } from '../../../packages/contracts/src/index.ts';
 import { ApiError, createRoom, fetchLobby, fetchRoom } from './net.ts';
-import { AvatarPicker, Modal } from './panels.tsx';
+import { Avatar } from './avatar.tsx';
+import { Modal } from './panels.tsx';
+import { ProfileModal } from './profile.tsx';
 import { playSound } from './audio.ts';
-import { profileStore, useStore } from './store.ts';
+import { profileStore, recentStore, useStore } from './store.ts';
 
 const BLINDS = [
   [10, 20],
@@ -31,6 +33,10 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
   const [code, setCode] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [filter, setFilter] = useState<'ALL' | 'CASH' | 'SIT_AND_GO'>('ALL');
+  const [onlyOpen, setOnlyOpen] = useState(false);
+  const recent = useStore(recentStore).tables;
 
   useEffect(() => {
     let stopped = false;
@@ -45,6 +51,12 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
       clearInterval(timer);
     };
   }, []);
+
+  const visibleRooms = (rooms ?? []).filter(
+    (room) =>
+      (filter === 'ALL' || room.mode === filter) &&
+      (!onlyOpen || (room.players < room.seats && room.status !== 'FINISHED')),
+  );
 
   const needName = () => {
     if (valid) return false;
@@ -97,7 +109,7 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
     <main className="home" id="content">
       <section className="hero">
         <div className="hero-copy">
-          <img className="hero-logo" src="/highlords-torch.png" alt="" />
+          <p className="eyebrow">{t('home:eyebrow')}</p>
           <h1>{t('home:heroTitle')}</h1>
           <p>{t('home:heroSub')}</p>
         </div>
@@ -114,25 +126,33 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
               profileStore.set({ nickname: e.target.value });
             }}
           />
-          <AvatarPicker
-            value={profile.avatar}
-            onChange={(avatar) => profileStore.set({ avatar })}
-          />
-          <div className="cta-row">
-            <button
-              className="primary big"
-              onClick={() => {
-                playSound('click');
-                if (!needName()) setCreating(true);
-              }}
-            >
-              {t('home:createTable')}
-            </button>
-            <button className="big" disabled={busy} onClick={() => void quickBots()}>
-              {t('home:playBots')}
-              <small>{t('home:playBotsHint')}</small>
-            </button>
-          </div>
+          <button
+            type="button"
+            className="profile-chip"
+            data-frame={profile.color ?? 'brass'}
+            onClick={() => setProfileOpen(true)}
+          >
+            <span className="avatar-frame">
+              <Avatar avatar={profile.avatar} photo={profile.photo} />
+            </span>
+            <span>
+              <b>{t('profile:customize')}</b>
+              <small>{t('profile:customizeHint')}</small>
+            </span>
+          </button>
+          <button className="primary huge" disabled={busy} onClick={() => void quickBots()}>
+            {t('home:playBots')}
+            <small>{t('home:playBotsHint')}</small>
+          </button>
+          <button
+            className="big"
+            onClick={() => {
+              playSound('click');
+              if (!needName()) setCreating(true);
+            }}
+          >
+            {t('home:createTable')}
+          </button>
           <form className="code-row" onSubmit={joinByCode}>
             <label htmlFor="code">{t('home:joinCode')}</label>
             <input
@@ -154,11 +174,52 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
               {message}
             </p>
           )}
+          {recent.length > 0 && (
+            <div className="recent">
+              <small>{t('home:recent')}</small>
+              <ul>
+                {recent.map((table) => (
+                  <li key={table.id}>
+                    <button
+                      type="button"
+                      className="ghost small"
+                      onClick={() => !needName() && navigate(`/mesa/${table.id}`)}
+                    >
+                      {table.title} <code>{table.id}</code>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </section>
 
       <section className="lobby" aria-labelledby="open-tables">
-        <h2 id="open-tables">{t('home:openTables')}</h2>
+        <div className="lobby-head">
+          <h2 id="open-tables">{t('home:openTables')}</h2>
+          <div className="lobby-filters" role="group" aria-label={t('home:filters')}>
+            {(['ALL', 'CASH', 'SIT_AND_GO'] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                className="small"
+                aria-pressed={filter === value}
+                onClick={() => setFilter(value)}
+              >
+                {value === 'ALL' ? t('home:filterAll') : t(`home:${value}`)}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="small"
+              aria-pressed={onlyOpen}
+              onClick={() => setOnlyOpen(!onlyOpen)}
+            >
+              {t('home:filterOpen')}
+            </button>
+          </div>
+        </div>
         {rooms === null ? (
           <div className="spinner" aria-label={t('common:loading')} />
         ) : rooms.length === 0 ? (
@@ -168,7 +229,7 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
           </div>
         ) : (
           <ul className="room-list">
-            {rooms.map((room) => (
+            {visibleRooms.map((room) => (
               <li key={room.id}>
                 <button
                   className="room-card"
@@ -210,6 +271,7 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
         )}
       </section>
 
+      {profileOpen && <ProfileModal onClose={() => setProfileOpen(false)} />}
       {creating && (
         <CreateDialog
           onClose={() => setCreating(false)}

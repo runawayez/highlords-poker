@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  AVATARS,
+  BOT_STYLES,
   EMOTES,
   type BotDifficulty,
-  type Profile,
+  type BotStyle,
 } from '../../../packages/contracts/src/index.ts';
+import { Avatar } from './avatar.tsx';
 import type { PlayerView, RoomView } from './net.ts';
-import { portrait, useNumber, type Send } from './table.tsx';
-import { playSound } from './audio.ts';
+import { ReplayModal } from './replay.tsx';
+import { prefsStore, statsStore, useStore } from './store.ts';
+import { useNumber, type Send } from './table.tsx';
 
 export function Modal({
   title,
@@ -60,38 +62,16 @@ export function Modal({
   );
 }
 
-export function AvatarPicker({
-  value,
-  onChange,
-}: {
-  value: Profile['avatar'];
-  onChange: (a: Profile['avatar']) => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <div className="avatar-picker" role="radiogroup" aria-label={t('home:avatar')}>
-      {AVATARS.map((avatar, index) => (
-        <button
-          key={avatar}
-          type="button"
-          role="radio"
-          aria-checked={value === avatar}
-          aria-label={t('home:portrait', { number: index + 1 })}
-          onClick={() => {
-            playSound('click');
-            onChange(avatar);
-          }}
-        >
-          <img src={portrait(avatar)} alt="" draggable={false} />
-        </button>
-      ))}
-    </div>
-  );
-}
+const QUICK_PHRASES = ['gg', 'quickNice', 'quickGood', 'quickThinking'] as const;
 
 function Chat({ state, send }: { state: RoomView; send: Send }) {
   const { t } = useTranslation();
+  const prefs = useStore(prefsStore);
   const [text, setText] = useState('');
+  const toggleMute = (id: string) =>
+    prefsStore.set({
+      muted: prefs.muted.includes(id) ? prefs.muted.filter((m) => m !== id) : [...prefs.muted, id],
+    });
   const list = useRef<HTMLOListElement>(null);
   useEffect(() => {
     list.current?.scrollTo({ top: list.current.scrollHeight });
@@ -100,19 +80,53 @@ function Chat({ state, send }: { state: RoomView; send: Send }) {
     <div className="chat">
       <ol ref={list} aria-live="polite">
         {state.chat.length === 0 && <li className="empty">{t('game:chatEmpty')}</li>}
-        {state.chat.map((m) =>
-          m.sys ? (
-            <li key={m.id} className="sys">
-              {t(`game:sys_${m.sys}`, m.params)}
-            </li>
-          ) : (
-            <li key={m.id} className={m.from === state.me ? 'mine' : ''}>
-              <b>{m.from === state.me ? t('game:you') : m.nickname}</b>
-              <span>{m.text}</span>
-            </li>
-          ),
-        )}
+        {state.chat
+          .filter((m) => !m.from || m.from === state.me || !prefs.muted.includes(m.from))
+          .map((m) =>
+            m.sys ? (
+              <li key={m.id} className="sys">
+                {t(`game:sys_${m.sys}`, m.params)}
+              </li>
+            ) : (
+              <li key={m.id} className={m.from === state.me ? 'mine' : ''}>
+                <b>{m.from === state.me ? t('game:you') : m.nickname}</b>
+                <span>{m.text}</span>
+                {m.from && m.from !== state.me && (
+                  <button
+                    type="button"
+                    className="ghost mute"
+                    title={t('game:muteHint')}
+                    aria-label={t('game:mute', { name: m.nickname ?? '' })}
+                    onClick={() => toggleMute(m.from!)}
+                  >
+                    🔇
+                  </button>
+                )}
+              </li>
+            ),
+          )}
       </ol>
+      {prefs.muted.length > 0 && (
+        <button
+          type="button"
+          className="ghost small unmute"
+          onClick={() => prefsStore.set({ muted: [] })}
+        >
+          {t('game:unmuteAll', { count: prefs.muted.length })}
+        </button>
+      )}
+      <div className="quick-chat">
+        {QUICK_PHRASES.map((phrase) => (
+          <button
+            key={phrase}
+            type="button"
+            className="small"
+            onClick={() => send({ type: 'CHAT', text: t(`game:${phrase}`) })}
+          >
+            {t(`game:${phrase}`)}
+          </button>
+        ))}
+      </div>
       <div className="emotes">
         {EMOTES.map((emote) => (
           <button key={emote} onClick={() => send({ type: 'EMOTE', emote })} aria-label={emote}>
@@ -147,14 +161,20 @@ function TablePanel({
   state,
   send,
   onClosed,
+  onProfile,
+  onSettings,
 }: {
   state: RoomView;
   send: Send;
   onClosed: () => void;
+  onProfile: () => void;
+  onSettings: () => void;
 }) {
   const { t } = useTranslation();
   const format = useNumber();
   const [difficulty, setDifficulty] = useState<BotDifficulty>('MEDIUM');
+  const [style, setStyle] = useState<BotStyle | 'RANDOM'>('RANDOM');
+  const botStyle = style === 'RANDOM' ? undefined : style;
   const [confirming, setConfirming] = useState<
     null | { kind: 'kick'; player: PlayerView } | { kind: 'close' }
   >(null);
@@ -163,6 +183,10 @@ function TablePanel({
   const me = state.players.find((p) => p.id === state.me);
   return (
     <div className="manage">
+      <section className="me-tools">
+        <button onClick={onProfile}>{t('profile:edit')}</button>
+        <button onClick={onSettings}>{t('settings:title')}</button>
+      </section>
       <section>
         <h3>
           {t('game:players')}{' '}
@@ -176,11 +200,18 @@ function TablePanel({
             .sort((a, b) => a.seat - b.seat)
             .map((p) => (
               <li key={p.id} className={p.online ? '' : 'away'}>
-                <img src={portrait(p.avatar)} alt="" />
+                <span className="roster-avatar" data-frame={p.color ?? 'brass'}>
+                  <Avatar avatar={p.avatar} id={p.id} />
+                </span>
                 <span>
                   {p.nickname}
                   {p.id === state.hostId && <em>{t('game:host')}</em>}
                   {p.bot && <em>{t(`game:${p.bot}`)}</em>}
+                  {p.bot && p.botStyle && (
+                    <em className="style-tag" title={t(`game:styleHint_${p.botStyle}`)}>
+                      {t(`game:style_${p.botStyle}`)}
+                    </em>
+                  )}
                 </span>
                 <b>{format(p.stack)}</b>
                 {state.host && p.id !== state.me && (
@@ -221,16 +252,29 @@ function TablePanel({
                 </option>
               ))}
             </select>
+            <select
+              value={style}
+              onChange={(e) => setStyle(e.target.value as BotStyle | 'RANDOM')}
+              aria-label={t('game:botStyle')}
+            >
+              <option value="RANDOM">{t('game:styleRandom')}</option>
+              {BOT_STYLES.map((value) => (
+                <option key={value} value={value}>
+                  {t(`game:style_${value}`)}
+                </option>
+              ))}
+            </select>
             <button
               disabled={!canBots || free < 1}
-              onClick={() => send({ type: 'ADD_BOT', difficulty })}
+              onClick={() => send({ type: 'ADD_BOT', difficulty, style: botStyle })}
             >
               {t('game:addBot')}
             </button>
             <button
               disabled={!canBots || free < 1}
               onClick={() => {
-                for (let i = 0; i < free; i++) send({ type: 'ADD_BOT', difficulty });
+                for (let i = 0; i < free; i++)
+                  send({ type: 'ADD_BOT', difficulty, style: botStyle });
               }}
             >
               {t('game:fillBots')}
@@ -301,9 +345,17 @@ function TablePanel({
 function History({ state }: { state: RoomView }) {
   const { t } = useTranslation();
   const format = useNumber();
+  const stats = useStore(statsStore);
+  const [replay, setReplay] = useState<RoomView['history'][number] | null>(null);
   if (!state.history.length) return <p className="empty-note">{t('game:noHistory')}</p>;
+  const biggest = state.history.reduce((top, h) => Math.max(top, h.pot), 0);
   return (
     <>
+      <p className="table-stats">
+        {t('game:tableStats', { hands: state.handNo, biggest: format(biggest) })}
+        {stats.hands > 0 && ` · ${t('game:myStats', { won: stats.won, hands: stats.hands })}`}
+      </p>
+      {replay && <ReplayModal hand={replay} me={state.me} onClose={() => setReplay(null)} />}
       {state.standings.length > 0 && (
         <section className="standings">
           <h3>{t('game:standings')}</h3>
@@ -311,7 +363,9 @@ function History({ state }: { state: RoomView }) {
             {state.standings.map((s) => (
               <li key={s.id}>
                 <b>{s.rank}º</b>
-                <img src={portrait(s.avatar)} alt="" />
+                <span className="roster-avatar" data-frame={s.color ?? 'brass'}>
+                  <Avatar avatar={s.avatar} id={s.id} />
+                </span>
                 <span>{s.nickname}</span>
               </li>
             ))}
@@ -329,6 +383,11 @@ function History({ state }: { state: RoomView }) {
                 <span>
                   {t('game:pot')} {format(h.pot)}
                 </span>
+                {h.log && h.log.length > 0 && (
+                  <button className="ghost small" onClick={() => setReplay(h)}>
+                    {t('game:replay')}
+                  </button>
+                )}
               </header>
               {h.winners.map((w) => (
                 <p key={w.id}>
@@ -360,6 +419,8 @@ export function SidePanel({
   onClose,
   onClosed,
   unread,
+  onProfile,
+  onSettings,
 }: {
   state: RoomView;
   send: Send;
@@ -368,6 +429,8 @@ export function SidePanel({
   onClose: () => void;
   onClosed: () => void;
   unread: number;
+  onProfile: () => void;
+  onSettings: () => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -387,7 +450,15 @@ export function SidePanel({
       </header>
       <div className="side-body">
         {tab === 'chat' && <Chat state={state} send={send} />}
-        {tab === 'table' && <TablePanel state={state} send={send} onClosed={onClosed} />}
+        {tab === 'table' && (
+          <TablePanel
+            state={state}
+            send={send}
+            onClosed={onClosed}
+            onProfile={onProfile}
+            onSettings={onSettings}
+          />
+        )}
         {tab === 'history' && <History state={state} />}
       </div>
     </aside>

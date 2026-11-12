@@ -48,6 +48,13 @@ export class RateLimiter {
   }
 }
 const limiter = new RateLimiter();
+// Salas novas por minuto e por IP. Os testes de ponta a ponta (Node) elevam o limite pelo ambiente;
+// no Worker não existe `process`, então vale o padrão.
+const CREATE_LIMIT =
+  Number(
+    (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+      ?.ROOM_CREATE_LIMIT,
+  ) || 8;
 
 /** Rotas JSON. WebSocket é tratado por cada plataforma. */
 export async function handleApi(req: Request, backend: Backend, ip: string) {
@@ -60,9 +67,9 @@ export async function handleApi(req: Request, backend: Backend, ip: string) {
       return json({ rooms: await backend.lobby() });
     }
     if (path === '/api/rooms' && req.method === 'POST') {
-      if (!limiter.take('create:' + ip, 8)) return json({ error: 'RATE_LIMIT' }, 429);
+      if (!limiter.take('create:' + ip, CREATE_LIMIT)) return json({ error: 'RATE_LIMIT' }, 429);
       const raw = await req.text();
-      if (raw.length > 4096) return json({ error: 'VALIDATION' }, 413);
+      if (raw.length > 12_000) return json({ error: 'VALIDATION' }, 413);
       const parsed = CreateSchema.safeParse(JSON.parse(raw));
       if (!parsed.success) return json({ error: 'VALIDATION' }, 400);
       const { password, ...config } = parsed.data.config;

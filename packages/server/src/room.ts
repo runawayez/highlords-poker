@@ -1,6 +1,9 @@
 import {
   blindLevel,
+  BOT_STYLES,
+  PROFILE_COLORS,
   type BotDifficulty,
+  type BotStyle,
   type ClientMessage,
   type ErrorCode,
   type LobbyEntry,
@@ -31,6 +34,11 @@ export type Seated = {
   leaving: boolean;
   timeouts: number;
   bot?: BotDifficulty;
+  botStyle?: BotStyle;
+  /** Tempo extra disponível (ms) para pedir mais tempo na sua vez. */
+  bank?: number;
+  /** Prefere esconder as cartas ao perder no showdown. */
+  muck?: boolean;
   /** Nome e retrato dos bots; humanos usam `members`. */
   botProfile?: Profile;
 };
@@ -49,6 +57,9 @@ export type HandSummary = {
   pot: number;
   board: string[];
   winners: { id: string; nickname: string; amount: number; category?: number }[];
+  /** Jogadores da mão; as cartas só aparecem para quem as mostrou no showdown. */
+  players?: { id: string; nickname: string; seat: number; folded: boolean; cards: string[] }[];
+  log?: { player: string; action: string; amount: number; street: number }[];
 };
 export type RoomState = {
   v: 1;
@@ -66,7 +77,13 @@ export type RoomState = {
   admitted: string[];
   banned: string[];
   players: Seated[];
-  standings: { id: string; rank: number; nickname: string; avatar: Profile['avatar'] }[];
+  standings: {
+    id: string;
+    rank: number;
+    nickname: string;
+    avatar: Profile['avatar'];
+    color?: Profile['color'];
+  }[];
   button: number;
   hand?: Hand;
   handNo: number;
@@ -79,6 +96,8 @@ export type RoomState = {
   chat: Message[];
   emotes: { n: number; id: string; emote: string; at: number }[];
   history: HandSummary[];
+  /** Quem escolheu mostrar as cartas depois da mão (vale só para `hand`). */
+  revealed?: { hand: string; ids: string[] };
   seq: number;
   closed?: boolean;
 };
@@ -88,6 +107,9 @@ export const EMPTY_EXPIRE_MS = 30 * 60_000;
 export const FINISHED_EXPIRE_MS = 60 * 60_000;
 const OFFLINE_SEAT_MS = 10 * 60_000;
 const BOT_NAMES = ['Dante', 'Raven', 'Vega', 'Nox', 'Luna', 'Atlas', 'Iris', 'Drake'];
+export const TIME_BANK_START = 30_000;
+export const TIME_BANK_CAP = 45_000;
+export const TIME_BANK_STEP = 15_000;
 
 export class RoomEngine {
   constructor(
@@ -149,15 +171,36 @@ export class RoomEngine {
     const s = this.state;
     demand(!s.closed, 'ROOM_NOT_FOUND');
     demand(!s.banned.includes(id), 'KICKED');
+    const isNew = !s.members[id];
+    this.setProfile(id, profile, now);
+    if (!s.admitted.includes(id)) s.admitted.push(id);
+    if (isNew && Object.keys(s.members).length > 60) demand(false, 'CAPACITY');
+    this.touch();
+  }
+
+  /** Grava o perfil (nova entrada ou edição); apelido repetido ganha um sufixo. */
+  private setProfile(id: string, profile: Profile, now: number) {
+    const s = this.state;
     const duplicate = Object.values(s.members).some(
       (m) => m.id !== id && m.nickname.toLowerCase() === profile.nickname.toLowerCase(),
     );
     const nickname = duplicate ? `${profile.nickname} ${id.slice(0, 2)}` : profile.nickname;
-    const isNew = !s.members[id];
-    s.members[id] = { id, nickname, avatar: profile.avatar, lastSeen: now };
-    if (!s.admitted.includes(id)) s.admitted.push(id);
-    if (isNew && Object.keys(s.members).length > 60) demand(false, 'CAPACITY');
-    this.touch();
+    s.members[id] = {
+      id,
+      nickname,
+      avatar: profile.avatar,
+      color: profile.color,
+      photo: profile.photo,
+      lastSeen: now,
+    };
+  }
+
+  /** Fotos dos membros (id para data URL), enviadas à parte para não pesar em cada estado. */
+  photos(onlyId?: string): Record<string, string | null> {
+    const out: Record<string, string | null> = {};
+    for (const m of Object.values(this.state.members))
+      if (!onlyId || m.id === onlyId) out[m.id] = m.photo ?? null;
+    return out;
   }
 
   private touch() {
@@ -252,6 +295,31 @@ export class RoomEngine {
         this.maybeAutoStart(now);
         break;
       }
+      case 'PROFILE': {
+        this.setProfile(id, msg.profile, now);
+        break;
+      }
+      case 'TIME_BANK': {
+        demand(me && s.status === 'RUNNING' && s.hand && !s.hand.done, 'INVALID_ACTION');
+        demand(s.hand.actor === id, 'NOT_YOUR_TURN');
+        const bank = me.bank ?? TIME_BANK_START;
+        demand(bank >= TIME_BANK_STEP, 'INVALID_ACTION');
+        me.bank = bank - TIME_BANK_STEP;
+        s.deadline += TIME_BANK_STEP;
+        break;
+      }
+      case 'SHOWDOWN': {
+        demand(me, 'INVALID_ACTION');
+        me.muck = msg.mode === 'MUCK';
+        break;
+      }
+      case 'SHOW': {
+        const h = s.hand;
+        demand(me && h?.done && h.players.some((p) => p.id === id), 'INVALID_ACTION');
+        if (s.revealed?.hand !== h.id) s.revealed = { hand: h.id, ids: [] };
+        if (!s.revealed.ids.includes(id)) s.revealed.ids.push(id);
+        break;
+      }
       case 'ADD_BOT': {
         demand(isHost, 'FORBIDDEN');
         demand(s.config.mode === 'CASH' || s.status === 'WAITING', 'INVALID_ACTION');
@@ -260,9 +328,12 @@ export class RoomEngine {
         const used = s.players.filter((p) => p.bot).map((p) => p.botProfile?.nickname);
         const name = BOT_NAMES.find((n) => !used.includes(n)) ?? botId.slice(4);
         const player = this.seat(botId, msg.difficulty);
+        const nth = s.players.filter((p) => p.bot).length;
+        player.botStyle = msg.style ?? BOT_STYLES[(nth + 1) % BOT_STYLES.length];
         player.botProfile = {
           nickname: name,
-          avatar: (['a1', 'a2', 'a3', 'a4'] as const)[s.players.filter((p) => p.bot).length % 4],
+          avatar: (['a1', 'a2', 'a3', 'a4'] as const)[nth % 4],
+          color: PROFILE_COLORS[(nth * 3 + 1) % PROFILE_COLORS.length],
         };
         this.say('SAT', { name }, botId, now);
         this.maybeAutoStart(now);
@@ -330,6 +401,7 @@ export class RoomEngine {
       leaving: false,
       timeouts: 0,
       bot,
+      bank: TIME_BANK_START,
     };
     s.players.push(player);
     return player;
@@ -447,8 +519,24 @@ export class RoomEngine {
       pot: winners.reduce((sum, w) => sum + w.amount, 0),
       board: [...h.board],
       winners,
+      players: h.players.map((hp) => ({
+        id: hp.id,
+        nickname: this.nameOf(hp.id),
+        seat: hp.seat,
+        folded: hp.folded,
+        cards: this.showsAtShowdown(h, hp.id) ? [...hp.cards] : [],
+      })),
+      log: h.log.map((entry) => ({ ...entry })),
     });
     s.history = s.history.slice(-15);
+  }
+
+  /** No showdown quem ganhou sempre mostra; quem perdeu mostra, salvo se escolheu esconder (muck). */
+  private showsAtShowdown(h: Hand, id: string) {
+    const hp = h.players.find((p) => p.id === id);
+    if (!h.done || !h.showdown || !hp || hp.folded) return false;
+    if ((h.awards[id] ?? 0) > 0) return true;
+    return !this.state.players.find((p) => p.id === id)?.muck;
   }
 
   /** Sem mãos possíveis: a sala volta a esperar jogadores. */
@@ -473,6 +561,7 @@ export class RoomEngine {
             rank: alive.length + busted.length - i,
             nickname: this.nameOf(p.id),
             avatar: p.botProfile?.avatar ?? s.members[p.id]?.avatar ?? 'a1',
+            color: p.botProfile?.color ?? s.members[p.id]?.color,
           });
         });
       s.players = alive;
@@ -483,6 +572,7 @@ export class RoomEngine {
             rank: 1,
             nickname: this.nameOf(alive[0].id),
             avatar: alive[0].botProfile?.avatar ?? s.members[alive[0].id]?.avatar ?? 'a1',
+            color: alive[0].botProfile?.color ?? s.members[alive[0].id]?.color,
           });
         s.standings.sort((a, b) => a.rank - b.rank);
         s.status = 'FINISHED';
@@ -516,6 +606,7 @@ export class RoomEngine {
       level.ante,
     );
     s.handNo++;
+    for (const p of s.players) p.bank = Math.min(TIME_BANK_CAP, (p.bank ?? TIME_BANK_START) + 5000);
     s.deadline = now + s.config.turnSeconds * 1000;
     s.botAt = 0;
     for (const hp of s.hand.players) {
@@ -601,6 +692,7 @@ export class RoomEngine {
             legal: legal(h, actorId),
           },
           p.bot,
+          p.botStyle,
         );
         this.apply(actorId, decision.action, decision.amount, now);
         this.touch();
@@ -661,6 +753,16 @@ export class RoomEngine {
 
   // ----------------------------------------------------------------- vistas
 
+  /** Cartas que `viewer` pode ver de `owner`: as próprias, as mostradas no showdown ou reveladas depois. */
+  private visibleCards(viewer: string, owner: string, fromPublic: string[]) {
+    const h = this.state.hand;
+    if (!h?.done || viewer === owner) return fromPublic;
+    const raw = h.players.find((p) => p.id === owner);
+    if (!raw) return [];
+    const shown = this.state.revealed?.hand === h.id && this.state.revealed.ids.includes(owner);
+    return shown || this.showsAtShowdown(h, owner) ? [...raw.cards] : [];
+  }
+
   view(id: string, now: number, online: ReadonlySet<string>) {
     const s = this.state;
     const h = s.hand;
@@ -682,8 +784,17 @@ export class RoomEngine {
         inHand: !!hp,
         folded: hp?.folded ?? false,
         bet: hp?.bet ?? 0,
-        cards: hp?.cards ?? [],
+        cards: this.visibleCards(id, p.id, hp?.cards ?? []),
         isButton: !!pub && pub.button === p.seat,
+        color: profile?.color,
+        botStyle: p.botStyle,
+        bank: p.bank ?? TIME_BANK_START,
+        muck: !!p.muck,
+        /** As cartas desta mão estão à mostra para a mesa (showdown ou revelação voluntária). */
+        shown:
+          !!h?.done &&
+          (this.showsAtShowdown(h, p.id) ||
+            (this.state.revealed?.hand === h.id && this.state.revealed.ids.includes(p.id))),
       };
     });
     return {

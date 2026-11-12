@@ -1,0 +1,14 @@
+{
+  "title": "Walkthrough",
+  "cardsTitle": "Your cards",
+  "cardsText": "Only you see these two cards. Each street adds shared cards to the table.",
+  "potTitle": "The pot and the board",
+  "potText": "Shared cards sit in the middle and the pot shows the total bet.",
+  "actionsTitle": "Your turn",
+  "actionsText": "Fold, check/call or raise. Shortcuts: F, C, R and T for extra time.",
+  "rankingTitle": "Hand rankings",
+  "rankingText": "Forgot what beats what? Tap the ? at any time.",
+  "skip": "Skip",
+  "next": "Next",
+  "done": "Got it"
+}

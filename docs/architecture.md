@@ -29,6 +29,9 @@ navegador ──HTTPS──► Worker ──┬─► Lobby (Durable Object úni
 
 1. `POST /api/rooms` gera um código (6 caracteres sem 0/O/1/I) e inicializa o Durable Object.
 2. Cliente abre o WebSocket e envia `HELLO {key, profile, password?}`; recebe `STATE` a cada mudança.
+   Fotos de perfil (pequenas, já reduzidas no navegador) não vão em cada `STATE`: o servidor as envia à parte em
+   mensagens `PHOTOS {id: dataUrl | null}`. Mensagens novas do cliente: `PROFILE` (editar perfil a qualquer momento),
+   `TIME_BANK`, `SHOWDOWN {mode}` (mostrar/esconder ao perder) e `SHOW` (revelar as cartas depois da mão).
 3. Cash: a mão começa sozinha com 2+ jogadores. Sit & Go: começa com a mesa cheia ou quando o anfitrião inicia.
 4. Tempo de vez esgotado: check/fold; dois seguidos colocam o jogador em pausa.
 5. Sem humanos conectados por 60 s a mesa pausa; após 30 min sem ninguém ela é apagada. Sit & Go encerrado some em 1 h.

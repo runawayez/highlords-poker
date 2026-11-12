@@ -1,0 +1,14 @@
+{
+  "title": "Passo a passo",
+  "cardsTitle": "Suas cartas",
+  "cardsText": "Só você vê essas duas cartas. A cada rua a mesa ganha cartas comuns.",
+  "potTitle": "O pote e a mesa",
+  "potText": "As cartas comuns ficam no meio e o pote mostra o total apostado.",
+  "actionsTitle": "Sua vez",
+  "actionsText": "Desista, passe/pague ou aumente. Atalhos: F, C, R e T para tempo extra.",
+  "rankingTitle": "Ranking de mãos",
+  "rankingText": "Esqueceu o que ganha de quê? Toque no ? a qualquer momento.",
+  "skip": "Pular",
+  "next": "Próximo",
+  "done": "Entendi"
+}

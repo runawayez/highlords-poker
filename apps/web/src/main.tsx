@@ -7,6 +7,12 @@ import { ROOM_CODE_PATTERN } from '../../../packages/contracts/src/index.ts';
 import { Home } from './home.tsx';
 import { LearningCenter, learningPaths, learningRoute, type LearningSection } from './learning.tsx';
 import { RoomPage } from './room.tsx';
+import { SettingsModal } from './settings.tsx';
+import { applyPrefs, prefsStore } from './store.ts';
+
+// Tema, tamanho de texto, contraste e naipes refletem no <html> desde o primeiro quadro.
+applyPrefs();
+prefsStore.subscribe(() => applyPrefs());
 
 function usePath() {
   const [path, setPath] = useState(() => location.pathname.replace(/\/$/, '') || '/');
@@ -45,6 +51,7 @@ function Shell({
   children: React.ReactNode;
 }) {
   const { t } = useTranslation();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   return (
     <div className="shell">
       <a className="skip" href="#content">
@@ -74,10 +81,19 @@ function Shell({
           >
             {t('common:learn')}
           </a>
+          <button
+            className="ghost small"
+            aria-label={t('settings:title')}
+            title={t('settings:title')}
+            onClick={() => setSettingsOpen(true)}
+          >
+            ⚙
+          </button>
           <LanguageToggle />
         </nav>
       </header>
       {children}
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }
