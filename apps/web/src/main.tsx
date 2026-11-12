@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import './i18n/index.ts';
 import './design.css';
 import { playTableSound, primeTableAudio } from './table-audio.ts';
-import { ClubArtwork, ClubFeatures } from './club-art.tsx';
+import { ClubFeatures } from './club-art.tsx';
 import {
   ProfileSchema,
   type Profile,
@@ -668,7 +668,7 @@ function App() {
                       <span>♠</span> {t('lobby:stats')}
                     </div>
                   </div>
-                  <ClubArtwork />
+                  <img className="home-still-life" src="/club-still-life.webp" alt="" />
                 </section>
               )}
               {homeScreen === 'home' && <ClubFeatures onLearn={() => openRules()} />}
@@ -705,51 +705,68 @@ function App() {
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
                       />
-                      <select
-                        aria-label={t('lobby:mode')}
-                        value={mode}
-                        onChange={(e) => setMode(e.target.value)}
-                      >
-                        <option value="">{t('lobby:all')}</option>
-                        {['CASH', 'SIT_AND_GO', 'TOURNAMENT'].map((m) => (
-                          <option key={m} value={m}>
-                            {t(`game:${m}`)}
-                          </option>
+                      <div className="format-chips" aria-label={t('lobby:mode')}>
+                        {['', 'CASH', 'SIT_AND_GO', 'TOURNAMENT'].map((value) => (
+                          <button
+                            key={value}
+                            aria-pressed={mode === value}
+                            onClick={() => setMode(value)}
+                          >
+                            {value ? t(`game:${value}`) : t('lobby:all')}
+                          </button>
                         ))}
-                      </select>
-                      <select
-                        aria-label={t('lobby:status')}
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                      >
-                        <option value="">{t('lobby:status')}</option>
-                        {['WAITING', 'RUNNING', 'PAUSED', 'FINISHED'].map((s) => (
-                          <option key={s} value={s}>
-                            {t(`game:${s}`)}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        aria-label={t('lobby:protection')}
-                        value={protection}
-                        onChange={(e) => setProtection(e.target.value)}
-                      >
-                        <option value="">{t('lobby:protection')}</option>
-                        <option value="yes">{t('lobby:protected')}</option>
-                        <option value="no">{t('lobby:public')}</option>
-                      </select>
-                      <label className="check">
-                        <input
-                          type="checkbox"
-                          checked={vacancies}
-                          onChange={(e) => setVacancies(e.target.checked)}
-                        />
-                        {t('lobby:vacancies')}
-                      </label>
+                      </div>
+                      <details className="advanced-filters">
+                        <summary aria-label={t('club:filters')}>☷</summary>
+                        <div>
+                          <select
+                            aria-label={t('lobby:mode')}
+                            value={mode}
+                            onChange={(e) => setMode(e.target.value)}
+                          >
+                            <option value="">{t('lobby:all')}</option>
+                            {['CASH', 'SIT_AND_GO', 'TOURNAMENT'].map((m) => (
+                              <option key={m} value={m}>
+                                {t(`game:${m}`)}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            aria-label={t('lobby:status')}
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                          >
+                            <option value="">{t('lobby:status')}</option>
+                            {['WAITING', 'RUNNING', 'PAUSED', 'FINISHED'].map((s) => (
+                              <option key={s} value={s}>
+                                {t(`game:${s}`)}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            aria-label={t('lobby:protection')}
+                            value={protection}
+                            onChange={(e) => setProtection(e.target.value)}
+                          >
+                            <option value="">{t('lobby:protection')}</option>
+                            <option value="yes">{t('lobby:protected')}</option>
+                            <option value="no">{t('lobby:public')}</option>
+                          </select>
+                          <label className="check">
+                            <input
+                              type="checkbox"
+                              checked={vacancies}
+                              onChange={(e) => setVacancies(e.target.checked)}
+                            />
+                            {t('lobby:vacancies')}
+                          </label>
+                        </div>
+                      </details>
                     </div>
                     <div className="lobby-table" role="region" aria-label={t('lobby:rooms')}>
                       <div className="lobby-table-head" aria-hidden="true">
                         <span>{t('lobby:rooms')}</span>
+                        <span>{t('club:host')}</span>
                         <span>{t('lobby:mode')}</span>
                         <span>Blinds</span>
                         <span>{t('lobby:occupiedSeats')}</span>
@@ -791,11 +808,22 @@ function App() {
                                 </p>
                               </div>
                             </div>
+                            <div className="room-host-cell">
+                              <Avatar profile={r.hostProfile} />
+                              <span>{r.hostProfile?.nickname ?? '—'}</span>
+                            </div>
                             <span className="room-mode-cell">{t(`game:${r.mode}`)}</span>
                             <strong className="room-blinds-cell">
                               {num(r.small)} / {num(r.big)}
                             </strong>
                             <div className="room-players-cell">
+                              {r.playerProfiles && (
+                                <span className="room-avatar-cluster">
+                                  {r.playerProfiles.map((profile, index) => (
+                                    <Avatar key={index} profile={profile} seed={String(index)} />
+                                  ))}
+                                </span>
+                              )}
                               <strong>
                                 {r.players}/{r.capacity} {t('lobby:occupiedSeats')}
                               </strong>
@@ -891,12 +919,29 @@ function App() {
           ) : (
             <>
               {snapshot ? (
-                <div className="club-room">
+                <div className={`club-room room-state-${snapshot.status.toLowerCase()}`}>
                   <div className="room-heading">
-                    <button className="room-brand" onClick={openLobby}>
+                    <button
+                      className="room-brand"
+                      aria-label={t('lobby:lobbyNav')}
+                      onClick={openLobby}
+                    >
                       <span aria-hidden="true">←</span>
                       <b>{t('lobby:lobbyNav')}</b>
                     </button>
+                    <a
+                      className="room-wordmark"
+                      href="/"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        openLobby();
+                      }}
+                    >
+                      <img src="/highlords-torch.png" alt="" />
+                      <span>
+                        HIGHLORDS<small>POKER CLUB</small>
+                      </span>
+                    </a>
                     <div className="room-name">
                       <h1>{snapshot.config.title}</h1>
                       <p>

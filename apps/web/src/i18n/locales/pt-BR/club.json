@@ -38,5 +38,7 @@
   "inviteBody": "Compartilhe o link com a galera.",
   "playTitle": "Jogue com amigos",
   "playBody": "Sente à mesa e aproveite a partida.",
-  "resumeTitle": "De volta à mesa?"
+  "resumeTitle": "De volta à mesa?",
+  "host": "Anfitrião",
+  "filters": "Mais filtros"
 }

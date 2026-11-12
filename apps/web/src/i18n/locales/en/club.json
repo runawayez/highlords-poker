@@ -38,5 +38,7 @@
   "inviteBody": "Share the link with your friends.",
   "playTitle": "Play with friends",
   "playBody": "Take your seat and enjoy the game.",
-  "resumeTitle": "Back to your table?"
+  "resumeTitle": "Back to your table?",
+  "host": "Host",
+  "filters": "More filters"
 }

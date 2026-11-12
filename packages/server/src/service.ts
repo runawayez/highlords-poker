@@ -258,6 +258,19 @@ export class PokerService {
       .map((r) => ({
         id: r.id,
         title: r.config.title,
+        hostProfile: (() => {
+          const profile = this.state.sessions.find((session) => session.id === r.host)?.profile;
+          return profile ? { nickname: profile.nickname, avatar: profile.avatar } : undefined;
+        })(),
+        playerProfiles: r.players
+          .filter((player) => !player.left)
+          .slice(0, 5)
+          .map((player) => {
+            const profile =
+              player.bot?.profile ??
+              this.state.sessions.find((session) => session.id === player.id)?.profile;
+            return profile ? { nickname: profile.nickname, avatar: profile.avatar } : undefined;
+          }),
         mode: r.config.mode,
         seats: r.config.seats,
         capacity: r.config.mode === 'TOURNAMENT' ? r.config.capacity : r.config.seats,
@@ -447,10 +460,15 @@ export class PokerService {
           player.bot = {
             difficulty,
             profile: {
-              nickname: 'Highlord Bot ' + id.slice(0, 4),
-              avatar: '♜',
+              nickname:
+                'Highlord Bot ' +
+                (['Dante', 'Raven', 'Vega', 'Nox', 'Luna', 'Atlas', 'Iris', 'Drake'].find(
+                  (name) =>
+                    !r.players.some((p) => p.bot?.profile.nickname === 'Highlord Bot ' + name),
+                ) ?? id.slice(0, 4)),
+              avatar: (['♠', '♥', '♣', '♦'] as const)[r.players.filter((p) => p.bot).length % 4],
               frame: 'plain',
-              accent: '#d9b66b',
+              accent: '#df3449',
               tagline: '',
             },
           };

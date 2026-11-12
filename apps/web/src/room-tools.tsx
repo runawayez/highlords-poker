@@ -109,7 +109,10 @@ export function seatPosition(index: number, count: number) {
     ],
   };
   const [x, y] = (positions[count] ?? positions[6])[index % count];
-  return { left: `${x}%`, top: `${y}%` };
+  return {
+    left: `clamp(var(--seat-left-inset, 0px), ${x}%, calc(100% - var(--seat-right-inset, 0px)))`,
+    top: `${y === 13 ? (count >= 8 ? 16 : 18) : y}%`,
+  };
 }
 export { Card } from './card.tsx';
 export function TablePreview({
@@ -286,8 +289,14 @@ export function PokerTable({
                 onClick={onAddBot}
                 aria-label={t('game:addAtSeat', { number: i + 1 })}
               >
-                <b>＋</b>
-                <small>{t(canAdd ? 'club:botSeat' : 'game:seat')}</small>
+                <span className="empty-seat-avatar" aria-hidden="true">
+                  <svg viewBox="0 0 40 40">
+                    <circle cx="20" cy="13" r="7" />
+                    <path d="M7 36c0-15 26-15 26 0" />
+                  </svg>
+                  <b>＋</b>
+                </span>
+                <small>{t(canAdd ? 'game:addBot' : 'game:seat')}</small>
               </button>
             </div>
           );
@@ -325,7 +334,9 @@ export function PokerTable({
                 </span>
                 <span className="seat-identity">
                   <strong>
-                    {p.bot ? p.profile?.nickname.replace(/^Highlord /, '') : p.profile?.nickname}
+                    {p.bot
+                      ? p.profile?.nickname.replace(/^Highlord Bot /, '').replace(/^Highlord /, '')
+                      : p.profile?.nickname}
                   </strong>
                   <small>{num(p.stack)}</small>
                 </span>

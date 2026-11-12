@@ -11,6 +11,12 @@ async function finishCreate(page: Page) {
     .getByRole('button', { name: 'Criar uma mesa', exact: true })
     .click();
 }
+async function commitAllIn(page: Page) {
+  if (await page.locator('.all-in-shortcut').count()) {
+    await page.locator('.all-in-shortcut').click();
+    await page.locator('.raise-submit').click();
+  } else await page.getByRole('button', { name: /^All-in/ }).click();
+}
 async function roomOption(page: Page, name: string) {
   const menu = page.locator('.room-options');
   if (!(await menu.evaluate((e) => (e as HTMLDetailsElement).open)))
@@ -124,7 +130,7 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await expect(
       b.locator('.table-chat-dock').getByText('<img src=x onerror=alert(1)>', { exact: true }),
     ).toBeVisible();
-    await expect(b.locator('.table-chat-dock .messages img')).toHaveCount(0);
+    await expect(b.locator('.table-chat-dock .message p img')).toHaveCount(0);
     // All-in is always available for the preflop heads-up actor. Locate it in either independent client.
     const actorA = await a.getByRole('button', { name: /^All-in/ }).isVisible();
     const actor = actorA ? a : b;
@@ -148,10 +154,10 @@ test('two independent guests play, chat, change language mid-hand and reconnect'
     await actor.screenshot({ path: 'test-results/ui-decision-mobile.png' });
     await actor.setViewportSize(originalViewport);
 
-    await actor.getByRole('button', { name: /^All-in/ }).click();
+    await commitAllIn(actor);
     const other = actorA ? b : a;
     await expect(other.getByRole('button', { name: /^All-in/ })).toBeVisible();
-    await other.getByRole('button', { name: /^All-in/ }).click();
+    await commitAllIn(other);
     await expect(a.locator('.community .playing-card:not(.card-empty)')).toHaveCount(5);
     await expect(a.locator('.winner').first()).toBeVisible();
     await a.reload();
@@ -182,7 +188,7 @@ test('mobile profile, language menu and lobby fit without horizontal overflow', 
   const p = await context.newPage();
   try {
     await enter(p, 'Mobile');
-    await expect(p.locator('.mini-table')).toHaveCSS('transform', 'none');
+    await expect(p.locator('.home-still-life')).toBeVisible();
     await p.screenshot({ path: 'test-results/ui-mobile-home.png', fullPage: true });
     await changeLanguage(p, 'en');
     await expect(p.locator('.hero-actions .primary')).toHaveText('Create a table');
@@ -225,7 +231,7 @@ test('host adds and removes bots, plays a hand and reconnects', async ({ page })
   await page.getByRole('button', { name: 'Distribuir cartas', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Adicionar bot', exact: true })).not.toBeVisible();
   await expect(page.getByRole('button', { name: /^All-in/ })).toBeVisible();
-  await page.getByRole('button', { name: /^All-in/ }).click();
+  await commitAllIn(page);
   await expect(page.locator('.winner').first()).toBeVisible();
   await page.reload();
   await expect(page.locator('.seat-profile[title^="Highlord Bot"]').first()).toBeVisible();
@@ -586,7 +592,7 @@ test('finished tournament presents podium and virtual prizes in both languages',
 
 test('home artwork is horizontal and the tables page keeps real navigation', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.mini-table')).toHaveCSS('transform', 'none');
+  await expect(page.locator('.home-still-life')).toBeVisible();
   await page.getByRole('button', { name: /Encontrar uma mesa/ }).click();
   await expect(page).toHaveURL(/\/mesas$/);
   await expect(page.locator('.hero')).toHaveCount(0);
@@ -633,34 +639,20 @@ test('home illustration and cards fit every supported width without overlapping 
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
-      await expect(page.locator('.club-art')).toHaveCSS('transform', 'none');
-      for (const card of await page.locator('.art-own .playing-card').all())
-        await expect(card).toHaveCSS('transform', 'none');
-      const faces = await page.locator('.club-art .card-face').evaluateAll((elements) =>
-        elements.map((face) => {
-          const parts = [...face.children].map((part) => {
-            const box = part.getBoundingClientRect();
-            return { top: box.top, bottom: box.bottom };
-          });
-          return {
-            rankClear: parts[0].bottom <= parts[1].top,
-            suitClear: parts[1].bottom <= parts[2].top,
-          };
-        }),
-      );
-      expect(faces).toHaveLength(7);
-      expect(faces.every((face) => face.rankClear && face.suitClear)).toBe(true);
-      const hand = await page.locator('.hero-hand').boundingBox();
-      const ownCards = await page.locator('.art-own').boundingBox();
-      expect(hand!.y + hand!.height + 4).toBeLessThanOrEqual(ownCards!.y);
-      for (const selector of ['.art-player-left', '.art-player-right']) {
-        const player = await page.locator(selector).boundingBox();
-        const overlapX =
-          Math.min(hand!.x + hand!.width, player!.x + player!.width) - Math.max(hand!.x, player!.x);
-        const overlapY =
-          Math.min(hand!.y + hand!.height, player!.y + player!.height) -
-          Math.max(hand!.y, player!.y);
-        expect(overlapX > 2 && overlapY > 2).toBe(false);
+      await expect(page.locator('.home-still-life')).toBeVisible();
+      expect(
+        await page
+          .locator('.home-still-life')
+          .evaluate(
+            (image) =>
+              (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0,
+          ),
+      ).toBe(true);
+      const hero = await page.locator('.hero').boundingBox();
+      for (const button of await page.locator('.hero-actions button').all()) {
+        const box = await button.boundingBox();
+        expect(box!.x).toBeGreaterThanOrEqual(hero!.x);
+        expect(box!.x + box!.width).toBeLessThanOrEqual(hero!.x + hero!.width);
       }
       if ([390, 1366].includes(width) && value === 'pt-BR')
         await page.screenshot({ path: `test-results/ui-home-${width}.png`, fullPage: true });
@@ -794,7 +786,10 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
         await expect(page.locator('.raise-submit')).toBeInViewport({ ratio: 0.999 });
         const buttons = await page.locator('.action-buttons').boundingBox();
         const raise = await page.locator('.raise-submit').boundingBox();
-        expect(Math.abs(buttons!.y - raise!.y)).toBeLessThan(1);
+        expect(
+          Math.abs(buttons!.y - raise!.y),
+          `${state} ${width}x${height} ${language}: action buttons align`,
+        ).toBeLessThan(1);
         expect(raise!.x).toBeGreaterThanOrEqual(buttons!.x + buttons!.width);
         await expect(page.locator('.own-hand')).toBeInViewport({ ratio: 0.999 });
         await expect(page.locator('.table-center')).toBeInViewport({ ratio: 0.999 });
@@ -802,7 +797,10 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
         const ownCards = await page.locator('.own-hand').boundingBox();
         const selfProfile = await page.locator('.seat.self .seat-profile').boundingBox();
         expect(board!.y + board!.height).toBeLessThanOrEqual(ownCards!.y);
-        expect(ownCards!.y + ownCards!.height).toBeLessThanOrEqual(selfProfile!.y);
+        expect(
+          ownCards!.y + ownCards!.height,
+          `${state} ${width}x${height} ${language}: private cards clear the profile`,
+        ).toBeLessThanOrEqual(selfProfile!.y);
         const visibleControls = await page.locator('.raise-controls').boundingBox();
         expect(visibleControls!.y + visibleControls!.height).toBeLessThanOrEqual(height);
         expect(
@@ -811,7 +809,10 @@ test('bet and raise labels, inputs, slider and shortcuts never collide in either
         const scene = await page.locator('.scene-viewport').boundingBox();
         const self = await page.locator('.seat.self').boundingBox();
         const dock = await page.locator('.decision-zone').boundingBox();
-        expect(self!.y + self!.height).toBeLessThanOrEqual(dock!.y);
+        expect(
+          self!.y + self!.height,
+          `${state} ${width}x${height} ${language}: profile clears action dock`,
+        ).toBeLessThanOrEqual(dock!.y);
         expect(scene!.height).toBeGreaterThan(100);
         if ([390, 1366].includes(width) && language === 'pt-BR')
           await page.screenshot({ path: `test-results/ui-fixed-${state}-${width}.png` });
