@@ -787,3 +787,30 @@
   border-color: rgb(156 47 66 / 0.5);
   font-weight: 600;
 }
+
+/* ---------- perfil no celular: o seletor de retratos acompanha a largura do modal ---------- */
+.profile-form,
+.profile-form fieldset {
+  min-width: 0;
+}
+.avatar-picker {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.avatar-picker button {
+  width: 100%;
+  max-width: 52px;
+  min-height: 0;
+  aspect-ratio: 1;
+}
+.profile-preview {
+  min-width: 0;
+}
+.profile-preview input {
+  min-width: 0;
+}
+@media (max-width: 420px) {
+  .modal-body {
+    padding: 14px;
+  }
+}
