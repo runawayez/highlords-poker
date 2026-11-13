@@ -497,7 +497,9 @@ export function Table({
             {state.status === 'PAUSED'
               ? state.pauseReason === 'EMPTY'
                 ? t('game:pausedEmpty')
-                : t('game:paused')
+                : state.pauseReason === 'IDLE'
+                  ? t('game:pausedIdle')
+                  : t('game:paused')
               : state.status === 'FINISHED'
                 ? t('game:finished')
                 : t('game:waitingPlayers')}
@@ -885,10 +887,12 @@ export function ActionBar({
         )}
       </div>
     );
-  } else if (state.status === 'PAUSED' && state.host) {
+  } else if (state.status === 'PAUSED' && (state.host || state.pauseReason === 'IDLE')) {
     content = (
       <div className="actions single">
-        <p className="hint">{t('game:paused')}</p>
+        <p className="hint">
+          {state.pauseReason === 'IDLE' ? t('game:pausedIdleHint') : t('game:paused')}
+        </p>
         <button className="primary" onClick={() => send({ type: 'RESUME' })}>
           {t('game:resume')}
         </button>
