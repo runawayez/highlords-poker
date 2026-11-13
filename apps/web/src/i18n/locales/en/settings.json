@@ -36,5 +36,7 @@
   "cards_m": "Medium",
   "cards_l": "Large",
   "previewLabel": "Table preview with your choices",
-  "reset": "Restore defaults"
+  "reset": "Restore defaults",
+  "reduceMotion": "Reduce motion",
+  "reduceMotionNote": "Turns off card flights, flips and table glows."
 }

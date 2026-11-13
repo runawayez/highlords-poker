@@ -81,6 +81,8 @@ export type Prefs = {
   muck: boolean;
   /** Aceita dividir o pote em duas rodadas quando todos em all-in concordam. */
   runTwice: boolean;
+  /** Menos movimento: desliga voos de carta, viradas e brilhos (escolha do jogador, não do sistema). */
+  reduceMotion: boolean;
   /** Tamanho das cartas na mesa. */
   cardSize: CardSize;
   /** Já viu o passo a passo da primeira mesa. */
@@ -101,6 +103,7 @@ export const prefsStore = createStore<Prefs>('highlords.prefs', () => ({
   muck: false,
   runTwice: false,
   cardSize: 'm',
+  reduceMotion: false,
   tourDone: false,
   muted: [],
 }));
@@ -136,4 +139,5 @@ export function applyPrefs(prefs: Prefs = prefsStore.get()) {
   root.dataset.fourColor = String(prefs.fourColor);
   root.dataset.back = prefs.cardBack;
   root.dataset.cards = prefs.cardSize;
+  root.dataset.motion = prefs.reduceMotion ? 'reduced' : 'full';
 }

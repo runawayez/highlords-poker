@@ -111,11 +111,11 @@ function TimerRing({
   );
 }
 
-/** Anima o número até o novo valor (só quando aumenta); respeita prefers-reduced-motion. */
+/** Anima o número até o novo valor (só quando aumenta); respeita a opção Reduzir animações. */
 function useCountUp(target: number) {
   const [shown, setShown] = useState(target);
   useEffect(() => {
-    if (target <= shown || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (target <= shown || prefsStore.get().reduceMotion) {
       setShown(target);
       return;
     }

@@ -636,11 +636,9 @@ button.primary.huge small {
     flex: none;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .hero-table,
-  .hero-card {
-    animation: none;
-  }
+[data-motion='reduced'] .hero-table,
+[data-motion='reduced'] .hero-card {
+  animation: none;
 }
 
 /* celular: bandeja de ações mais baixa, sobra mais espaço para a mesa */

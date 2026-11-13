@@ -442,12 +442,10 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-stage .hero-card,
-  .win-pop,
-  .toast {
-    animation: none;
-  }
+[data-motion='reduced'] .hero-stage .hero-card,
+[data-motion='reduced'] .win-pop,
+[data-motion='reduced'] .toast {
+  animation: none;
 }
 
 /* temas: o :root do premium.css vencia o [data-theme]; aqui a especificidade é maior */
@@ -577,10 +575,45 @@
     transform: none;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .hole-card,
-  .flip-front,
-  .flip-back {
-    animation: none;
+[data-motion='reduced'] .hole-card,
+[data-motion='reduced'] .flip-front,
+[data-motion='reduced'] .flip-back {
+  animation: none;
+}
+
+/* minhas cartas voam fechadas e abrem ao chegar */
+.seat.me .hole-card:not(.is-down)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8%;
+  background:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.07) 0 1.5px, transparent 1.5px 6px),
+    linear-gradient(160deg, #7d2536, #3e0f19);
+  box-shadow:
+    inset 0 0 0 2px var(--ivory),
+    inset 0 0 0 4px rgb(0 0 0 / 0.35);
+  opacity: 0;
+  pointer-events: none;
+  animation: deal-cover 0.62s ease-out both;
+  animation-delay: calc(var(--i) * 0.11s);
+}
+[data-back='azure'] .seat.me .hole-card:not(.is-down)::after {
+  background:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.1) 0 2px, transparent 2px 7px),
+    linear-gradient(160deg, #3a7fc9, #17335c);
+}
+[data-back='onyx'] .seat.me .hole-card:not(.is-down)::after {
+  background:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.08) 0 2px, transparent 2px 7px),
+    linear-gradient(160deg, #3a3a44, #0c0c10);
+}
+@keyframes deal-cover {
+  from,
+  78% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
