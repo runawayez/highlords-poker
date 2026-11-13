@@ -22,8 +22,8 @@ export const useNumber = () => {
 /** Cadeira `rel` (0 = eu, embaixo) no oval; retorna % do palco. */
 function seatPosition(rel: number, count: number, tall: boolean) {
   const angle = Math.PI / 2 + (2 * Math.PI * rel) / count;
-  const rx = tall ? 41 : 42;
-  const ry = tall ? 38 : 32;
+  const rx = tall ? 41 : 46;
+  const ry = tall ? 38 : 35;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   // Em pé a mesa é um "estádio" (superelipse): os assentos ocupam os cantos e o centro sobra para o pote.

@@ -68,5 +68,14 @@
   "stakes_ALL": "Todos os blinds",
   "stakes_LOW": "Baixos (até 20)",
   "stakes_MID": "Médios (21–100)",
-  "stakes_HIGH": "Altos (100+)"
+  "stakes_HIGH": "Altos (100+)",
+  "randomName": "Sortear outro nome",
+  "stakesShort_ALL": "Todos",
+  "stakesShort_LOW": "Baixos",
+  "stakesShort_MID": "Médios",
+  "stakesShort_HIGH": "Altos",
+  "colTable": "Mesa",
+  "colBlinds": "Blinds",
+  "colSeats": "Assentos",
+  "colStatus": "Status"
 }

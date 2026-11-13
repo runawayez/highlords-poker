@@ -64,7 +64,7 @@ export function Modal({
 
 const QUICK_PHRASES = ['gg', 'quickNice', 'quickGood', 'quickThinking'] as const;
 
-function Chat({ state, send }: { state: RoomView; send: Send }) {
+export function Chat({ state, send }: { state: RoomView; send: Send }) {
   const { t } = useTranslation();
   const prefs = useStore(prefsStore);
   const [text, setText] = useState('');
@@ -154,6 +154,41 @@ function Chat({ state, send }: { state: RoomView; send: Send }) {
         </button>
       </form>
     </div>
+  );
+}
+
+/** Faixa do celular: as duas últimas mensagens sempre à vista; toque abre o chat completo. */
+export function ChatStrip({
+  state,
+  unread,
+  onOpen,
+}: {
+  state: RoomView;
+  unread: number;
+  onOpen: () => void;
+}) {
+  const { t } = useTranslation();
+  const prefs = useStore(prefsStore);
+  const recent = state.chat
+    .filter((m) => m.text && (!m.from || m.from === state.me || !prefs.muted.includes(m.from)))
+    .slice(-2);
+  return (
+    <button type="button" className="chat-strip" onClick={onOpen} aria-label={t('game:tabChat')}>
+      <span className="chat-strip-icon" aria-hidden>
+        💬{unread > 0 && <i className="badge">{unread}</i>}
+      </span>
+      <span className="chat-strip-lines">
+        {recent.length === 0 ? (
+          <em>{t('game:chatEmpty')}</em>
+        ) : (
+          recent.map((m) => (
+            <span key={m.id}>
+              <b>{m.from === state.me ? t('game:you') : m.nickname}</b> {m.text}
+            </span>
+          ))
+        )}
+      </span>
+    </button>
   );
 }
 
@@ -421,10 +456,12 @@ export function SidePanel({
   unread,
   onProfile,
   onSettings,
+  hideChat = false,
 }: {
   state: RoomView;
   send: Send;
   tab: Tab;
+  hideChat?: boolean;
   onTab: (tab: Tab) => void;
   onClose: () => void;
   onClosed: () => void;
@@ -437,12 +474,16 @@ export function SidePanel({
     <aside className="side-panel" aria-label={t('game:menu')}>
       <header>
         <div role="tablist">
-          {(['chat', 'table', 'history'] as const).map((key) => (
-            <button key={key} role="tab" aria-selected={tab === key} onClick={() => onTab(key)}>
-              {t(`game:tab${key[0].toUpperCase()}${key.slice(1)}`)}
-              {key === 'chat' && unread > 0 && tab !== 'chat' && <i className="badge">{unread}</i>}
-            </button>
-          ))}
+          {(['chat', 'table', 'history'] as const)
+            .filter((key) => !(hideChat && key === 'chat'))
+            .map((key) => (
+              <button key={key} role="tab" aria-selected={tab === key} onClick={() => onTab(key)}>
+                {t(`game:tab${key[0].toUpperCase()}${key.slice(1)}`)}
+                {key === 'chat' && unread > 0 && tab !== 'chat' && (
+                  <i className="badge">{unread}</i>
+                )}
+              </button>
+            ))}
         </div>
         <button className="icon-button" onClick={onClose} aria-label={t('common:close')}>
           ✕

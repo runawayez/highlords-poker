@@ -39,11 +39,16 @@ test('duas pessoas entram pelo código e conversam no chat', async ({ browser, p
   await guest.getByRole('button', { name: /Sentar em uma cadeira/ }).click();
   await expect(page.locator('.seat:not(.empty)')).toHaveCount(2);
 
-  await guest.getByRole('button', { name: 'Chat' }).first().click();
+  // Em tela larga o chat já fica fixo ao lado da mesa; no celular ele abre pela faixa/botão.
+  const openChat = async (view: typeof page) => {
+    const toggle = view.getByRole('button', { name: 'Chat' }).first();
+    if (await toggle.isVisible()) await toggle.click();
+  };
+  await openChat(guest);
   await guest.getByPlaceholder(/Digite uma mensagem/).fill('oi pessoal');
   await guest.getByRole('button', { name: 'Enviar' }).click();
-  await page.getByRole('button', { name: 'Chat' }).first().click();
-  await expect(page.getByText('oi pessoal')).toBeVisible();
+  await openChat(page);
+  await expect(page.locator('.chat').getByText('oi pessoal')).toBeVisible();
   await guest.context().close();
 });
 
@@ -149,4 +154,34 @@ test('os ajustes trocam o tema da mesa e persistem', async ({ page }) => {
   await page.keyboard.press('Escape');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'royal');
+});
+
+test('o dado sorteia outro nome e o perfil só oferece emblemas', async ({ page }) => {
+  await page.goto('/');
+  const nickname = page.locator('#nickname');
+  const before = await nickname.inputValue();
+  expect(before).not.toMatch(/^Highlord\d+$/);
+  // Sorteia até mudar (a chance de repetir seguidas é desprezível).
+  for (let attempt = 0; attempt < 5 && (await nickname.inputValue()) === before; attempt++) {
+    await page.getByRole('button', { name: /Sortear outro nome/ }).click();
+  }
+  expect(await nickname.inputValue()).not.toBe(before);
+  await page.getByRole('button', { name: /Personalizar perfil/ }).click();
+  await expect(page.locator('.avatar-picker button')).toHaveCount(12);
+});
+
+test('no desktop o chat fica fixo ao lado da mesa', async ({ page, isMobile }) => {
+  test.skip(!!isMobile, 'a faixa compacta do celular tem outro fluxo');
+  await page.goto('/');
+  await page.getByRole('button', { name: /Jogar contra bots/ }).click();
+  await expect(page.locator('.dock .chat')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Chat' })).toHaveCount(0);
+});
+
+test('no celular o chat aparece como faixa e abre em painel', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'só vale no celular');
+  await page.goto('/');
+  await page.getByRole('button', { name: /Jogar contra bots/ }).click();
+  await page.locator('.chat-strip').click();
+  await expect(page.locator('.side-panel .chat')).toBeVisible();
 });
