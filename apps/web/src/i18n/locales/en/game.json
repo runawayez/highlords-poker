@@ -174,5 +174,8 @@
   "state_BET": "Bet",
   "state_RAISE": "Raised",
   "state_ALL_IN": "All-in",
-  "chatSlow": "Easy! Wait a moment."
+  "chatSlow": "Easy! Wait a moment.",
+  "eliminated": "You were eliminated in {{rank}} place and are now watching.",
+  "nowWatching": "{{name}} is watching",
+  "spectatorsCount": "Watching: {{count}}"
 }

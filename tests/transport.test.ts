@@ -74,14 +74,21 @@ describe('transporte WebSocket', () => {
     expect(created.body.id).toMatch(/^[A-HJ-NP-Z2-9]{6}$/);
     const id = created.body.id;
 
-    const lobby = (await (await fetch(`http://${base}/api/lobby`)).json()) as { rooms: any[] };
-    expect(lobby.rooms.map((r) => r.id)).toContain(id);
+    // Sala sem ninguém online não aparece no lobby.
+    const empty = (await (await fetch(`http://${base}/api/lobby`)).json()) as { rooms: any[] };
+    expect(empty.rooms.map((r) => r.id)).not.toContain(id);
 
     const a = await connect(id);
     const b = await connect(id);
     hello(a, key('a'), 'Host');
     hello(b, key('b'), 'Ana');
     await a.until((s) => s.me);
+    await expect
+      .poll(async () => {
+        const list = (await (await fetch(`http://${base}/api/lobby`)).json()) as { rooms: any[] };
+        return list.rooms.map((r) => r.id);
+      })
+      .toContain(id);
     a.send({ type: 'SIT' });
     b.send({ type: 'SIT' });
     const state = await a.until((s) => s.hand && s.hand.actor);

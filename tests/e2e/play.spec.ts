@@ -275,3 +275,25 @@ test('as animações da mesa rodam mesmo com o sistema em movimento reduzido e p
   expect(parseFloat(await duration())).toBeLessThan(0.001);
   await context.close();
 });
+
+test('quem só assiste aparece para a mesa e vê que está assistindo', async ({ browser, page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Criar mesa/ }).click();
+  await page.getByRole('button', { name: /Abrir mesa/ }).click();
+  await expect(page).toHaveURL(/\/mesa\//);
+  const code = page.url().split('/').pop()!;
+  await expect(page.locator('.spec-button')).toHaveCount(0);
+
+  const guest = await (await browser.newContext()).newPage();
+  await guest.goto('/');
+  await guest.getByLabel(/Tem um código/).fill(code);
+  await guest.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await expect(guest).toHaveURL(new RegExp(`/mesa/${code}$`));
+  await expect(guest.locator('.spectator-note')).toBeVisible();
+
+  await expect(page.locator('.spec-button')).toBeVisible();
+  await expect(page.locator('.spec-button b')).toHaveText('1');
+  await page.locator('.spec-button').click();
+  await expect(page.locator('.spec-pop li')).toHaveCount(1);
+  await guest.context().close();
+});

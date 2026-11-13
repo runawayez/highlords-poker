@@ -39,6 +39,8 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
   const [learning, setLearning] = useState<LearningSection | null>(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState('');
+  const [specOpen, setSpecOpen] = useState(false);
+  const knownSpectators = useRef<Set<string> | null>(null);
   const [password, setPassword] = useState('');
   const [seenChat, setSeenChat] = useState(0);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -115,6 +117,20 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
     if (panel === 'chat') setSeenChat(chatCount);
   }, [panel, chatCount]);
 
+  // Aviso discreto quando alguém passa a assistir (não na primeira carga, nem sobre mim).
+  useEffect(() => {
+    if (!state) return;
+    const now = new Set(state.spectators.map((s) => s.id));
+    const before = knownSpectators.current;
+    knownSpectators.current = now;
+    if (!before) return;
+    const arrived = state.spectators.find((s) => !before.has(s.id) && s.id !== state.me);
+    if (!arrived) return;
+    setToast(t('game:nowWatching', { name: arrived.nickname }));
+    const timer = setTimeout(() => setToast(''), 2600);
+    return () => clearTimeout(timer);
+  }, [state?.spectators, state?.me, t]);
+
   const invite = async () => {
     const url = `${location.origin}/mesa/${code}`;
     try {
@@ -164,6 +180,30 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
             <button className="primary small" onClick={invite}>
               {copied ? t('game:inviteCopied') : t('game:invite')}
             </button>
+            {state && state.spectators.length > 0 && (
+              <span className="spec-wrap">
+                <button
+                  className="icon-button spec-button"
+                  aria-expanded={specOpen}
+                  aria-label={t('game:spectatorsCount', { count: state.spectators.length })}
+                  title={t('game:spectatorsCount', { count: state.spectators.length })}
+                  onClick={() => setSpecOpen((open) => !open)}
+                >
+                  <Icon name="eye" />
+                  <b>{state.spectators.length}</b>
+                </button>
+                {specOpen && (
+                  <div className="spec-pop" role="dialog" aria-label={t('game:spectators')}>
+                    <small>{t('game:spectators')}</small>
+                    <ul>
+                      {state.spectators.map((s) => (
+                        <li key={s.id}>{s.nickname}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </span>
+            )}
             <button
               className="icon-button sound-toggle"
               aria-pressed={prefs.sound}
