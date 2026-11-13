@@ -26,8 +26,8 @@ function seatPosition(rel: number, count: number, tall: boolean) {
   const ry = tall ? 38 : 35;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
-  // Em pé a mesa é um "estádio" (superelipse): os assentos ocupam os cantos e o centro sobra para o pote.
-  const curve = tall ? 0.75 : 1;
+  // A mesa é um "estádio" (superelipse): os assentos acompanham as bordas retas e os cantos.
+  const curve = tall ? 0.75 : 0.72;
   const bend = (v: number) => Math.sign(v) * Math.abs(v) ** curve;
   return { x: 50 + rx * bend(cos), y: 50 + ry * bend(sin) };
 }
@@ -433,14 +433,7 @@ export function Table({
     <div className={`stage ${tall ? 'tall' : ''}`}>
       <div className="rail">
         <div className="felt">
-          <div className="felt-mark" aria-hidden>
-            <svg viewBox="0 0 120 120" fill="none" stroke="currentColor">
-              <circle cx="60" cy="60" r="54" strokeWidth="1.2" />
-              <circle cx="60" cy="60" r="48" strokeWidth="0.6" />
-              <path d="M40 38v44M80 38v44M40 60h40" strokeWidth="3.2" strokeLinecap="square" />
-            </svg>
-            <em>HIGHLORDS</em>
-          </div>
+          <div className="felt-mark" aria-hidden />
         </div>
       </div>
 

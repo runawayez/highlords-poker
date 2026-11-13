@@ -617,3 +617,27 @@
     opacity: 0;
   }
 }
+
+/* ---------- mesa em estádio no desktop: bordas retas em cima e embaixo, pontas arredondadas ---------- */
+.stage:not(.tall) .rail {
+  inset: 15% 6%;
+  border-radius: 9999px;
+}
+.stage:not(.tall) .felt {
+  border-radius: 9999px;
+}
+
+/* cálice como marca d'água no centro do feltro */
+.felt-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--u) * 15);
+  aspect-ratio: 460 / 740;
+  transform: translate(-50%, -50%);
+  background: rgb(230 211 163 / 0.09);
+  -webkit-mask: url('/highlords-torch.png') center / contain no-repeat;
+  mask: url('/highlords-torch.png') center / contain no-repeat;
+  text-shadow: none;
+  pointer-events: none;
+}
