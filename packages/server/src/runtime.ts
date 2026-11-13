@@ -39,6 +39,7 @@ export type RoomInit = {
 // Cabe uma foto pequena no HELLO e no PROFILE; o restante das mensagens é curto.
 const MAX_MESSAGE = 12_000;
 const HEARTBEAT_MS = 60_000;
+const SOFT_SAVE_MS = 10_000;
 
 /**
  * Orquestra uma sala: valida mensagens, aplica no `RoomEngine`, persiste e transmite
@@ -48,6 +49,8 @@ export class RoomRuntime {
   engine: RoomEngine | null = null;
   private lobbyMemo = '';
   private lastLobbyPut = 0;
+  private lastSaveAt = 0;
+  private lastWake: number | null = null;
   private buckets = new Map<string, { at: number; n: number }>();
   constructor(
     private deps: {
@@ -176,7 +179,8 @@ export class RoomRuntime {
       if (code === 'INTERNAL') console.error('room error', e);
       return this.fail(socket, code);
     }
-    await this.commit();
+    // Chat e emote não precisam gravar a cada envio: entram no próximo salvamento.
+    await this.commit(undefined, msg.type === 'CHAT' || msg.type === 'EMOTE' ? 'soft' : 'now');
   }
 
   /** Avisa os outros que a foto de `id` mudou (a própria conexão já recebeu o mapa completo). */
@@ -203,15 +207,18 @@ export class RoomRuntime {
   private async handleAlarm() {
     const engine = this.engine;
     if (!engine) return;
+    // O alarme que acabou de disparar não está mais pendente (mesmo que o relógio chegue
+    // um pouco antes do horário marcado).
+    this.lastWake = null;
     const now = this.now();
     const online = this.online();
     engine.tick(now, online);
     if (engine.isExpired(now, online)) return this.destroy();
-    await this.commit();
+    await this.commit(undefined, 'alarm');
   }
 
   /** Persiste, transmite e reagenda. */
-  private async commit(closing?: Socket) {
+  private async commit(closing?: Socket, mode: 'now' | 'soft' | 'alarm' = 'now') {
     const engine = this.engine;
     if (!engine) return;
     const now = this.now();
@@ -222,7 +229,19 @@ export class RoomRuntime {
         this.fail(c.socket, 'KICKED');
         c.socket.close(4003, 'KICKED');
       }
-    await this.deps.storage.save(engine.state);
+    // Chat e jogadas de bot (acordadas do relógio) gravam no máximo a cada 10 s. Ação de humano,
+    // fim de mão e mudanças estruturais gravam na hora, para nunca perder uma jogada.
+    const hand = engine.state.hand;
+    const botOnTurn =
+      mode === 'alarm' &&
+      engine.state.status === 'RUNNING' &&
+      !!hand &&
+      !hand.done &&
+      !!engine.state.players.find((p) => p.id === hand.actor)?.bot;
+    if (!(mode === 'soft' || botOnTurn) || now - this.lastSaveAt >= SOFT_SAVE_MS) {
+      await this.deps.storage.save(engine.state);
+      this.lastSaveAt = now;
+    }
     const online = this.online(closing);
     for (const c of this.deps.hub.sockets()) {
       if (!c.id || c.socket === closing) continue;
@@ -231,7 +250,13 @@ export class RoomRuntime {
     this.publishLobby(online, now);
     const wake = engine.nextWake(now, online);
     const cap = online.size ? now + HEARTBEAT_MS : null;
-    await this.deps.scheduler.set(wake && cap ? Math.min(wake, cap) : (wake ?? cap));
+    const target = wake && cap ? Math.min(wake, cap) : (wake ?? cap);
+    // Já existe um alarme pendente igual ou mais cedo: regravar só gastaria cota.
+    const pending = this.lastWake !== null && this.lastWake > now;
+    if (target === null ? this.lastWake !== null : !(pending && target >= this.lastWake!)) {
+      this.lastWake = target;
+      await this.deps.scheduler.set(target);
+    }
   }
 
   private publishLobby(online: ReadonlySet<string>, now: number) {

@@ -177,5 +177,8 @@
   "chatSlow": "Calma! Espere um instante.",
   "eliminated": "Você foi eliminado em {{rank}}º lugar e agora está assistindo.",
   "nowWatching": "{{name}} está assistindo",
-  "spectatorsCount": "Assistindo: {{count}}"
+  "spectatorsCount": "Assistindo: {{count}}",
+  "pausedIdle": "Pausada por inatividade",
+  "pausedIdleHint": "Mesa pausada por inatividade. Toque para continuar.",
+  "sys_PAUSED_IDLE": "Partida pausada por inatividade. Qualquer pessoa pode continuar."
 }

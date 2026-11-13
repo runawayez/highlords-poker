@@ -74,7 +74,7 @@ export type RoomState = {
   hostId: string;
   created: number;
   status: 'WAITING' | 'RUNNING' | 'PAUSED' | 'FINISHED';
-  pauseReason?: 'HOST' | 'EMPTY';
+  pauseReason?: 'HOST' | 'EMPTY' | 'IDLE';
   pausedAt?: number;
   finishedAt?: number;
   members: Record<string, Member>;
@@ -97,6 +97,8 @@ export type RoomState = {
   levelElapsed: number;
   clock: number;
   lastHuman: number;
+  /** Última vez que um humano mandou um comando (agir, sentar, conversar...); ping e reconexão não contam. */
+  lastActive?: number;
   chat: Message[];
   emotes: { n: number; id: string; emote: string; at: number }[];
   history: HandSummary[];
@@ -107,6 +109,8 @@ export type RoomState = {
 };
 
 export const EMPTY_PAUSE_MS = 60_000;
+/** Sem nenhum comando humano por este tempo, a mesa pausa (evita bots jogando sozinhos a noite toda). */
+export const IDLE_PAUSE_MS = 3 * 60_000;
 export const EMPTY_EXPIRE_MS = 5 * 60_000;
 export const FINISHED_EXPIRE_MS = 10 * 60_000;
 const OFFLINE_SEAT_MS = 10 * 60_000;
@@ -153,6 +157,7 @@ export class RoomEngine {
       levelElapsed: 0,
       clock: now,
       lastHuman: now,
+      lastActive: now,
       chat: [],
       emotes: [],
       history: [],
@@ -237,6 +242,7 @@ export class RoomEngine {
     demand(s.members[id] && !s.banned.includes(id), 'FORBIDDEN');
     const isHost = id === s.hostId;
     const me = this.seated(id);
+    if (msg.type !== 'PING' && msg.type !== 'HELLO') s.lastActive = now;
     switch (msg.type) {
       case 'PING':
       case 'HELLO':
@@ -270,7 +276,8 @@ export class RoomEngine {
         break;
       }
       case 'RESUME': {
-        demand(isHost && s.status === 'PAUSED', 'FORBIDDEN');
+        // Pausa por inatividade qualquer pessoa na mesa retoma; as demais, só o anfitrião.
+        demand(s.status === 'PAUSED' && (isHost || s.pauseReason === 'IDLE'), 'FORBIDDEN');
         this.resume(now);
         break;
       }
@@ -457,13 +464,18 @@ export class RoomEngine {
     this.say('STARTED', undefined, undefined, now);
   }
 
-  private pause(reason: 'HOST' | 'EMPTY', now: number) {
+  private pause(reason: 'HOST' | 'EMPTY' | 'IDLE', now: number) {
     const s = this.state;
     this.advanceClock(now);
     s.status = 'PAUSED';
     s.pauseReason = reason;
     s.pausedAt = now;
-    this.say(reason === 'HOST' ? 'PAUSED' : 'PAUSED_EMPTY', undefined, undefined, now);
+    this.say(
+      reason === 'HOST' ? 'PAUSED' : reason === 'IDLE' ? 'PAUSED_IDLE' : 'PAUSED_EMPTY',
+      undefined,
+      undefined,
+      now,
+    );
   }
 
   private resume(now: number) {
@@ -474,6 +486,7 @@ export class RoomEngine {
     s.botAt = s.botAt ? s.botAt + gap : 0;
     s.status = 'RUNNING';
     s.clock = now;
+    s.lastActive = now;
     delete s.pauseReason;
     delete s.pausedAt;
     this.say('RESUMED', undefined, undefined, now);
@@ -663,6 +676,10 @@ export class RoomEngine {
     if (s.status === 'RUNNING' && !humanOnline && now - s.lastHuman >= EMPTY_PAUSE_MS)
       this.pause('EMPTY', s.lastHuman + EMPTY_PAUSE_MS);
 
+    s.lastActive ??= now;
+    if (s.status === 'RUNNING' && now - s.lastActive >= IDLE_PAUSE_MS)
+      this.pause('IDLE', s.lastActive + IDLE_PAUSE_MS);
+
     if (s.status === 'RUNNING') {
       this.advanceClock(now);
       this.runGame(now);
@@ -750,6 +767,7 @@ export class RoomEngine {
     if (!humanOnline) times.push(s.lastHuman + EMPTY_EXPIRE_MS);
     if (s.status === 'FINISHED') times.push((s.finishedAt ?? now) + FINISHED_EXPIRE_MS);
     if (s.status === 'RUNNING') {
+      times.push((s.lastActive ?? now) + IDLE_PAUSE_MS);
       if (!humanOnline) times.push(s.lastHuman + EMPTY_PAUSE_MS);
       const h = s.hand;
       if (!h || h.done) times.push(s.nextHandAt);

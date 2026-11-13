@@ -177,5 +177,8 @@
   "chatSlow": "Easy! Wait a moment.",
   "eliminated": "You were eliminated in {{rank}} place and are now watching.",
   "nowWatching": "{{name}} is watching",
-  "spectatorsCount": "Watching: {{count}}"
+  "spectatorsCount": "Watching: {{count}}",
+  "pausedIdle": "Paused: inactivity",
+  "pausedIdleHint": "Table paused for inactivity. Tap to continue.",
+  "sys_PAUSED_IDLE": "Game paused for inactivity. Anyone can continue."
 }
