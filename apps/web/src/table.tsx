@@ -144,7 +144,14 @@ function Seat({
   onPick,
   hud,
   fiveCards,
+  dealFrom,
+  dealOrder,
+  dealtCount,
 }: {
+  dealFrom: { dx: number; dy: number };
+  /** Posição na rodada de distribuição, a partir do dealer. */
+  dealOrder: number;
+  dealtCount: number;
   player: PlayerView;
   state: RoomView;
   x: number;
@@ -223,7 +230,11 @@ function Seat({
               }
               dim={!!fiveCards && award > 0 && !!player.cards[i] && !fiveCards.has(player.cards[i])}
               className="hole-card"
-              style={{ ['--i' as string]: i + player.seat * 2 }}
+              style={{
+                ['--i' as string]: dealOrder + i * dealtCount,
+                ['--fx' as string]: `${dealFrom.dx}cqw`,
+                ['--fy' as string]: `${dealFrom.dy}cqh`,
+              }}
             />
           ))}
         </div>
@@ -403,6 +414,21 @@ export function Table({
     return board.size || Object.keys(perPlayer).length ? { board, perPlayer } : null;
   }, [hand, state.players]);
 
+  const dealerPlayer = state.players.find((p) => p.isButton);
+  const dealerPos = dealerPlayer
+    ? seatPosition((dealerPlayer.seat - base + count) % count, count, tall)
+    : { x: 50, y: 50 };
+  const firstSeat = dealerPlayer?.seat ?? 0;
+  const dealOrder = new Map(
+    state.players
+      .filter((p) => p.inHand)
+      .sort(
+        (a, b) =>
+          ((a.seat - firstSeat - 1 + count) % count) - ((b.seat - firstSeat - 1 + count) % count),
+      )
+      .map((p, order) => [p.id, order] as const),
+  );
+
   return (
     <div className={`stage ${tall ? 'tall' : ''}`}>
       <div className="rail">
@@ -446,14 +472,19 @@ export function Table({
         <div className="board">
           {Array.from({ length: 5 }, (_, i) =>
             hand?.board[i] ? (
-              <Card
+              <div
                 key={hand.board[i]}
-                card={hand.board[i]}
-                dim={!!highlight && !highlight.board.has(hand.board[i])}
-                glow={!!highlight && highlight.board.has(hand.board[i])}
-                className={`board-card ${i < 3 ? 'flop' : ''}`}
+                className="flip"
                 style={{ ['--i' as string]: i < 3 ? i : 0 }}
-              />
+              >
+                <Card
+                  card={hand.board[i]}
+                  dim={!!highlight && !highlight.board.has(hand.board[i])}
+                  glow={!!highlight && highlight.board.has(hand.board[i])}
+                  className={`board-card flip-front ${i < 3 ? 'flop' : ''}`}
+                />
+                <Card down className="flip-back" />
+              </div>
             ) : (
               <div key={i} className="board-slot" />
             ),
@@ -508,6 +539,9 @@ export function Table({
             state={state}
             x={x}
             y={y}
+            dealFrom={{ dx: dealerPos.x - x, dy: dealerPos.y - y }}
+            dealOrder={dealOrder.get(player.id) ?? 0}
+            dealtCount={Math.max(1, dealOrder.size)}
             handName={handNames[player.id]}
             serverNow={serverNow}
             canKick={state.host}
