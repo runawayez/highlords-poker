@@ -839,9 +839,19 @@ export function ActionBar({
     );
   } else if (!me) {
     const canSit = state.status !== 'FINISHED' && state.players.length < state.config.seats;
+    const out = state.standings.find((entry) => entry.id === state.me);
     content = (
       <div className="actions single">
-        <p className="hint">{canSit ? t('game:spectating') : t('game:spectatingFull')}</p>
+        <p className={`hint spectator-note ${out ? 'is-out' : ''}`}>
+          <Icon name="eye" size={16} />
+          <span>
+            {out
+              ? t('game:eliminated', { rank: out.rank })
+              : canSit
+                ? t('game:spectating')
+                : t('game:spectatingFull')}
+          </span>
+        </p>
         {canSit && (
           <button className="primary" onClick={() => send({ type: 'SIT' })}>
             {t('game:sitAny')}

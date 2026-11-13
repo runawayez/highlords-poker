@@ -18,6 +18,7 @@ Fichas 100% virtuais — não há dinheiro real, depósitos ou prêmios.
 - **Para quem está aprendendo:** modo treino com chance de vitória, pot odds, outs e sugestão; passo a passo na primeira mesa; bots com estilos de jogo (fechado, solto, agressivo).
 - **Para quem já joga:** tempo extra (time bank), mostrar ou esconder cartas no showdown, rever mãos, HUD opcional dos adversários e atalhos de teclado (F, C, R, T e 1 a 6).
 - **Mais regras de mesa:** ante e straddle no cash, rodar duas vezes quando todos estão all-in, ritmo dos bots (calmo, normal, rápido) e QR code para convidar pelo celular.
+- **Espectadores:** indicador com contagem e lista na barra da sala, aviso quando alguém passa a assistir e faixa clara para quem foi eliminado. Salas vazias expiram em 5 min e partidas encerradas em 10 min; o lobby só lista salas com gente online.
 - **Mesa viva:** as cartas saem da mão do dealer na distribuição e as cartas comunitárias viram de verdade no flop, turn e river, com sons sincronizados (desligáveis em Ajustes > Acessibilidade > Reduzir animações; não dependem da configuração de animação do sistema).
 - **Aparência:** prévia ao vivo da mesa com temas, versos de carta, naipes em 4 cores, tamanho de texto e das cartas e alto contraste, em grupos (Mesa, Cartas, Acessibilidade) e com "Restaurar padrão". Instalável como app (PWA).
 - **Home:** hero de impacto com entrada direta (nome, bots, criar mesa, código), mesa de vitrine, mesas abertas e jogadores online em tempo real.

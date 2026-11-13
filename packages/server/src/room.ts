@@ -107,8 +107,8 @@ export type RoomState = {
 };
 
 export const EMPTY_PAUSE_MS = 60_000;
-export const EMPTY_EXPIRE_MS = 30 * 60_000;
-export const FINISHED_EXPIRE_MS = 60 * 60_000;
+export const EMPTY_EXPIRE_MS = 5 * 60_000;
+export const FINISHED_EXPIRE_MS = 10 * 60_000;
 const OFFLINE_SEAT_MS = 10 * 60_000;
 const BOT_NAMES = ['Dante', 'Raven', 'Vega', 'Nox', 'Luna', 'Atlas', 'Iris', 'Drake'];
 export const TIME_BANK_START = 30_000;

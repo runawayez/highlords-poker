@@ -87,8 +87,8 @@ describe('sala (cash game)', () => {
     expect(room.state.status).toBe('PAUSED');
     room.tick(T0 + 80_000, new Set(['host']));
     expect(room.state.status).toBe('RUNNING');
-    expect(room.isExpired(T0 + 80_000 + 31 * 60_000, new Set())).toBe(true);
-    expect(room.isExpired(T0 + 80_000 + 10 * 60_000, new Set())).toBe(false);
+    expect(room.isExpired(T0 + 80_000 + 6 * 60_000, new Set())).toBe(true);
+    expect(room.isExpired(T0 + 80_000 + 3 * 60_000, new Set())).toBe(false);
   });
 
   it('bots completam mãos sozinhos e o anfitrião controla bots e kick', () => {

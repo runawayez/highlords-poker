@@ -174,5 +174,8 @@
   "state_BET": "Apostou",
   "state_RAISE": "Aumentou",
   "state_ALL_IN": "All-in",
-  "chatSlow": "Calma! Espere um instante."
+  "chatSlow": "Calma! Espere um instante.",
+  "eliminated": "Você foi eliminado em {{rank}}º lugar e agora está assistindo.",
+  "nowWatching": "{{name}} está assistindo",
+  "spectatorsCount": "Assistindo: {{count}}"
 }
