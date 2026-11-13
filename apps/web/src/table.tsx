@@ -206,6 +206,7 @@ function Seat({
       className={[
         'seat',
         isMe && 'me',
+        y < 22 && 'top',
         acting && 'acting',
         player.folded && 'folded',
         award > 0 && 'winner',
