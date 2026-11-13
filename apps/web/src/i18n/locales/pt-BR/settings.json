@@ -34,5 +34,7 @@
   "cardSize": "Tamanho das cartas",
   "cards_s": "Pequenas",
   "cards_m": "Médias",
-  "cards_l": "Grandes"
+  "cards_l": "Grandes",
+  "previewLabel": "Prévia da mesa com as suas escolhas",
+  "reset": "Restaurar padrão"
 }

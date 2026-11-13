@@ -18,7 +18,8 @@ Fichas 100% virtuais — não há dinheiro real, depósitos ou prêmios.
 - **Para quem está aprendendo:** modo treino com chance de vitória, pot odds, outs e sugestão; passo a passo na primeira mesa; bots com estilos de jogo (fechado, solto, agressivo).
 - **Para quem já joga:** tempo extra (time bank), mostrar ou esconder cartas no showdown, rever mãos, HUD opcional dos adversários e atalhos de teclado (F, C, R, T e 1 a 6).
 - **Mais regras de mesa:** ante e straddle no cash, rodar duas vezes quando todos estão all-in, ritmo dos bots (calmo, normal, rápido) e QR code para convidar pelo celular.
-- **Aparência:** temas de mesa, versos de carta, naipes em 4 cores, tamanho de texto e das cartas e alto contraste. Instalável como app (PWA).
+- **Aparência:** prévia ao vivo da mesa com temas, versos de carta, naipes em 4 cores, tamanho de texto e das cartas e alto contraste, em grupos (Mesa, Cartas, Acessibilidade) e com "Restaurar padrão". Instalável como app (PWA).
+- **Home:** hero de impacto com entrada direta (nome, bots, criar mesa, código), mesa de vitrine, mesas abertas e jogadores online em tempo real.
 - **Visual "clube privê" (grafite, champanhe e bordô, ícones SVG, altura fixa da bandeja de ações):** lobby em tabela com filtros, mesa grande com chat fixo ao lado no desktop e faixa de chat + painel no celular, pensado para virar app (safe-area, alvos de toque de 44px, orientação retrato). Apelidos sorteados e 12 retratos desenhados em código ou foto própria.
 - **Chat, emotes, sons e animações** de cartas, fichas e vitórias. Funciona no celular e no computador.
 - **Aprender:** guia de como jogar, ranking de mãos, ajuda e regras da casa (português e inglês), além de uma dica opcional da sua mão atual.

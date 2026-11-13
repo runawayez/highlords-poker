@@ -34,5 +34,7 @@
   "cardSize": "Card size",
   "cards_s": "Small",
   "cards_m": "Medium",
-  "cards_l": "Large"
+  "cards_l": "Large",
+  "previewLabel": "Table preview with your choices",
+  "reset": "Restore defaults"
 }

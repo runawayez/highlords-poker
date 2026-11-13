@@ -77,5 +77,14 @@
   "colTable": "Table",
   "colBlinds": "Blinds",
   "colSeats": "Seats",
-  "colStatus": "Status"
+  "colStatus": "Status",
+  "proof": "{{tables}} open tables right now · {{players}} players online",
+  "proofEmpty": "No open tables right now. Open the first one and call your friends.",
+  "pillarsLabel": "Why play here",
+  "pillar_one_title": "No sign-up",
+  "pillar_one_text": "Pick a name and play. Nothing to install, no account to create.",
+  "pillar_two_title": "With your friends",
+  "pillar_two_text": "Open a table, share the link or QR code and start playing in seconds.",
+  "pillar_three_title": "Learn by playing",
+  "pillar_three_text": "Live win chance, pot odds and tips for anyone just getting started."
 }

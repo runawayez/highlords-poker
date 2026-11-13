@@ -214,3 +214,33 @@ test('a mesa não pula entre a minha vez e a dos outros', async ({ page }) => {
   // A mesa e a bandeja de ações ficam sempre do mesmo tamanho e no mesmo lugar.
   expect([...seen]).toHaveLength(1);
 });
+
+test('a aparência mostra uma prévia da mesa que acompanha as escolhas e restaura o padrão', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Ajustes' }).click();
+  await expect(page.locator('.pv')).toBeVisible();
+  await expect(page.locator('.pv .pv-board .pv-card')).toHaveCount(5);
+  await page.getByRole('radio', { name: /Real/ }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'royal');
+  await page.getByRole('button', { name: 'Restaurar padrão' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
+});
+
+test('mensagens de chat em rajada mostram aviso discreto e a mesa mantém D/SB/BB juntos', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Jogar contra bots/ }).click();
+  await expect(page).toHaveURL(/\/mesa\//);
+  const toggle = page.getByRole('button', { name: 'Chat' }).first();
+  if (await toggle.isVisible()) await toggle.click();
+  const input = page.getByPlaceholder(/Digite uma mensagem/);
+  await input.fill('a');
+  await page.getByRole('button', { name: 'Enviar' }).click();
+  await input.fill('b');
+  await page.getByRole('button', { name: 'Enviar' }).click();
+  await expect(page.locator('.chat-hint')).toBeVisible();
+  await expect(page.locator('.pos-cluster').first()).toBeVisible();
+});

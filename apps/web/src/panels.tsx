@@ -69,6 +69,20 @@ export function Chat({ state, send }: { state: RoomView; send: Send }) {
   const { t } = useTranslation();
   const prefs = useStore(prefsStore);
   const [text, setText] = useState('');
+  const [slow, setSlow] = useState(false);
+  const lastSent = useRef(0);
+  // O servidor limita o ritmo do chat; avisamos aqui, ao lado do campo, antes de ele recusar.
+  const sendPaced = (message: Parameters<Send>[0]) => {
+    const now = Date.now();
+    if (now - lastSent.current < 1000) {
+      setSlow(true);
+      setTimeout(() => setSlow(false), 2200);
+      return false;
+    }
+    lastSent.current = now;
+    send(message);
+    return true;
+  };
   const toggleMute = (id: string) =>
     prefsStore.set({
       muted: prefs.muted.includes(id) ? prefs.muted.filter((m) => m !== id) : [...prefs.muted, id],
@@ -122,7 +136,7 @@ export function Chat({ state, send }: { state: RoomView; send: Send }) {
             key={phrase}
             type="button"
             className="small"
-            onClick={() => send({ type: 'CHAT', text: t(`game:${phrase}`) })}
+            onClick={() => sendPaced({ type: 'CHAT', text: t(`game:${phrase}`) })}
           >
             {t(`game:${phrase}`)}
           </button>
@@ -130,7 +144,11 @@ export function Chat({ state, send }: { state: RoomView; send: Send }) {
       </div>
       <div className="emotes">
         {EMOTES.map((emote) => (
-          <button key={emote} onClick={() => send({ type: 'EMOTE', emote })} aria-label={emote}>
+          <button
+            key={emote}
+            onClick={() => sendPaced({ type: 'EMOTE', emote })}
+            aria-label={emote}
+          >
             {emote}
           </button>
         ))}
@@ -139,8 +157,7 @@ export function Chat({ state, send }: { state: RoomView; send: Send }) {
         onSubmit={(e) => {
           e.preventDefault();
           if (!text.trim()) return;
-          send({ type: 'CHAT', text: text.trim() });
-          setText('');
+          if (sendPaced({ type: 'CHAT', text: text.trim() })) setText('');
         }}
       >
         <input
@@ -154,6 +171,11 @@ export function Chat({ state, send }: { state: RoomView; send: Send }) {
           {t('game:send')}
         </button>
       </form>
+      {slow && (
+        <small className="chat-hint" role="status">
+          {t('game:chatSlow')}
+        </small>
+      )}
     </div>
   );
 }

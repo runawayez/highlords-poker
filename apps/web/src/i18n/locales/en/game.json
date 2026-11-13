@@ -173,5 +173,6 @@
   "state_CALL": "Called",
   "state_BET": "Bet",
   "state_RAISE": "Raised",
-  "state_ALL_IN": "All-in"
+  "state_ALL_IN": "All-in",
+  "chatSlow": "Easy! Wait a moment."
 }
