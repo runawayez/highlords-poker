@@ -185,3 +185,32 @@ test('no celular o chat aparece como faixa e abre em painel', async ({ page, isM
   await page.locator('.chat-strip').click();
   await expect(page.locator('.side-panel .chat')).toBeVisible();
 });
+
+test('a mesa não pula entre a minha vez e a dos outros', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.goto('/');
+  await page.getByRole('button', { name: /Jogar contra bots/ }).click();
+  await expect(page.locator('.seat.me .hole-card').first()).toBeVisible();
+  const geometry = () =>
+    page.evaluate(() => {
+      const rail = document.querySelector('.rail')!.getBoundingClientRect();
+      const bar = document.querySelector('.action-bar')!.getBoundingClientRect();
+      return `${Math.round(rail.top)}/${Math.round(rail.height)}/${Math.round(bar.height)}`;
+    });
+  const seen = new Set<string>();
+  const turns = new Set<boolean>();
+  const deadline = Date.now() + 45_000;
+  while (
+    Date.now() < deadline &&
+    !(turns.size === 2 && seen.size >= 1 && Date.now() > deadline - 30_000)
+  ) {
+    seen.add(await geometry());
+    turns.add(await page.locator('.action-bar.my-turn').isVisible());
+    const call = page.getByRole('button', { name: /Pagar|Passar/ });
+    if (await call.isVisible()) await call.click().catch(() => undefined);
+    await page.waitForTimeout(150);
+  }
+  expect(turns.size).toBe(2);
+  // A mesa e a bandeja de ações ficam sempre do mesmo tamanho e no mesmo lugar.
+  expect([...seen]).toHaveLength(1);
+});

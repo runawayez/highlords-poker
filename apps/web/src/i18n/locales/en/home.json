@@ -3,7 +3,7 @@
   "heroSub": "Pick a name, open a table and share the link. No sign-up, nothing to install.",
   "yourName": "Your name",
   "avatar": "Portrait",
-  "portrait": "Emblem {{number}}",
+  "portrait": "Portrait {{number}}",
   "createTable": "Create table",
   "playBots": "Play against bots",
   "playBotsHint": "A table in one click",

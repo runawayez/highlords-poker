@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-/** Emblemas desenhados no cliente (g1-g12); o cliente mapeia cada id. */
-export const EMBLEMS = [
+/** Retratos desenhados no cliente (g1-g12); o cliente mapeia cada id. */
+export const AVATARS = [
   'g1',
   'g2',
   'g3',
@@ -15,10 +15,9 @@ export const EMBLEMS = [
   'g11',
   'g12',
 ] as const;
-export const AVATARS = EMBLEMS;
 /** Perfis e salas antigos guardam retratos (a1-a4), que não existem mais: viram o emblema equivalente. */
 export const normalizeAvatar = (value: unknown) =>
-  typeof value === 'string' && /^a[1-4]$/.test(value) ? EMBLEMS[Number(value[1]) - 1] : value;
+  typeof value === 'string' && /^a[1-4]$/.test(value) ? AVATARS[Number(value[1]) - 1] : value;
 /** Cor da moldura do avatar. */
 export const PROFILE_COLORS = [
   'brass',
@@ -44,7 +43,7 @@ export const ProfileSchema = z.object({
     .min(2)
     .max(20)
     .regex(/^[\p{L}\p{N}_ .-]+$/u),
-  avatar: z.preprocess(normalizeAvatar, z.enum(EMBLEMS).default('g1')),
+  avatar: z.preprocess(normalizeAvatar, z.enum(AVATARS).default('g1')),
   color: z.enum(PROFILE_COLORS).optional(),
   photo: PhotoSchema.optional(),
 });

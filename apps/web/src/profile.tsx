@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { Icon } from './icons.tsx';
 import { useTranslation } from 'react-i18next';
 import {
-  EMBLEMS,
+  AVATARS,
   PHOTO_MAX_LENGTH,
   PROFILE_COLORS,
   ProfileSchema,
@@ -54,7 +55,7 @@ export function AvatarPicker({
   const { t } = useTranslation();
   return (
     <div className="avatar-picker" role="radiogroup" aria-label={t('home:avatar')}>
-      {EMBLEMS.map((avatar, index) => (
+      {AVATARS.map((avatar, index) => (
         <button
           key={avatar}
           type="button"
@@ -127,7 +128,7 @@ export function ProfileModal({
             title={t('home:randomName')}
             onClick={() => setDraft({ ...draft, nickname: randomNickname(i18n.language) })}
           >
-            🎲
+            <Icon name="dice" />
           </button>
         </div>
         {!check.success && <p className="error">{t('home:nameShort')}</p>}

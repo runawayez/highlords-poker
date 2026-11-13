@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Icon } from './icons.tsx';
 import { useTranslation } from 'react-i18next';
 import type { ClientMessage } from '../../../packages/contracts/src/index.ts';
 import { bestFive } from '../../../packages/poker-engine/src/index.ts';
@@ -377,7 +378,11 @@ export function Table({
       <div className="rail">
         <div className="felt">
           <div className="felt-mark" aria-hidden>
-            <span>♠</span>
+            <svg viewBox="0 0 120 120" fill="none" stroke="currentColor">
+              <circle cx="60" cy="60" r="54" strokeWidth="1.2" />
+              <circle cx="60" cy="60" r="48" strokeWidth="0.6" />
+              <path d="M40 38v44M80 38v44M40 60h40" strokeWidth="3.2" strokeLinecap="square" />
+            </svg>
             <em>HIGHLORDS</em>
           </div>
         </div>
@@ -498,8 +503,10 @@ export function Table({
         const bet = hand && !hand.done ? p.bet : 0;
         const rel = (p.seat - base + count) % count;
         const { x, y } = seatPosition(rel, count, tall);
-        const bx = 50 + (x - 50) * 0.56;
-        const by = 50 + (y - 50) * 0.56;
+        // Minha aposta fica ao lado das minhas cartas, nunca atrás delas; as demais, a meio caminho do centro.
+        const mine = rel === 0;
+        const bx = mine ? x + (tall ? 24 : 13) : 50 + (x - 50) * 0.56;
+        const by = mine ? y - (tall ? 11 : 12) : 50 + (y - 50) * 0.56;
         const sweep = sweeps.find((s) => s.id === p.id);
         return (
           <React.Fragment key={p.id}>
@@ -706,7 +713,7 @@ export function ActionBar({
             onClick={() => setRaising(false)}
             aria-label={t('common:cancel')}
           >
-            ✕
+            <Icon name="close" />
           </button>
           <input
             type="range"
@@ -831,7 +838,9 @@ export function ActionBar({
   } else content = <p className="hint">{t('game:connecting')}</p>;
 
   return (
-    <footer className={`action-bar ${myTurn ? 'my-turn' : ''}`}>
+    <footer
+      className={`action-bar ${myTurn ? 'my-turn' : ''} ${raising && myTurn ? 'is-raising' : ''}`}
+    >
       <div className="action-meta">
         <div className="coach-group">
           {coachLine && <span className="coach">{coachLine}</span>}

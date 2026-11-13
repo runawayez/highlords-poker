@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Icon } from './icons.tsx';
 import { useTranslation } from 'react-i18next';
 import {
   BOT_STYLES,
@@ -53,7 +54,7 @@ export function Modal({
         <header>
           <h2>{title}</h2>
           <button className="icon-button" onClick={onClose} aria-label={t('common:close')}>
-            ✕
+            <Icon name="close" />
           </button>
         </header>
         <div className="modal-body">{children}</div>
@@ -99,7 +100,7 @@ export function Chat({ state, send }: { state: RoomView; send: Send }) {
                     aria-label={t('game:mute', { name: m.nickname ?? '' })}
                     onClick={() => toggleMute(m.from!)}
                   >
-                    🔇
+                    <Icon name="mute" size={14} />
                   </button>
                 )}
               </li>
@@ -175,7 +176,8 @@ export function ChatStrip({
   return (
     <button type="button" className="chat-strip" onClick={onOpen} aria-label={t('game:tabChat')}>
       <span className="chat-strip-icon" aria-hidden>
-        💬{unread > 0 && <i className="badge">{unread}</i>}
+        <Icon name="chat" size={22} />
+        {unread > 0 && <i className="badge">{unread}</i>}
       </span>
       <span className="chat-strip-lines">
         {recent.length === 0 ? (
@@ -486,7 +488,7 @@ export function SidePanel({
             ))}
         </div>
         <button className="icon-button" onClick={onClose} aria-label={t('common:close')}>
-          ✕
+          <Icon name="close" />
         </button>
       </header>
       <div className="side-body">

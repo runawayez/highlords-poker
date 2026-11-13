@@ -1,5 +1,5 @@
 import {
-  EMBLEMS,
+  AVATARS,
   blindLevel,
   BOT_STYLES,
   PROFILE_COLORS,
@@ -341,7 +341,7 @@ export class RoomEngine {
         player.botStyle = msg.style ?? BOT_STYLES[(nth + 1) % BOT_STYLES.length];
         player.botProfile = {
           nickname: name,
-          avatar: EMBLEMS[(nth * 5 + 4) % EMBLEMS.length],
+          avatar: AVATARS[(nth * 5 + 4) % AVATARS.length],
           color: PROFILE_COLORS[(nth * 3 + 1) % PROFILE_COLORS.length],
         };
         this.say('SAT', { name }, botId, now);
