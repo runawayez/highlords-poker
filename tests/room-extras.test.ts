@@ -201,13 +201,13 @@ describe('ante, straddle, ritmo dos bots e run it twice', () => {
 
 describe('avatares', () => {
   it('bots entram com emblemas e ids antigos de retrato viram emblema', async () => {
-    const { ProfileSchema, EMBLEMS } = await import('../packages/contracts/src/index.ts');
+    const { ProfileSchema, AVATARS } = await import('../packages/contracts/src/index.ts');
     const { room } = headsUp();
     for (let i = 0; i < 3; i++)
       room.command('host', { type: 'ADD_BOT', difficulty: 'EASY' }, T0 + 2100);
     const bots = room.state.players.filter((p) => p.bot);
     expect(bots.length).toBeGreaterThan(0);
-    for (const bot of bots) expect(EMBLEMS).toContain(bot.botProfile!.avatar);
+    for (const bot of bots) expect(AVATARS).toContain(bot.botProfile!.avatar);
     expect(ProfileSchema.parse({ nickname: 'Velho', avatar: 'a3' }).avatar).toBe('g3');
     expect(ProfileSchema.parse({ nickname: 'Sem avatar' }).avatar).toBe('g1');
   });

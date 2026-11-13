@@ -7,19 +7,19 @@ Fichas 100% virtuais — não há dinheiro real, depósitos ou prêmios.
 
 ## Como jogar
 
-1. Abra o [site](https://highlords-poker.highlords.workers.dev), escolha seu nome e emblema.
+1. Abra o [site](https://highlords-poker.highlords.workers.dev), escolha seu nome e retrato.
 2. **Criar mesa** (ou **Jogar contra bots** para uma mesa pronta em um clique).
 3. Toque em **Convidar** para copiar o link. Quem abrir entra na hora e senta em uma cadeira vazia.
 
 - **Formatos:** cash game (entre e saia quando quiser, com recompra) e Sit & Go (uma mesa, blinds que sobem, até sobrar um).
 - **Bots** fáceis, médios e difíceis para treinar ou completar a mesa. Eles só enxergam as próprias cartas.
 - **Mesas com senha**, lista de mesas abertas e entrada por código de 6 caracteres.
-- **Perfil sem conta:** emblema ou foto, cor da moldura e estatísticas só no seu navegador, editáveis a qualquer momento.
+- **Perfil sem conta:** 12 retratos desenhados ou foto, cor da moldura e estatísticas só no seu navegador, editáveis a qualquer momento.
 - **Para quem está aprendendo:** modo treino com chance de vitória, pot odds, outs e sugestão; passo a passo na primeira mesa; bots com estilos de jogo (fechado, solto, agressivo).
 - **Para quem já joga:** tempo extra (time bank), mostrar ou esconder cartas no showdown, rever mãos, HUD opcional dos adversários e atalhos de teclado (F, C, R, T e 1 a 6).
 - **Mais regras de mesa:** ante e straddle no cash, rodar duas vezes quando todos estão all-in, ritmo dos bots (calmo, normal, rápido) e QR code para convidar pelo celular.
 - **Aparência:** temas de mesa, versos de carta, naipes em 4 cores, tamanho de texto e das cartas e alto contraste. Instalável como app (PWA).
-- **Layout "salão privê":** lobby em tabela com filtros, mesa grande com chat fixo ao lado no desktop e faixa de chat + painel no celular, pensado para virar app (safe-area, alvos de toque de 44px, orientação retrato). Apelidos sorteados e avatares só em emblemas ou foto.
+- **Visual "clube privê" (grafite, champanhe e bordô, ícones SVG, altura fixa da bandeja de ações):** lobby em tabela com filtros, mesa grande com chat fixo ao lado no desktop e faixa de chat + painel no celular, pensado para virar app (safe-area, alvos de toque de 44px, orientação retrato). Apelidos sorteados e 12 retratos desenhados em código ou foto própria.
 - **Chat, emotes, sons e animações** de cartas, fichas e vitórias. Funciona no celular e no computador.
 - **Aprender:** guia de como jogar, ranking de mãos, ajuda e regras da casa (português e inglês), além de uma dica opcional da sua mão atual.
 

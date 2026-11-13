@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Icon } from './icons.tsx';
 import { useTranslation } from 'react-i18next';
 import {
   ProfileSchema,
@@ -149,7 +150,7 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
                 profileStore.set({ nickname: randomNickname(i18n.language) });
               }}
             >
-              🎲
+              <Icon name="dice" />
             </button>
           </div>
           <button
@@ -289,7 +290,7 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
                       {room.locked && (
                         <span title={t('home:locked')} aria-label={t('home:locked')}>
                           {' '}
-                          🔒
+                          <Icon name="lock" size={14} />
                         </span>
                       )}
                     </strong>

@@ -1,4 +1,5 @@
 import { QrCode } from './qr.tsx';
+import { Icon } from './icons.tsx';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhotosContext } from './avatar.tsx';
@@ -178,7 +179,7 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
                 if (!prefs.sound) setTimeout(() => playSound('click'), 30);
               }}
             >
-              {prefs.sound ? '🔊' : '🔇'}
+              <Icon name={prefs.sound ? 'sound' : 'mute'} />
             </button>
             <button
               className="icon-button"
@@ -187,7 +188,7 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
               data-tour="ranking"
               onClick={() => setLearning('hands')}
             >
-              ?
+              <Icon name="help" />
             </button>
             {!wide && (
               <button
@@ -196,7 +197,8 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
                 aria-pressed={panel === 'chat'}
                 onClick={() => setPanel(panel === 'chat' ? null : 'chat')}
               >
-                💬{unread > 0 && panel !== 'chat' && <i className="badge">{unread}</i>}
+                <Icon name="chat" />
+                {unread > 0 && panel !== 'chat' && <i className="badge">{unread}</i>}
               </button>
             )}
             <button
@@ -205,7 +207,7 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
               aria-pressed={panel === 'table'}
               onClick={() => setPanel(panel === 'table' ? null : 'table')}
             >
-              ☰
+              <Icon name="menu" />
             </button>
           </div>
         </header>

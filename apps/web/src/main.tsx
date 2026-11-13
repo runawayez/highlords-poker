@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Icon } from './icons.tsx';
 import { createRoot } from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
 import './i18n/index.ts';
@@ -6,6 +7,7 @@ import '@fontsource-variable/fraunces/wght.css';
 import '@fontsource-variable/manrope/index.css';
 import './styles.css';
 import './repaginada3.css';
+import './premium.css';
 import { ROOM_CODE_PATTERN } from '../../../packages/contracts/src/index.ts';
 import { Home } from './home.tsx';
 import { LearningCenter, learningPaths, learningRoute, type LearningSection } from './learning.tsx';
@@ -113,7 +115,7 @@ function Shell({
             title={t('settings:title')}
             onClick={() => setSettingsOpen(true)}
           >
-            ⚙
+            <Icon name="gear" />
           </button>
           <LanguageToggle />
         </nav>

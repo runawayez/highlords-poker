@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { EMBLEMS, PROFILE_COLORS, type Profile } from '../../../packages/contracts/src/index.ts';
+import { AVATARS, PROFILE_COLORS, type Profile } from '../../../packages/contracts/src/index.ts';
 import { randomNickname } from './names.ts';
 
 function read<T>(key: string, fallback: T): T {
@@ -34,7 +34,7 @@ export function guestProfile(): Profile {
   const n = crypto.getRandomValues(new Uint32Array(1))[0];
   return {
     nickname: randomNickname(),
-    avatar: EMBLEMS[n % EMBLEMS.length],
+    avatar: AVATARS[n % AVATARS.length],
     color: PROFILE_COLORS[n % PROFILE_COLORS.length],
   };
 }

@@ -3,7 +3,7 @@
   "heroSub": "Escolha um nome, abra uma mesa e mande o link. Sem cadastro, sem instalar nada.",
   "yourName": "Seu nome",
   "avatar": "Retrato",
-  "portrait": "Emblema {{number}}",
+  "portrait": "Retrato {{number}}",
   "createTable": "Criar mesa",
   "playBots": "Jogar contra bots",
   "playBotsHint": "Mesa pronta em um clique",
