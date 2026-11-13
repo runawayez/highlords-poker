@@ -12,6 +12,7 @@ import { Avatar } from './avatar.tsx';
 import { Card } from './card.tsx';
 import { randomNickname } from './names.ts';
 import { Modal } from './panels.tsx';
+import { Chips } from './table.tsx';
 import { ProfileModal } from './profile.tsx';
 import { playSound } from './audio.ts';
 import { profileStore, recentStore, useStore } from './store.ts';
@@ -56,6 +57,8 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
     };
   }, []);
 
+  const openCount = rooms?.length ?? 0;
+  const onlineCount = (rooms ?? []).reduce((sum, room) => sum + room.online, 0);
   const visibleRooms = (rooms ?? []).filter(
     (room) =>
       (filter === 'ALL' || room.mode === filter) &&
@@ -122,104 +125,126 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
         <div className="hero-copy">
           <p className="eyebrow">{t('home:eyebrow')}</p>
           <h1>{t('home:heroTitle')}</h1>
-          <p>{t('home:heroSub')}</p>
-          <HeroTable />
-        </div>
+          <p className="lead">{t('home:heroSub')}</p>
 
-        <div className="join-card">
-          <label htmlFor="nickname">{t('home:yourName')}</label>
-          <div className="name-row">
-            <input
-              id="nickname"
-              value={profile.nickname}
-              maxLength={20}
-              autoComplete="nickname"
-              onChange={(e) => {
-                setMessage('');
-                profileStore.set({ nickname: e.target.value });
-              }}
-            />
+          <div className="join-card">
+            <label htmlFor="nickname">{t('home:yourName')}</label>
+            <div className="name-row">
+              <input
+                id="nickname"
+                value={profile.nickname}
+                maxLength={20}
+                autoComplete="nickname"
+                onChange={(e) => {
+                  setMessage('');
+                  profileStore.set({ nickname: e.target.value });
+                }}
+              />
+              <button
+                type="button"
+                className="dice"
+                aria-label={t('home:randomName')}
+                title={t('home:randomName')}
+                onClick={() => {
+                  playSound('click');
+                  setMessage('');
+                  profileStore.set({ nickname: randomNickname(i18n.language) });
+                }}
+              >
+                <Icon name="dice" />
+              </button>
+            </div>
             <button
               type="button"
-              className="dice"
-              aria-label={t('home:randomName')}
-              title={t('home:randomName')}
+              className="profile-chip"
+              data-frame={profile.color ?? 'brass'}
+              onClick={() => setProfileOpen(true)}
+            >
+              <span className="avatar-frame">
+                <Avatar avatar={profile.avatar} photo={profile.photo} />
+              </span>
+              <span>
+                <b>{t('profile:customize')}</b>
+                <small>{t('profile:customizeHint')}</small>
+              </span>
+            </button>
+            <button className="primary huge" disabled={busy} onClick={() => void quickBots()}>
+              {t('home:playBots')}
+              <small>{t('home:playBotsHint')}</small>
+            </button>
+            <button
+              className="big"
               onClick={() => {
                 playSound('click');
-                setMessage('');
-                profileStore.set({ nickname: randomNickname(i18n.language) });
+                if (!needName()) setCreating(true);
               }}
             >
-              <Icon name="dice" />
+              {t('home:createTable')}
             </button>
+            <form className="code-row" onSubmit={joinByCode}>
+              <label htmlFor="code">{t('home:joinCode')}</label>
+              <input
+                id="code"
+                value={code}
+                maxLength={6}
+                placeholder={t('home:joinPlaceholder')}
+                autoCapitalize="characters"
+                spellCheck={false}
+                onChange={(e) => {
+                  setMessage('');
+                  setCode(e.target.value.toUpperCase());
+                }}
+              />
+              <button type="submit">{t('home:join')}</button>
+            </form>
+            {message && (
+              <p className="error" role="alert">
+                {message}
+              </p>
+            )}
+            {recent.length > 0 && (
+              <div className="recent">
+                <small>{t('home:recent')}</small>
+                <ul>
+                  {recent.map((table) => (
+                    <li key={table.id}>
+                      <button
+                        type="button"
+                        className="ghost small"
+                        onClick={() => !needName() && navigate(`/mesa/${table.id}`)}
+                      >
+                        {table.title} <code>{table.id}</code>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-          <button
-            type="button"
-            className="profile-chip"
-            data-frame={profile.color ?? 'brass'}
-            onClick={() => setProfileOpen(true)}
-          >
-            <span className="avatar-frame">
-              <Avatar avatar={profile.avatar} photo={profile.photo} />
-            </span>
-            <span>
-              <b>{t('profile:customize')}</b>
-              <small>{t('profile:customizeHint')}</small>
-            </span>
-          </button>
-          <button className="primary huge" disabled={busy} onClick={() => void quickBots()}>
-            {t('home:playBots')}
-            <small>{t('home:playBotsHint')}</small>
-          </button>
-          <button
-            className="big"
-            onClick={() => {
-              playSound('click');
-              if (!needName()) setCreating(true);
-            }}
-          >
-            {t('home:createTable')}
-          </button>
-          <form className="code-row" onSubmit={joinByCode}>
-            <label htmlFor="code">{t('home:joinCode')}</label>
-            <input
-              id="code"
-              value={code}
-              maxLength={6}
-              placeholder={t('home:joinPlaceholder')}
-              autoCapitalize="characters"
-              spellCheck={false}
-              onChange={(e) => {
-                setMessage('');
-                setCode(e.target.value.toUpperCase());
-              }}
-            />
-            <button type="submit">{t('home:join')}</button>
-          </form>
-          {message && (
-            <p className="error" role="alert">
-              {message}
-            </p>
-          )}
-          {recent.length > 0 && (
-            <div className="recent">
-              <small>{t('home:recent')}</small>
-              <ul>
-                {recent.map((table) => (
-                  <li key={table.id}>
-                    <button
-                      type="button"
-                      className="ghost small"
-                      onClick={() => !needName() && navigate(`/mesa/${table.id}`)}
-                    >
-                      {table.title} <code>{table.id}</code>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <p className="proof" role="status">
+            {rooms === null
+              ? '\u00a0'
+              : openCount > 0
+                ? t('home:proof', { tables: openCount, players: onlineCount })
+                : t('home:proofEmpty')}
+          </p>
         </div>
+
+        <div className="hero-stage">
+          <HeroTable />
+        </div>
+      </section>
+
+      <section className="pillars" aria-label={t('home:pillarsLabel')}>
+        {(['one', 'two', 'three'] as const).map((key, index) => (
+          <article key={key}>
+            <span className="pillar-n" aria-hidden>
+              {index + 1}
+            </span>
+            <h3>{t(`home:pillar_${key}_title`)}</h3>
+            <p>{t(`home:pillar_${key}_text`)}</p>
+          </article>
+        ))}
       </section>
 
       <section className="lobby" aria-labelledby="open-tables">
@@ -338,27 +363,38 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
 /** Mesa de vitrine do hero: puramente visual, mostra o clima do jogo antes de entrar. */
 function HeroTable() {
   const seats = [
-    { avatar: 'g5', style: { left: '50%', top: '4%' } },
-    { avatar: 'g2', style: { left: '88%', top: '30%' } },
-    { avatar: 'g9', style: { left: '80%', top: '82%' } },
-    { avatar: 'g4', style: { left: '20%', top: '82%' } },
-    { avatar: 'g8', style: { left: '12%', top: '30%' } },
+    { avatar: 'g5', name: 'Marcus', stack: '3.420', style: { left: '50%', top: '2%' } },
+    { avatar: 'g2', name: 'Helena', stack: '1.980', style: { left: '90%', top: '30%' } },
+    { avatar: 'g9', name: 'Rafael', stack: '2.760', style: { left: '78%', top: '88%' } },
+    { avatar: 'g4', name: 'Clara', stack: '4.150', style: { left: '22%', top: '88%' } },
+    { avatar: 'g3', name: 'Otávio', stack: '1.240', style: { left: '10%', top: '30%' } },
   ];
   return (
     <div className="hero-table" aria-hidden>
       <div className="hero-rail">
         <div className="hero-felt">
+          <span className="hero-pot">POTE 1.240</span>
           <div className="hero-board">
             {['As', 'Kh', 'Qd', 'Jc', 'Ts'].map((card, i) => (
               <Card key={card} card={card} className="hero-card" style={{ ['--i' as string]: i }} />
             ))}
           </div>
-          <span className="hero-pot">♠ 1.240</span>
+          <Chips amount={1240} className="hero-chips" />
         </div>
       </div>
-      {seats.map((seat, i) => (
-        <span key={i} className="hero-seat" style={seat.style}>
-          <Avatar avatar={seat.avatar} />
+      {seats.map((seat) => (
+        <span key={seat.name} className="hero-seat" style={seat.style}>
+          <span className="hero-hole">
+            <Card down className="hero-back" />
+            <Card down className="hero-back" />
+          </span>
+          <span className="hero-face">
+            <Avatar avatar={seat.avatar} />
+          </span>
+          <span className="hero-plate">
+            <b>{seat.name}</b>
+            <i>{seat.stack}</i>
+          </span>
         </span>
       ))}
     </div>

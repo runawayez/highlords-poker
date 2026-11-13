@@ -306,6 +306,7 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
 
         {toast && (
           <div className="toast" role="alert">
+            <Icon name="help" size={16} />
             {toast}
           </div>
         )}

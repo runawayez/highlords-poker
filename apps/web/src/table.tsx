@@ -111,6 +111,28 @@ function TimerRing({
   );
 }
 
+/** Anima o número até o novo valor (só quando aumenta); respeita prefers-reduced-motion. */
+function useCountUp(target: number) {
+  const [shown, setShown] = useState(target);
+  useEffect(() => {
+    if (target <= shown || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setShown(target);
+      return;
+    }
+    const from = shown;
+    const start = performance.now();
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / 700);
+      setShown(Math.round(from + (target - from) * (1 - (1 - progress) ** 3)));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target]);
+  return shown;
+}
+
 function Seat({
   player,
   state,
@@ -137,6 +159,7 @@ function Seat({
 }) {
   const { t } = useTranslation();
   const format = useNumber();
+  const shownStack = useCountUp(player.stack);
   const hand = state.hand;
   const acting = !!hand && !hand.done && hand.actor === player.id;
   const remaining = useCountdown(acting ? hand!.deadline : undefined, serverNow);
@@ -227,25 +250,32 @@ function Seat({
           />
         )}
         <Avatar avatar={player.avatar} id={player.id} />
-        {player.isButton && (
-          <span className="dealer" title={t('game:dealer')}>
-            D
-          </span>
-        )}
-        {hand?.smallBlindId === player.id && (
-          <span className="blind-tag sb" title={t('game:smallBlind')}>
-            SB
-          </span>
-        )}
-        {hand?.bigBlindId === player.id && (
-          <span className="blind-tag bb" title={t('game:bigBlind')}>
-            BB
-          </span>
-        )}
         {player.bot && <span className="bot-tag">BOT</span>}
-        {hand?.straddler === player.id && (
-          <span className="straddle-tag" title={t('game:straddle')}>
-            S
+        {(player.isButton ||
+          hand?.smallBlindId === player.id ||
+          hand?.bigBlindId === player.id ||
+          hand?.straddler === player.id) && (
+          <span className="pos-cluster">
+            {player.isButton && (
+              <span className="pos dealer" title={t('game:dealer')}>
+                D
+              </span>
+            )}
+            {hand?.smallBlindId === player.id && (
+              <span className="pos sb" title={t('game:smallBlind')}>
+                SB
+              </span>
+            )}
+            {hand?.bigBlindId === player.id && (
+              <span className="pos bb" title={t('game:bigBlind')}>
+                BB
+              </span>
+            )}
+            {hand?.straddler === player.id && (
+              <span className="pos straddle" title={t('game:straddle')}>
+                S
+              </span>
+            )}
           </span>
         )}
       </button>
@@ -258,7 +288,7 @@ function Seat({
               ? t('game:sittingOut')
               : !player.online
                 ? t('game:offline')
-                : format(player.stack)}
+                : format(shownStack)}
         </span>
         {hud && hud.hands >= 4 && (
           <small className="hud" title={t('game:hudTitle', { hands: hud.hands })}>

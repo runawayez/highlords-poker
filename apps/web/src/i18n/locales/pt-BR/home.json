@@ -77,5 +77,14 @@
   "colTable": "Mesa",
   "colBlinds": "Blinds",
   "colSeats": "Assentos",
-  "colStatus": "Status"
+  "colStatus": "Status",
+  "proof": "{{tables}} mesas abertas agora · {{players}} jogadores online",
+  "proofEmpty": "Nenhuma mesa aberta agora. Abra a primeira e chame a galera.",
+  "pillarsLabel": "Por que jogar aqui",
+  "pillar_one_title": "Sem cadastro",
+  "pillar_one_text": "Escolha um nome e jogue. Nada para instalar, nenhuma conta para criar.",
+  "pillar_two_title": "Com a galera",
+  "pillar_two_text": "Abra uma mesa, mande o link ou o QR code e comece a jogar em segundos.",
+  "pillar_three_title": "Aprenda jogando",
+  "pillar_three_text": "Chance de vitória, pot odds e dicas ao vivo para quem está começando."
 }

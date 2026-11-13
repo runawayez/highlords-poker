@@ -173,5 +173,6 @@
   "state_CALL": "Pagou",
   "state_BET": "Apostou",
   "state_RAISE": "Aumentou",
-  "state_ALL_IN": "All-in"
+  "state_ALL_IN": "All-in",
+  "chatSlow": "Calma! Espere um instante."
 }
