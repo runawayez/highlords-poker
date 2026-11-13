@@ -238,3 +238,40 @@ test('mensagens de chat em rajada mostram aviso discreto e a mesa mantém D/SB/B
   await expect(page.locator('.chat-hint')).toBeVisible();
   await expect(page.locator('.pos-cluster').first()).toBeVisible();
 });
+
+test('as animações da mesa rodam mesmo com o sistema em movimento reduzido e podem ser desligadas nos ajustes', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('highlords.prefs'))
+      localStorage.setItem('highlords.prefs', JSON.stringify({ tourDone: true }));
+  });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'full');
+  await page.getByRole('button', { name: /Jogar contra bots/ }).click();
+  await expect(page.locator('.seat.me .hole-card').first()).toBeVisible();
+  const duration = () =>
+    page
+      .locator('.seat.me .hole-card')
+      .first()
+      .evaluate((card) => getComputedStyle(card).animationDuration);
+  expect(await duration()).toBe('0.5s');
+  expect(
+    await page
+      .locator('.seat.me .hole-card')
+      .first()
+      .evaluate((card) => getComputedStyle(card).animationName),
+  ).toBe('deal-fly');
+
+  await page.evaluate(() => {
+    const prefs = JSON.parse(localStorage.getItem('highlords.prefs') ?? '{}');
+    localStorage.setItem('highlords.prefs', JSON.stringify({ ...prefs, reduceMotion: true }));
+  });
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
+  await expect(page.locator('.seat.me .hole-card').first()).toBeVisible();
+  expect(parseFloat(await duration())).toBeLessThan(0.001);
+  await context.close();
+});

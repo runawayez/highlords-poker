@@ -112,6 +112,7 @@ export function SettingsModal({
       textSize: 'm',
       cardSize: 'm',
       contrast: false,
+      reduceMotion: false,
     });
 
   return (
@@ -198,6 +199,12 @@ export function SettingsModal({
               label={t('settings:contrast')}
               checked={prefs.contrast}
               onChange={(contrast) => set({ contrast })}
+            />
+            <Toggle
+              label={t('settings:reduceMotion')}
+              note={t('settings:reduceMotionNote')}
+              checked={prefs.reduceMotion}
+              onChange={(reduceMotion) => set({ reduceMotion })}
             />
           </section>
           <section>

@@ -36,5 +36,7 @@
   "cards_m": "Médias",
   "cards_l": "Grandes",
   "previewLabel": "Prévia da mesa com as suas escolhas",
-  "reset": "Restaurar padrão"
+  "reset": "Restaurar padrão",
+  "reduceMotion": "Reduzir animações",
+  "reduceMotionNote": "Desliga o voo das cartas, as viradas e os brilhos da mesa."
 }

@@ -1783,17 +1783,15 @@ kbd {
     transform: translate(calc(-50% + var(--dx)), 46vmin) rotate(var(--dr));
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0s !important;
-    transition-duration: 0.01ms !important;
-  }
-  .confetti {
-    display: none;
-  }
+[data-motion='reduced'] *,
+[data-motion='reduced'] *::before,
+[data-motion='reduced'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
+  transition-duration: 0.01ms !important;
+}
+[data-motion='reduced'] .confetti {
+  display: none;
 }
 
 /* ---------- responsivo ---------- */
@@ -2598,11 +2596,9 @@ button.huge {
 .board-second .card {
   --cw: calc(var(--cw-base, var(--cw)) * 0.72);
 }
-@media (prefers-reduced-motion: reduce) {
-  .award,
-  .seat.allin .avatar {
-    animation: none;
-  }
+[data-motion='reduced'] .award,
+[data-motion='reduced'] .seat.allin .avatar {
+  animation: none;
 }
 
 /* celular: controles do anfitrião primeiro no painel */
