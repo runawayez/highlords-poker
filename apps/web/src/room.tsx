@@ -86,11 +86,6 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
     });
   }, [state]);
 
-  // Passo a passo na primeira mesa, quando as primeiras cartas chegam.
-  const hasCards = !!me && me.cards.length === 2;
-  useEffect(() => {
-    if (!prefs.tourDone && hasCards) setTourOn(true);
-  }, [prefs.tourDone, hasCards]);
   const finishTour = () => {
     prefsStore.set({ tourDone: true });
     setTourOn(false);

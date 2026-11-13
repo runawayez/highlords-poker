@@ -128,20 +128,14 @@ test('o perfil pode ser editado e aparece na mesa', async ({ page }) => {
   await expect(page.locator('.roster')).toContainText('Ana Mudou');
 });
 
-test('o passo a passo aparece na primeira mesa e pode ser pulado', async ({ page }) => {
+test('o passo a passo não abre sozinho na primeira mesa', async ({ page }) => {
   await page.addInitScript(() => {
-    // Só na primeira carga: depois de pular o tour, recarregar não pode trazê-lo de volta.
     if (sessionStorage.getItem('seeded')) return;
     sessionStorage.setItem('seeded', '1');
     localStorage.setItem('highlords.prefs', '{}');
   });
   await page.goto('/');
   await page.getByRole('button', { name: /Jogar contra bots/ }).click();
-  const tour = page.getByRole('dialog', { name: 'Passo a passo' });
-  await expect(tour).toBeVisible();
-  await tour.getByRole('button', { name: 'Pular' }).click();
-  await expect(tour).toHaveCount(0);
-  await page.reload();
   await expect(page.locator('.seat.me .hole-card').first()).toBeVisible();
   await expect(page.getByRole('dialog', { name: 'Passo a passo' })).toHaveCount(0);
 });

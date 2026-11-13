@@ -292,7 +292,6 @@
   gap: clamp(4px, 0.6vw, 10px);
 }
 .hero-stage .hero-card {
-  position: static;
   animation: deal-in 0.55s both;
   animation-delay: calc(var(--i, 0) * 0.12s + 0.2s);
 }
@@ -448,5 +447,67 @@
   .win-pop,
   .toast {
     animation: none;
+  }
+}
+
+/* temas: o :root do premium.css vencia o [data-theme]; aqui a especificidade é maior */
+:root[data-theme='emerald'] {
+  --felt-1: #25a06a;
+  --felt-2: #136e48;
+  --felt-3: #094a31;
+}
+:root[data-theme='royal'] {
+  --felt-1: #2a6fb8;
+  --felt-2: #164677;
+  --felt-3: #0a2644;
+}
+:root[data-theme='crimson'] {
+  --felt-1: #a3304a;
+  --felt-2: #6b1a2e;
+  --felt-3: #3d0e1a;
+}
+
+/* prévia: tamanho de carta e felpa acompanham as escolhas */
+.pv-felt {
+  background: radial-gradient(ellipse at 50% 35%, var(--felt-1), var(--felt-2) 65%, var(--felt-3));
+}
+.pv-card {
+  --cw: calc(28px * var(--card-scale, 1));
+}
+.pv-hole {
+  --cw: calc(26px * var(--card-scale, 1));
+}
+
+/* convite: centralizado na mesa (a barra de ações fica fora da conta) */
+.waiting-card {
+  top: calc((100% - var(--action-h, 168px)) * 0.5);
+  transform: translate(-50%, -50%);
+}
+@media (max-width: 899px) {
+  .waiting-card {
+    top: calc((100% - var(--action-h, 152px) - 48px) * 0.5);
+  }
+}
+
+/* home: a entrada inteira cabe na primeira tela do desktop */
+@media (min-width: 900px) {
+  .hero {
+    padding-top: 14px;
+    gap: clamp(24px, 3vw, 48px);
+  }
+  .hero-copy {
+    gap: 12px;
+  }
+  .hero-copy h1 {
+    font-size: clamp(2.6rem, 4.6vw, 4.4rem);
+    max-width: none;
+  }
+  .hero-copy .lead {
+    font-size: 1.05rem;
+    max-width: 44ch;
+  }
+  .hero-copy .join-card {
+    padding: 16px 18px;
+    gap: 10px;
   }
 }
