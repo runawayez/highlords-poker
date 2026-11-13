@@ -1,7 +1,5 @@
 import { createContext, useContext } from 'react';
-import { EMBLEMS } from '../../../packages/contracts/src/index.ts';
-
-export const portrait = (avatar: string) => `/avatars/avatar-${avatar.replace('a', '') || 1}.webp`;
+import { EMBLEMS, normalizeAvatar } from '../../../packages/contracts/src/index.ts';
 
 /** Fotos recebidas do servidor (id do jogador para data URL), fora do estado de cada mão. */
 export const PhotosContext = createContext<Record<string, string>>({});
@@ -23,7 +21,7 @@ const EMBLEM_LOOK: Record<string, { glyph: string; hue: number }> = {
 };
 export const isEmblem = (avatar: string) => (EMBLEMS as readonly string[]).includes(avatar);
 
-/** Retrato, emblema ou foto: o mesmo círculo em qualquer lugar da interface. */
+/** Emblema ou foto: o mesmo círculo em qualquer lugar da interface. */
 export function Avatar({
   avatar,
   photo,
@@ -35,19 +33,17 @@ export function Avatar({
   id?: string;
 }) {
   const photos = useContext(PhotosContext);
+  avatar = String(normalizeAvatar(avatar));
   const source = photo ?? (id ? photos[id] : undefined);
   if (source) return <img src={source} alt="" draggable={false} />;
-  if (isEmblem(avatar)) {
-    const look = EMBLEM_LOOK[avatar];
-    return (
-      <span
-        className="emblem"
-        aria-hidden
-        style={{ ['--hue' as string]: look.hue } as React.CSSProperties}
-      >
-        {look.glyph}
-      </span>
-    );
-  }
-  return <img src={portrait(avatar)} alt="" draggable={false} />;
+  const look = EMBLEM_LOOK[isEmblem(avatar) ? avatar : 'g1'];
+  return (
+    <span
+      className="emblem"
+      aria-hidden
+      style={{ ['--hue' as string]: look.hue } as React.CSSProperties}
+    >
+      {look.glyph}
+    </span>
+  );
 }

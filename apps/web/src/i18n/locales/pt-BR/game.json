@@ -165,5 +165,13 @@
   "botHint_BALANCED": "{{name}} joga de forma equilibrada: a aposta tem peso normal.",
   "botHint_TIGHT": "{{name}} é fechado: aposta só com mão forte. Respeite.",
   "botHint_LOOSE": "{{name}} é solto: aposta com muita coisa, pode estar blefando.",
-  "botHint_AGGRESSIVE": "{{name}} é agressivo: aposta e aumenta muito, nem sempre tem mão."
+  "botHint_AGGRESSIVE": "{{name}} é agressivo: aposta e aumenta muito, nem sempre tem mão.",
+  "smallBlind": "Small blind",
+  "bigBlind": "Big blind",
+  "state_FOLD": "Desistiu",
+  "state_CHECK": "Passou",
+  "state_CALL": "Pagou",
+  "state_BET": "Apostou",
+  "state_RAISE": "Aumentou",
+  "state_ALL_IN": "All-in"
 }

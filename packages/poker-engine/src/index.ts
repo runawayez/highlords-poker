@@ -27,6 +27,9 @@ export type Hand = {
   board2?: Card[];
   /** Quem aceitou decidir um all-in em duas rodadas. */
   twice: string[];
+  /** Quem pagou o small e o big blind desta mão. */
+  smallBlindId: string;
+  bigBlindId: string;
   /** Jogador que pagou o straddle (blind extra do under the gun), se houve. */
   straddler: string | null;
   log: { player: string; action: string; amount: number; street: number }[];
@@ -290,6 +293,8 @@ export function startHand(
     showdown: false,
     awards: {},
     twice: [...(options.twice ?? [])],
+    smallBlindId: '',
+    bigBlindId: '',
     straddler: null,
     log: [],
   };
@@ -298,6 +303,8 @@ export function startHand(
   for (const p of h.players) pay(p, ante, false);
   const sb = seats.length === 2 ? h.players.find((p) => p.seat === button)! : order[0];
   const bb = clockwise(h, sb.seat)[0];
+  h.smallBlindId = sb.id;
+  h.bigBlindId = bb.id;
   pay(sb, smallBlind);
   pay(bb, bigBlind);
   let last = bb;
@@ -363,6 +370,8 @@ export function publicHand(h: Hand, id?: string) {
     board: h.board,
     board2: h.board2,
     straddler: h.straddler,
+    smallBlindId: h.smallBlindId,
+    bigBlindId: h.bigBlindId,
     button: h.button,
     street: h.street,
     actor: h.actor,

@@ -7,14 +7,14 @@ Fichas 100% virtuais — não há dinheiro real, depósitos ou prêmios.
 
 ## Como jogar
 
-1. Abra o [site](https://highlords-poker.highlords.workers.dev), escolha seu nome e retrato.
+1. Abra o [site](https://highlords-poker.highlords.workers.dev), escolha seu nome e emblema.
 2. **Criar mesa** (ou **Jogar contra bots** para uma mesa pronta em um clique).
 3. Toque em **Convidar** para copiar o link. Quem abrir entra na hora e senta em uma cadeira vazia.
 
 - **Formatos:** cash game (entre e saia quando quiser, com recompra) e Sit & Go (uma mesa, blinds que sobem, até sobrar um).
 - **Bots** fáceis, médios e difíceis para treinar ou completar a mesa. Eles só enxergam as próprias cartas.
 - **Mesas com senha**, lista de mesas abertas e entrada por código de 6 caracteres.
-- **Perfil sem conta:** retrato, emblema ou foto, cor da moldura e estatísticas só no seu navegador, editáveis a qualquer momento.
+- **Perfil sem conta:** emblema ou foto, cor da moldura e estatísticas só no seu navegador, editáveis a qualquer momento.
 - **Para quem está aprendendo:** modo treino com chance de vitória, pot odds, outs e sugestão; passo a passo na primeira mesa; bots com estilos de jogo (fechado, solto, agressivo).
 - **Para quem já joga:** tempo extra (time bank), mostrar ou esconder cartas no showdown, rever mãos, HUD opcional dos adversários e atalhos de teclado (F, C, R, T e 1 a 6).
 - **Mais regras de mesa:** ante e straddle no cash, rodar duas vezes quando todos estão all-in, ritmo dos bots (calmo, normal, rápido) e QR code para convidar pelo celular.
