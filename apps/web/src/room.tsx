@@ -224,7 +224,6 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
             <main className="room-main">
               <Table
                 state={state}
-                labels={fx.labels}
                 sweeps={fx.sweeps}
                 emotes={fx.emotes}
                 serverNow={room.serverNow}

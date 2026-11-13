@@ -151,3 +151,15 @@ describe('run it twice', () => {
     }
   });
 });
+
+describe('blinds expostas', () => {
+  it('informa quem pagou small e big blind, também no heads-up', () => {
+    const three = startHand([seat('a', 0), seat('b', 1), seat('c', 2)], 0, 5, 10);
+    expect(publicHand(three).smallBlindId).toBe('b');
+    expect(publicHand(three).bigBlindId).toBe('c');
+    // Heads-up: o botão paga o small blind.
+    const two = startHand([seat('a', 0), seat('b', 1)], 0, 5, 10);
+    expect(publicHand(two).smallBlindId).toBe('a');
+    expect(publicHand(two).bigBlindId).toBe('b');
+  });
+});

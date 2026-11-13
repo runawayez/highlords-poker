@@ -7,11 +7,11 @@ function makeRoom(overrides: Record<string, unknown> = {}) {
   const { password, ...config } = ConfigSchema.parse({ title: 'Mesa teste', ...overrides });
   void password;
   const room = RoomEngine.create({ id: 'ABC234', config, salt: 's', hostId: 'host' }, T0);
-  room.admit('host', { nickname: 'Anfitriao', avatar: 'a1' }, T0);
+  room.admit('host', { nickname: 'Anfitriao', avatar: 'g1' }, T0);
   return room;
 }
 const join = (room: RoomEngine, id: string, name: string, now = T0) =>
-  room.admit(id, { nickname: name, avatar: 'a2' }, now);
+  room.admit(id, { nickname: name, avatar: 'g2' }, now);
 
 describe('sala (cash game)', () => {
   it('começa sozinha quando o segundo jogador senta e distribui a mão', () => {

@@ -5,7 +5,7 @@ import { bestFive } from '../../../packages/poker-engine/src/index.ts';
 import { Avatar } from './avatar.tsx';
 import { Card } from './card.tsx';
 import { adviseAction, countOuts, estimateEquity, potOdds } from './coach.ts';
-import { useCountdown, type ActionLabel, type Sweep } from './fx.ts';
+import { useCountdown, type Sweep } from './fx.ts';
 import { computeHud, type HudLine } from './hud.ts';
 import type { PlayerView, RoomView } from './net.ts';
 import { visibleHand } from './poker-learning.ts';
@@ -13,7 +13,6 @@ import { playSound } from './audio.ts';
 import { prefsStore, useStore } from './store.ts';
 
 export type Send = (message: ClientMessage) => void;
-export { portrait } from './avatar.tsx';
 export const useNumber = () => {
   const { i18n } = useTranslation();
   return (n: number) => new Intl.NumberFormat(i18n.language).format(n);
@@ -116,7 +115,6 @@ function Seat({
   state,
   x,
   y,
-  label,
   handName,
   serverNow,
   canKick,
@@ -128,7 +126,6 @@ function Seat({
   state: RoomView;
   x: number;
   y: number;
-  label?: ActionLabel;
   handName?: string;
   serverNow: () => number;
   canKick: boolean;
@@ -151,19 +148,28 @@ function Seat({
   const award = hand?.done ? (hand.awards[player.id] ?? 0) : 0;
   const allIn = player.inHand && !player.folded && player.stack === 0 && !hand?.done;
   const showCards = player.inHand && (!hand?.done || !player.folded || player.shown);
-  const labelText = label
-    ? label.action === 'FOLD'
-      ? t('game:actFold')
-      : label.action === 'CHECK'
-        ? t('game:actCheck')
-        : label.action === 'CALL'
-          ? t('game:actCall')
-          : label.action === 'BET'
-            ? t('game:actBet', { amount: format(label.amount) })
-            : label.action === 'RAISE'
-              ? t('game:actRaise', { amount: format(label.amount) })
-              : t('game:actAllIn', { amount: format(label.amount) })
-    : '';
+  // Última ação desta rua, que fica na plaquinha até a próxima rua.
+  const lastAct =
+    hand && !hand.done
+      ? [...hand.log]
+          .reverse()
+          .find((entry) => entry.player === player.id && entry.street === hand.street)
+      : undefined;
+  const stateTag = player.folded
+    ? 'FOLD'
+    : allIn
+      ? 'ALL_IN'
+      : lastAct && lastAct.action !== 'FOLD'
+        ? lastAct.action
+        : null;
+  const stateText =
+    stateTag === 'BET' || stateTag === 'RAISE' || stateTag === 'ALL_IN'
+      ? t(`game:act${stateTag === 'BET' ? 'Bet' : stateTag === 'RAISE' ? 'Raise' : 'AllIn'}`, {
+          amount: format(lastAct?.amount ?? 0),
+        })
+      : stateTag
+        ? t(`game:state_${stateTag}`)
+        : '';
   return (
     <div
       className={[
@@ -225,6 +231,16 @@ function Seat({
             D
           </span>
         )}
+        {hand?.smallBlindId === player.id && (
+          <span className="blind-tag sb" title={t('game:smallBlind')}>
+            SB
+          </span>
+        )}
+        {hand?.bigBlindId === player.id && (
+          <span className="blind-tag bb" title={t('game:bigBlind')}>
+            BB
+          </span>
+        )}
         {player.bot && <span className="bot-tag">BOT</span>}
         {hand?.straddler === player.id && (
           <span className="straddle-tag" title={t('game:straddle')}>
@@ -250,9 +266,12 @@ function Seat({
           </small>
         )}
       </div>
-      {label && !hand?.done && (
-        <span className="act-label" key={label.at}>
-          {labelText}
+      {stateTag && player.inHand && (
+        <span
+          className={`state-tag state-${stateTag.toLowerCase()}`}
+          key={stateTag + (lastAct?.amount ?? 0)}
+        >
+          {stateText}
         </span>
       )}
       {award > 0 && (
@@ -299,7 +318,6 @@ function EmptySeat({
 
 export function Table({
   state,
-  labels,
   sweeps,
   emotes,
   serverNow,
@@ -307,7 +325,6 @@ export function Table({
   onPick,
 }: {
   state: RoomView;
-  labels: Record<string, ActionLabel>;
   sweeps: Sweep[];
   emotes: { n: number; id: string; emote: string }[];
   serverNow: () => number;
@@ -367,10 +384,28 @@ export function Table({
       </div>
 
       <div className="center">
-        {hand && hand.pot > 0 && (
+        {hand && hand.pot > 0 && !hand.done && (
           <div className="pot" key={hand.pot}>
             <Chips amount={hand.pot} />
             <small>{t('game:pot')}</small>
+          </div>
+        )}
+        {winners.length > 0 && (
+          <div className="banner" key={hand?.id} role="status">
+            {winners.slice(0, 2).map((w) => (
+              <span key={w.id}>
+                {t('game:won', {
+                  name: w.id === state.me ? t('game:you') : w.nickname,
+                  amount: format(w.amount),
+                })}
+                {w.category !== undefined && (
+                  <em>
+                    {' '}
+                    {t('game:wonWith', { hand: t(`learn:rank${w.category}`).toLowerCase() })}
+                  </em>
+                )}
+              </span>
+            ))}
           </div>
         )}
         <div className="board">
@@ -394,24 +429,6 @@ export function Table({
             <small>{t('game:secondBoard')}</small>
             {hand.board2.map((card) => (
               <Card key={card} card={card} className="board-card" />
-            ))}
-          </div>
-        )}
-        {winners.length > 0 && (
-          <div className="banner" key={hand?.id} role="status">
-            {winners.slice(0, 2).map((w) => (
-              <span key={w.id}>
-                {t('game:won', {
-                  name: w.id === state.me ? t('game:you') : w.nickname,
-                  amount: format(w.amount),
-                })}
-                {w.category !== undefined && (
-                  <em>
-                    {' '}
-                    {t('game:wonWith', { hand: t(`learn:rank${w.category}`).toLowerCase() })}
-                  </em>
-                )}
-              </span>
             ))}
           </div>
         )}
@@ -440,7 +457,7 @@ export function Table({
               aria-hidden
               style={{ ['--x' as string]: `${x}%`, ['--y' as string]: `${y}%` }}
             >
-              <Chips amount={Math.min(amount, 1500)} />
+              <Chips amount={Math.min(amount, 1500)} className="no-label" />
             </span>
           );
         })}
@@ -456,7 +473,6 @@ export function Table({
             state={state}
             x={x}
             y={y}
-            label={labels[player.id]}
             handName={handNames[player.id]}
             serverNow={serverNow}
             canKick={state.host}
@@ -509,10 +525,10 @@ export function Table({
                   left: `${bx}%`,
                   top: `${by}%`,
                   ['--to-x' as string]: `${(50 - bx) * 8}px`,
-                  ['--to-y' as string]: `${(46 - by) * 8}px`,
+                  ['--to-y' as string]: `${(34 - by) * 8}px`,
                 }}
               >
-                <Chips amount={sweep.amount} />
+                <Chips amount={sweep.amount} className="no-label" />
               </div>
             )}
           </React.Fragment>

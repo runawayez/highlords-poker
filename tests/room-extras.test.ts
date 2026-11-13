@@ -8,8 +8,8 @@ function headsUp(overrides: Record<string, unknown> = {}) {
   const { password, ...config } = ConfigSchema.parse({ title: 'Mesa extra', ...overrides });
   void password;
   const room = RoomEngine.create({ id: 'ABC234', config, salt: 's', hostId: 'host' }, T0);
-  room.admit('host', { nickname: 'Anfitriao', avatar: 'a1' }, T0);
-  room.admit('p2', { nickname: 'Ana', avatar: 'a2' }, T0);
+  room.admit('host', { nickname: 'Anfitriao', avatar: 'g1' }, T0);
+  room.admit('p2', { nickname: 'Ana', avatar: 'g2' }, T0);
   room.command('host', { type: 'SIT' }, T0);
   room.command('p2', { type: 'SIT' }, T0);
   const online = new Set(['host', 'p2']);
@@ -117,7 +117,7 @@ describe('perfil e bots', () => {
     const { room } = headsUp();
     room.command(
       'p2',
-      { type: 'PROFILE', profile: { nickname: 'anfitriao', avatar: 'a2' } },
+      { type: 'PROFILE', profile: { nickname: 'anfitriao', avatar: 'g2' } },
       T0 + 3000,
     );
     expect(room.state.members.p2.nickname).not.toBe('anfitriao');
@@ -128,7 +128,7 @@ describe('perfil e bots', () => {
     const photo = 'data:image/webp;base64,AAAA';
     room.command(
       'p2',
-      { type: 'PROFILE', profile: { nickname: 'Ana', avatar: 'a2', photo } },
+      { type: 'PROFILE', profile: { nickname: 'Ana', avatar: 'g2', photo } },
       T0 + 3000,
     );
     expect(room.photos('p2')).toEqual({ p2: photo });
@@ -155,7 +155,7 @@ describe('ante, straddle, ritmo dos bots e run it twice', () => {
     const { room, online } = headsUp({ straddle: true });
     // Com 2 jogadores não há straddle.
     expect(room.state.hand!.straddler).toBeNull();
-    room.admit('p3', { nickname: 'Beto', avatar: 'a3' }, T0);
+    room.admit('p3', { nickname: 'Beto', avatar: 'g3' }, T0);
     room.command('p3', { type: 'SIT' }, T0 + 2100);
     online.add('p3');
     // Termina a mão atual e espera a próxima com 3 jogadores.
@@ -196,5 +196,19 @@ describe('ante, straddle, ritmo dos bots e run it twice', () => {
     expect(room.view('host', T0 + 2100, online).players.find((p) => p.id === 'host')!.twice).toBe(
       true,
     );
+  });
+});
+
+describe('avatares', () => {
+  it('bots entram com emblemas e ids antigos de retrato viram emblema', async () => {
+    const { ProfileSchema, EMBLEMS } = await import('../packages/contracts/src/index.ts');
+    const { room } = headsUp();
+    for (let i = 0; i < 3; i++)
+      room.command('host', { type: 'ADD_BOT', difficulty: 'EASY' }, T0 + 2100);
+    const bots = room.state.players.filter((p) => p.bot);
+    expect(bots.length).toBeGreaterThan(0);
+    for (const bot of bots) expect(EMBLEMS).toContain(bot.botProfile!.avatar);
+    expect(ProfileSchema.parse({ nickname: 'Velho', avatar: 'a3' }).avatar).toBe('g3');
+    expect(ProfileSchema.parse({ nickname: 'Sem avatar' }).avatar).toBe('g1');
   });
 });

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { RoomView } from './net.ts';
 import { playSound } from './audio.ts';
 
-export type ActionLabel = { action: string; amount: number; at: number };
 export type Sweep = { id: string; amount: number; key: number };
 
 /**
@@ -11,7 +10,6 @@ export type Sweep = { id: string; amount: number; key: number };
  */
 export function useTableFx(state: RoomView | null) {
   const previous = useRef<RoomView | null>(null);
-  const [labels, setLabels] = useState<Record<string, ActionLabel>>({});
   const [sweeps, setSweeps] = useState<Sweep[]>([]);
   const [emotes, setEmotes] = useState<{ n: number; id: string; emote: string }[]>([]);
   const sweepKey = useRef(0);
@@ -26,7 +24,6 @@ export function useTableFx(state: RoomView | null) {
 
     // Nova mão: distribuir cartas.
     if (hand && hand.id !== was?.id) {
-      setLabels({});
       setSweeps([]);
       const seated = state.players.filter((p) => p.inHand).length;
       for (let i = 0; i < seated * 2; i++) playSound('deal', i * 0.11);
@@ -36,12 +33,6 @@ export function useTableFx(state: RoomView | null) {
       const fresh = Math.min(hand.logCount - was.logCount, hand.log.length);
       if (fresh > 0) {
         const entries = hand.log.slice(-fresh);
-        setLabels((current) => {
-          const next = { ...current };
-          for (const entry of entries)
-            next[entry.player] = { action: entry.action, amount: entry.amount, at: Date.now() };
-          return next;
-        });
         const last = entries[entries.length - 1];
         playSound(
           last.action === 'FOLD'
@@ -59,7 +50,6 @@ export function useTableFx(state: RoomView | null) {
           .filter((p) => p.bet > 0)
           .map((p) => ({ id: p.id, amount: p.bet, key: ++sweepKey.current }));
         setSweeps(gathered);
-        setLabels({});
         const count = hand.board.length - was.board.length;
         for (let i = 0; i < count; i++) playSound('flip', 0.15 + i * 0.12);
         setTimeout(() => setSweeps([]), 900);
@@ -105,7 +95,7 @@ export function useTableFx(state: RoomView | null) {
     }
   }, [state]);
 
-  return { labels, sweeps, emotes };
+  return { sweeps, emotes };
 }
 
 /** Segundos restantes até `deadline`, atualizados a cada 250 ms. */

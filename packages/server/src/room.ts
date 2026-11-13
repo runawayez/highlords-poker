@@ -1,4 +1,5 @@
 import {
+  EMBLEMS,
   blindLevel,
   BOT_STYLES,
   PROFILE_COLORS,
@@ -340,7 +341,7 @@ export class RoomEngine {
         player.botStyle = msg.style ?? BOT_STYLES[(nth + 1) % BOT_STYLES.length];
         player.botProfile = {
           nickname: name,
-          avatar: (['a1', 'a2', 'a3', 'a4'] as const)[nth % 4],
+          avatar: EMBLEMS[(nth * 5 + 4) % EMBLEMS.length],
           color: PROFILE_COLORS[(nth * 3 + 1) % PROFILE_COLORS.length],
         };
         this.say('SAT', { name }, botId, now);
@@ -569,7 +570,7 @@ export class RoomEngine {
             id: p.id,
             rank: alive.length + busted.length - i,
             nickname: this.nameOf(p.id),
-            avatar: p.botProfile?.avatar ?? s.members[p.id]?.avatar ?? 'a1',
+            avatar: p.botProfile?.avatar ?? s.members[p.id]?.avatar ?? 'g1',
             color: p.botProfile?.color ?? s.members[p.id]?.color,
           });
         });
@@ -580,7 +581,7 @@ export class RoomEngine {
             id: alive[0].id,
             rank: 1,
             nickname: this.nameOf(alive[0].id),
-            avatar: alive[0].botProfile?.avatar ?? s.members[alive[0].id]?.avatar ?? 'a1',
+            avatar: alive[0].botProfile?.avatar ?? s.members[alive[0].id]?.avatar ?? 'g1',
             color: alive[0].botProfile?.color ?? s.members[alive[0].id]?.color,
           });
         s.standings.sort((a, b) => a.rank - b.rank);
@@ -799,7 +800,7 @@ export class RoomEngine {
         id: p.id,
         seat: p.seat,
         nickname: profile?.nickname ?? '?',
-        avatar: profile?.avatar ?? 'a1',
+        avatar: profile?.avatar ?? 'g1',
         bot: p.bot,
         stack: hp?.stack ?? p.stack,
         sitOut: p.sitOut,
@@ -852,6 +853,8 @@ export class RoomEngine {
             board: pub.board,
             board2: pub.board2,
             straddler: pub.straddler,
+            smallBlindId: pub.smallBlindId,
+            bigBlindId: pub.bigBlindId,
             street: pub.street,
             actor: pub.actor,
             done: pub.done,
