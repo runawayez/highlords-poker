@@ -26,7 +26,7 @@ export function useTableFx(state: RoomView | null) {
     if (hand && hand.id !== was?.id) {
       setSweeps([]);
       const seated = state.players.filter((p) => p.inHand).length;
-      for (let i = 0; i < seated * 2; i++) playSound('deal', i * 0.11);
+      for (let i = 0; i < seated * 2; i++) playSound('deal', 0.32 + i * 0.11);
     }
 
     if (hand && was && hand.id === was.id) {
@@ -51,7 +51,7 @@ export function useTableFx(state: RoomView | null) {
           .map((p) => ({ id: p.id, amount: p.bet, key: ++sweepKey.current }));
         setSweeps(gathered);
         const count = hand.board.length - was.board.length;
-        for (let i = 0; i < count; i++) playSound('flip', 0.15 + i * 0.12);
+        for (let i = 0; i < count; i++) playSound('flip', 0.3 + i * 0.13);
         setTimeout(() => setSweeps([]), 900);
       }
       if (hand.done && !was.done) {

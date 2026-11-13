@@ -511,3 +511,76 @@
     gap: 10px;
   }
 }
+
+/* ---------- distribuição: as cartas saem da mão do dealer ---------- */
+.stage {
+  container-type: size;
+}
+.hole-card {
+  animation: deal-fly 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i) * 0.11s);
+}
+@keyframes deal-fly {
+  from {
+    opacity: 0.95;
+    translate: var(--fx, 0) var(--fy, -90px);
+    scale: 0.35;
+    rotate: -160deg;
+  }
+}
+
+/* ---------- rua nova: a carta vira de verdade ---------- */
+.board {
+  perspective: 800px;
+}
+.flip {
+  position: relative;
+  width: var(--cw);
+  aspect-ratio: 5 / 7;
+  flex: none;
+}
+.flip .card {
+  position: absolute;
+  inset: 0;
+}
+.flip-front {
+  animation: flip-front 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i) * 0.13s);
+}
+.flip-back {
+  opacity: 0;
+  pointer-events: none;
+  animation: flip-back 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i) * 0.13s);
+}
+@keyframes flip-back {
+  from {
+    opacity: 1;
+    transform: translateY(-34px) rotateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-12px) rotateY(90deg);
+  }
+  50.1%,
+  to {
+    opacity: 0;
+    transform: rotateY(90deg);
+  }
+}
+@keyframes flip-front {
+  from,
+  50% {
+    transform: translateY(-12px) rotateY(-90deg);
+  }
+  to {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hole-card,
+  .flip-front,
+  .flip-back {
+    animation: none;
+  }
+}
