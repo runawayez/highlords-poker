@@ -7,7 +7,12 @@ import type {
   Profile,
 } from '../../../packages/contracts/src/index.ts';
 import type { RoomEngine } from '../../../packages/server/src/room.ts';
+import i18n from './i18n/index.ts';
+import type { LocalWire } from './local-room.ts';
 import { playerKey, profileStore } from './store.ts';
+
+/** Código da mesa contra bots: roda inteira neste navegador, sem nenhuma requisição ao servidor. */
+export const LOCAL_ROOM_CODE = 'LOCAL';
 
 export type RoomView = ReturnType<RoomEngine['view']>;
 export type PlayerView = RoomView['players'][number];
@@ -52,7 +57,9 @@ export function useRoom(code: string) {
   const [wrongPassword, setWrongPassword] = useState(false);
   const [fatal, setFatal] = useState<RoomFatal>(null);
   const [lastError, setLastError] = useState<{ code: ErrorCode; at: number } | null>(null);
-  const socket = useRef<WebSocket | null>(null);
+  const socket = useRef<{ readyState: number; send(data: string): void; close(): void } | null>(
+    null,
+  );
   const password = useRef<string | undefined>(undefined);
   const attempt = useRef(0);
   const offset = useRef(0);
@@ -62,8 +69,56 @@ export function useRoom(code: string) {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let heartbeat: ReturnType<typeof setInterval> | undefined;
 
+    const handle = (raw: string) => {
+      const message = JSON.parse(raw) as
+        | { type: 'STATE'; data: RoomView }
+        | { type: 'ERROR'; code: ErrorCode }
+        | { type: 'CLOSED' }
+        | { type: 'PHOTOS'; data: Record<string, string | null> }
+        | { type: 'PONG' };
+      if (message.type === 'STATE') {
+        offset.current = message.data.serverNow - Date.now();
+        setConnection('open');
+        setNeedsPassword(false);
+        setWrongPassword(false);
+        setState(message.data);
+      } else if (message.type === 'ERROR') {
+        if (message.code === 'WRONG_PASSWORD') {
+          setNeedsPassword(true);
+          setWrongPassword(!!password.current);
+        } else if (message.code === 'KICKED' || message.code === 'ROOM_NOT_FOUND')
+          setFatal(message.code);
+        else setLastError({ code: message.code, at: Date.now() });
+      } else if (message.type === 'PHOTOS') {
+        setPhotos((current) => {
+          const next = { ...current };
+          for (const [id, photo] of Object.entries(message.data))
+            if (photo) next[id] = photo;
+            else delete next[id];
+          return next;
+        });
+      } else if (message.type === 'CLOSED') setFatal('ROOM_NOT_FOUND');
+    };
+
+    const openLocal = async () => {
+      // Mesa contra bots: a sala roda neste navegador (chunk separado, só carrega aqui).
+      const { startLocalRoom } = await import('./local-room.ts');
+      if (stopped) return;
+      const profile = profileStore.get();
+      const wire: LocalWire = await startLocalRoom({
+        title: i18n.t('home:defaultTitle', { name: profile.nickname }),
+        hostKey: playerKey(),
+        profile,
+        onMessage: handle,
+      });
+      if (stopped) return wire.close();
+      socket.current = wire;
+      wire.send(JSON.stringify({ type: 'HELLO', key: playerKey(), profile }));
+    };
+
     const open = async () => {
       if (stopped) return;
+      if (code === LOCAL_ROOM_CODE) return openLocal();
       // Confere se a sala existe antes de insistir em conectar.
       try {
         await fetchRoom(code);
@@ -89,36 +144,7 @@ export function useRoom(code: string) {
         );
         heartbeat = setInterval(() => ws.readyState === 1 && ws.send('ping'), 20_000);
       };
-      ws.onmessage = (event) => {
-        const message = JSON.parse(String(event.data)) as
-          | { type: 'STATE'; data: RoomView }
-          | { type: 'ERROR'; code: ErrorCode }
-          | { type: 'CLOSED' }
-          | { type: 'PHOTOS'; data: Record<string, string | null> }
-          | { type: 'PONG' };
-        if (message.type === 'STATE') {
-          offset.current = message.data.serverNow - Date.now();
-          setConnection('open');
-          setNeedsPassword(false);
-          setWrongPassword(false);
-          setState(message.data);
-        } else if (message.type === 'ERROR') {
-          if (message.code === 'WRONG_PASSWORD') {
-            setNeedsPassword(true);
-            setWrongPassword(!!password.current);
-          } else if (message.code === 'KICKED' || message.code === 'ROOM_NOT_FOUND')
-            setFatal(message.code);
-          else setLastError({ code: message.code, at: Date.now() });
-        } else if (message.type === 'PHOTOS') {
-          setPhotos((current) => {
-            const next = { ...current };
-            for (const [id, photo] of Object.entries(message.data))
-              if (photo) next[id] = photo;
-              else delete next[id];
-            return next;
-          });
-        } else if (message.type === 'CLOSED') setFatal('ROOM_NOT_FOUND');
-      };
+      ws.onmessage = (event) => handle(String(event.data));
       ws.onclose = () => {
         clearInterval(heartbeat);
         if (stopped) return;

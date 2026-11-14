@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { PhotosContext } from './avatar.tsx';
 import { useTableFx } from './fx.ts';
 import { LearningCenter, type LearningSection } from './learning.tsx';
-import { useRoom } from './net.ts';
+import { LOCAL_ROOM_CODE, useRoom } from './net.ts';
 import { Chat, ChatStrip, Modal, SidePanel, type Tab } from './panels.tsx';
 import { ProfileModal } from './profile.tsx';
 import { SettingsModal } from './settings.tsx';
@@ -29,6 +29,7 @@ function useMedia(query: string) {
 export function RoomPage({ code, navigate }: { code: string; navigate: (path: string) => void }) {
   const { t } = useTranslation();
   const room = useRoom(code);
+  const isLocal = code === LOCAL_ROOM_CODE;
   const { state } = room;
   const fx = useTableFx(state);
   const prefs = useStore(prefsStore);
@@ -63,8 +64,8 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
   // Mesas recentes: o atalho na home volta para cá pelo código.
   const title = state?.config.title;
   useEffect(() => {
-    if (title) rememberTable(code, title);
-  }, [code, title]);
+    if (title && !isLocal) rememberTable(code, title);
+  }, [code, title, isLocal]);
 
   // Estatísticas locais: conta só as mãos que terminam enquanto estou jogando nesta sala.
   useEffect(() => {
@@ -98,12 +99,8 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
     if (!state || bootstrapped.current || !state.host || state.players.length > 0) return;
     bootstrapped.current = true;
     room.send({ type: 'SIT' });
-    const quick = sessionStorage.getItem(`highlords.quick.${code}`);
-    if (quick) {
-      sessionStorage.removeItem(`highlords.quick.${code}`);
-      for (let i = 0; i < Number(quick); i++) room.send({ type: 'ADD_BOT', difficulty: 'MEDIUM' });
-    }
-  }, [state, room, code]);
+    if (isLocal) for (let i = 0; i < 3; i++) room.send({ type: 'ADD_BOT', difficulty: 'MEDIUM' });
+  }, [state, room, isLocal]);
 
   useEffect(() => {
     if (!room.lastError) return;
@@ -169,7 +166,7 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
             <strong>{state?.config.title ?? '…'}</strong>
             {state && (
               <small>
-                {t('game:code', { code })} ·{' '}
+                {isLocal ? t('home:playBots') : t('game:code', { code })} ·{' '}
                 {state.config.mode === 'CASH' ? t('home:CASH') : t('home:SIT_AND_GO')} ·{' '}
                 {t('game:blindsNow', { small: state.level.small, big: state.level.big })}
                 {state.level.ante > 0 && ` · ${t('game:ante', { ante: state.level.ante })}`}
@@ -177,9 +174,11 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
             )}
           </div>
           <div className="room-tools">
-            <button className="primary small" onClick={invite}>
-              {copied ? t('game:inviteCopied') : t('game:invite')}
-            </button>
+            {!isLocal && (
+              <button className="primary small" onClick={invite}>
+                {copied ? t('game:inviteCopied') : t('game:invite')}
+              </button>
+            )}
             {state && state.spectators.length > 0 && (
               <span className="spec-wrap">
                 <button
@@ -269,7 +268,7 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
                   player.id === state.me ? setProfileOpen(true) : setPanel('table')
                 }
               />
-              {state.status === 'WAITING' && state.players.length < 2 && (
+              {!isLocal && state.status === 'WAITING' && state.players.length < 2 && (
                 <div className="waiting-card">
                   <small>{t('game:shareCode')}</small>
                   <strong>{code}</strong>
@@ -312,6 +311,7 @@ export function RoomPage({ code, navigate }: { code: string; navigate: (path: st
               <SidePanel
                 state={state}
                 send={room.send}
+                allowBots={isLocal}
                 tab={panel}
                 hideChat={wide}
                 onTab={setPanel}

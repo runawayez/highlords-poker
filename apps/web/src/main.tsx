@@ -12,6 +12,7 @@ import './apresentacao.css';
 import { ROOM_CODE_PATTERN } from '../../../packages/contracts/src/index.ts';
 import { Home } from './home.tsx';
 import { LearningCenter, learningPaths, learningRoute, type LearningSection } from './learning.tsx';
+import { LOCAL_ROOM_CODE } from './net.ts';
 import { RoomPage } from './room.tsx';
 import { SettingsModal } from './settings.tsx';
 import { applyPrefs, prefsStore } from './store.ts';
@@ -132,7 +133,7 @@ function App() {
   const room = path.match(/^\/mesa\/([A-Za-z0-9]+)$/);
   if (room) {
     const code = room[1].toUpperCase();
-    if (ROOM_CODE_PATTERN.test(code))
+    if (code === LOCAL_ROOM_CODE || ROOM_CODE_PATTERN.test(code))
       return <RoomPage key={code} code={code} navigate={navigate} />;
   }
   const section = learningRoute();
