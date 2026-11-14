@@ -219,12 +219,14 @@ export function ChatStrip({
 function TablePanel({
   state,
   send,
+  allowBots,
   onClosed,
   onProfile,
   onSettings,
 }: {
   state: RoomView;
   send: Send;
+  allowBots: boolean;
   onClosed: () => void;
   onProfile: () => void;
   onSettings: () => void;
@@ -299,46 +301,48 @@ function TablePanel({
       {state.host && (
         <section>
           <h3>{t('game:host')}</h3>
-          <div className="bot-row">
-            <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value as BotDifficulty)}
-              aria-label={t('game:botLevel')}
-            >
-              {(['EASY', 'MEDIUM', 'HARD'] as const).map((d) => (
-                <option key={d} value={d}>
-                  {t(`game:${d}`)}
-                </option>
-              ))}
-            </select>
-            <select
-              value={style}
-              onChange={(e) => setStyle(e.target.value as BotStyle | 'RANDOM')}
-              aria-label={t('game:botStyle')}
-            >
-              <option value="RANDOM">{t('game:styleRandom')}</option>
-              {BOT_STYLES.map((value) => (
-                <option key={value} value={value}>
-                  {t(`game:style_${value}`)}
-                </option>
-              ))}
-            </select>
-            <button
-              disabled={!canBots || free < 1}
-              onClick={() => send({ type: 'ADD_BOT', difficulty, style: botStyle })}
-            >
-              {t('game:addBot')}
-            </button>
-            <button
-              disabled={!canBots || free < 1}
-              onClick={() => {
-                for (let i = 0; i < free; i++)
-                  send({ type: 'ADD_BOT', difficulty, style: botStyle });
-              }}
-            >
-              {t('game:fillBots')}
-            </button>
-          </div>
+          {allowBots && (
+            <div className="bot-row">
+              <select
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value as BotDifficulty)}
+                aria-label={t('game:botLevel')}
+              >
+                {(['EASY', 'MEDIUM', 'HARD'] as const).map((d) => (
+                  <option key={d} value={d}>
+                    {t(`game:${d}`)}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={style}
+                onChange={(e) => setStyle(e.target.value as BotStyle | 'RANDOM')}
+                aria-label={t('game:botStyle')}
+              >
+                <option value="RANDOM">{t('game:styleRandom')}</option>
+                {BOT_STYLES.map((value) => (
+                  <option key={value} value={value}>
+                    {t(`game:style_${value}`)}
+                  </option>
+                ))}
+              </select>
+              <button
+                disabled={!canBots || free < 1}
+                onClick={() => send({ type: 'ADD_BOT', difficulty, style: botStyle })}
+              >
+                {t('game:addBot')}
+              </button>
+              <button
+                disabled={!canBots || free < 1}
+                onClick={() => {
+                  for (let i = 0; i < free; i++)
+                    send({ type: 'ADD_BOT', difficulty, style: botStyle });
+                }}
+              >
+                {t('game:fillBots')}
+              </button>
+            </div>
+          )}
           <div className="bot-row">
             {state.status === 'RUNNING' && (
               <button onClick={() => send({ type: 'PAUSE' })}>{t('game:pause')}</button>
@@ -481,9 +485,11 @@ export function SidePanel({
   onProfile,
   onSettings,
   hideChat = false,
+  allowBots = false,
 }: {
   state: RoomView;
   send: Send;
+  allowBots?: boolean;
   tab: Tab;
   hideChat?: boolean;
   onTab: (tab: Tab) => void;
@@ -519,6 +525,7 @@ export function SidePanel({
           <TablePanel
             state={state}
             send={send}
+            allowBots={allowBots}
             onClosed={onClosed}
             onProfile={onProfile}
             onSettings={onSettings}

@@ -33,6 +33,7 @@ async function simulate(options: {
   });
   void password;
   const runtime = new RoomRuntime({
+    allowBots: true,
     now: () => now,
     storage: {
       load: async () => null,

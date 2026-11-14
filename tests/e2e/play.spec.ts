@@ -12,7 +12,7 @@ test('abrir o site, jogar contra bots e agir na mesa', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await page.getByRole('button', { name: /Jogar contra bots/ }).click();
-  await expect(page).toHaveURL(/\/mesa\/[A-Z2-9]{6}$/);
+  await expect(page).toHaveURL(/\/mesa\/LOCAL$/);
   // Cartas próprias na mesa e a barra de ações na minha vez (ou aguardando a vez dos bots).
   await expect(page.locator('.seat.me .hole-card').first()).toBeVisible();
   const fold = page.getByRole('button', { name: /Desistir/ });
@@ -296,4 +296,32 @@ test('quem só assiste aparece para a mesa e vê que está assistindo', async ({
   await page.locator('.spec-button').click();
   await expect(page.locator('.spec-pop li')).toHaveCount(1);
   await guest.context().close();
+});
+
+test('a mesa contra bots roda no navegador, sem chamar a API de salas', async ({ page }) => {
+  const calls: string[] = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (url.pathname.startsWith('/api/rooms') || url.pathname === '/api/lobby')
+      calls.push(url.pathname);
+  });
+  await page.goto('/');
+  calls.length = 0;
+  await page.getByRole('button', { name: /Jogar contra bots/ }).click();
+  await expect(page).toHaveURL(/\/mesa\/LOCAL$/);
+  calls.length = 0;
+  await expect(page.locator('.seat:not(.empty)')).toHaveCount(4);
+  await expect(page.locator('.seat.me .hole-card').first()).toBeVisible();
+  expect(calls).toEqual([]);
+});
+
+test('mesa online não oferece adicionar bots', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Criar mesa/ }).click();
+  await page.getByRole('button', { name: /Abrir mesa/ }).click();
+  await expect(page).toHaveURL(/\/mesa\/[A-Z2-9]{6}$/);
+  const toggle = page.getByRole('button', { name: 'Menu' });
+  await toggle.click();
+  await page.getByRole('tab', { name: 'Mesa' }).click();
+  await expect(page.getByRole('button', { name: 'Adicionar bot' })).toHaveCount(0);
 });

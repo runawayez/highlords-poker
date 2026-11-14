@@ -107,6 +107,20 @@ describe('transporte WebSocket', () => {
     b.ws.close();
   });
 
+  it('sala online recusa bots: eles só existem na mesa local do navegador', async () => {
+    const { body } = await createRoom(key('f'));
+    const host = await connect(body.id);
+    hello(host, key('f'), 'Host');
+    await host.until((s) => s.me);
+    host.send({ type: 'SIT' });
+    host.send({ type: 'ADD_BOT', difficulty: 'MEDIUM' });
+    await new Promise((r) => setTimeout(r, 200));
+    expect(host.errors).toContain('FORBIDDEN');
+    const state = await host.until((s) => s.players.length > 0);
+    expect(state.players.filter((p: any) => p.bot)).toHaveLength(0);
+    host.ws.close();
+  });
+
   it('exige senha e aceita a senha correta', async () => {
     const { body } = await createRoom(key('c'), { password: 'segredo' });
     const intruder = await connect(body.id);

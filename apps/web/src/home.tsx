@@ -7,7 +7,7 @@ import {
   type Config,
   type LobbyEntry,
 } from '../../../packages/contracts/src/index.ts';
-import { ApiError, createRoom, fetchLobby, fetchRoom } from './net.ts';
+import { ApiError, LOCAL_ROOM_CODE, createRoom, fetchLobby, fetchRoom } from './net.ts';
 import { Avatar } from './avatar.tsx';
 import { Card } from './card.tsx';
 import { randomNickname } from './names.ts';
@@ -36,7 +36,6 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
   const [creating, setCreating] = useState(false);
   const [code, setCode] = useState('');
   const [message, setMessage] = useState('');
-  const [busy, setBusy] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [filter, setFilter] = useState<'ALL' | 'CASH' | 'SIT_AND_GO'>('ALL');
   const [onlyOpen, setOnlyOpen] = useState(false);
@@ -78,28 +77,10 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
     return true;
   };
 
-  const quickBots = async () => {
+  // Contra bots a mesa roda no próprio navegador: não consome nada do servidor.
+  const quickBots = () => {
     if (needName()) return;
-    setBusy(true);
-    try {
-      const id = await createRoom(
-        {
-          title: t('home:defaultTitle', { name: profile.nickname }),
-          mode: 'CASH',
-          seats: 6,
-          stack: 2000,
-          small: 10,
-          big: 20,
-          botPace: 'CALM',
-        },
-        profile,
-      );
-      sessionStorage.setItem(`highlords.quick.${id}`, '3');
-      navigate(`/mesa/${id}`);
-    } catch {
-      setMessage(t('home:createError'));
-      setBusy(false);
-    }
+    navigate(`/mesa/${LOCAL_ROOM_CODE}`);
   };
 
   const joinByCode = async (e: React.FormEvent) => {
@@ -168,7 +149,7 @@ export function Home({ navigate }: { navigate: (path: string) => void }) {
                 <small>{t('profile:customizeHint')}</small>
               </span>
             </button>
-            <button className="primary huge" disabled={busy} onClick={() => void quickBots()}>
+            <button className="primary huge" onClick={quickBots}>
               {t('home:playBots')}
               <small>{t('home:playBotsHint')}</small>
             </button>

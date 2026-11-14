@@ -59,6 +59,8 @@ export class RoomRuntime {
       scheduler: Scheduler;
       lobby: LobbyPort;
       now?: () => number;
+      /** Só a mesa local (contra bots, no navegador) aceita bots; salas online nunca. */
+      allowBots?: boolean;
     },
   ) {}
   private now() {
@@ -170,6 +172,7 @@ export class RoomRuntime {
         const entry = this.deps.hub.sockets().find((c) => c.socket === socket);
         if (!entry?.id) return this.fail(socket, 'FORBIDDEN');
         if (this.limited(entry.id)) return this.fail(socket, 'RATE_LIMIT');
+        if (msg.type === 'ADD_BOT' && !this.deps.allowBots) return this.fail(socket, 'FORBIDDEN');
         engine.command(entry.id, msg, now);
         engine.tick(now, this.online());
         if (msg.type === 'PROFILE') this.sharePhoto(engine, entry.id);

@@ -27,3 +27,5 @@ Identidade: o navegador gera uma chave secreta (`localStorage`); o servidor guar
 - Cada sala é um Durable Object; nada de estado global compartilhado entre salas além do Lobby.
 - Textos de interface passam por i18n (pt-BR e en); `tests/i18n.test.ts` valida paridade.
 - Fichas e prêmios são fictícios. Nunca introduzir dinheiro real.
+- Bots só existem na mesa local (`/mesa/LOCAL`, roda no navegador via `apps/web/src/local-room.ts`, zero requisições). Sala online recusa `ADD_BOT`.
+- Para poupar a cota do Cloudflare, teste sempre no servidor local (`pnpm dev`, `pnpm test:e2e`) ou na mesa local contra bots; nunca contra a produção.
