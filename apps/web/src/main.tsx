@@ -9,6 +9,7 @@ import './styles.css';
 import './repaginada3.css';
 import './premium.css';
 import './apresentacao.css';
+import './hgl.css';
 import { ROOM_CODE_PATTERN } from '../../../packages/contracts/src/index.ts';
 import { Home } from './home.tsx';
 import { LearningCenter, learningPaths, learningRoute, type LearningSection } from './learning.tsx';
