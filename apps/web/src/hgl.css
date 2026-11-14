@@ -1,0 +1,423 @@
+/*
+ * HGL Poker — identidade visual atual (carrega por último, sobrepõe as camadas anteriores).
+ * Direção: cliente de poker moderno. Chrome azul-grafite, feltro esmeralda em foco, botões de ação
+ * sólidos e coloridos por função (vermelho desiste, verde paga, âmbar aumenta), tipografia
+ * sem serifa com números tabulares. Nada de latão/madeira/serifa.
+ */
+:root {
+  --ink-0: #080c13;
+  --ink-1: #0d131e;
+  --ink-2: #131b2a;
+  --ink-3: #1a2437;
+  --line: #26324a;
+  --hairline: rgb(150 170 210 / 0.14);
+  --glass: rgb(13 19 30 / 0.88);
+  --text: #e8edf7;
+  --muted: #8d9ab3;
+  --brass: #f4b63f;
+  --brass-light: #ffd47a;
+  --crimson: #ee4b57;
+  --crimson-dark: #a8222c;
+  --ok: #2fbf71;
+  --font-display: 'Manrope Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Manrope Variable', 'Segoe UI', system-ui, sans-serif;
+  --hgl-blue: #4c8dff;
+  --hgl-green: #2fbf71;
+  --hgl-amber: #f4b63f;
+  --hgl-red: #ee4b57;
+}
+
+body {
+  background:
+    radial-gradient(90% 55% at 50% -12%, #172640 0%, transparent 65%),
+    radial-gradient(50% 40% at 100% 100%, #1a1030 0%, transparent 70%), var(--ink-0);
+  background-attachment: fixed;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- botões globais ---------- */
+button {
+  font-family: var(--font-body);
+}
+button.primary {
+  background: linear-gradient(180deg, #ffc65c 0%, #f0a21f 100%);
+  border: 0;
+  color: #1b1100;
+  font-weight: 800;
+  box-shadow:
+    0 10px 24px -12px rgb(244 182 63 / 0.75),
+    inset 0 1px 0 rgb(255 255 255 / 0.45);
+}
+button.primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+/* ---------- barra da sala ---------- */
+.room-bar {
+  background: var(--ink-1);
+  border-bottom: 1px solid var(--hairline);
+}
+.room-title strong {
+  font: 800 16px/1.2 var(--font-body);
+  letter-spacing: -0.005em;
+}
+.room-title small {
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+/* ---------- mesa ---------- */
+.stage::before {
+  background: radial-gradient(60% 60% at 50% 45%, rgb(80 150 255 / 0.07), transparent 70%);
+}
+.rail {
+  background: linear-gradient(180deg, #2a3548 0%, #131a27 55%, #0a0e16 100%);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.07),
+    0 40px 70px -30px #000,
+    0 0 140px -30px rgb(30 140 95 / 0.45),
+    inset 0 2px 1px rgb(255 255 255 / 0.14),
+    inset 0 -6px 14px rgb(0 0 0 / 0.65);
+}
+.felt {
+  background: radial-gradient(
+    78% 72% at 50% 38%,
+    var(--felt-1) 0%,
+    var(--felt-2) 62%,
+    var(--felt-3) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.07),
+    inset 0 0 0 10px rgb(0 0 0 / 0.16),
+    inset 0 22px 90px rgb(0 0 0 / 0.5);
+}
+.felt-mark {
+  opacity: 0.5;
+}
+
+/* pote: pílula limpa */
+.pot {
+  background: rgb(8 12 20 / 0.78);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.pot small {
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.status-pill {
+  background: rgb(8 12 20 / 0.7);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+
+/* ---------- assentos ---------- */
+.plate {
+  min-width: 96px;
+  padding: 4px 14px 5px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #1c2639 0%, #0e1522 100%);
+  border: 1px solid rgb(150 170 210 / 0.24);
+  box-shadow:
+    0 10px 18px -10px #000,
+    inset 0 1px 0 rgb(255 255 255 / 0.07);
+  backdrop-filter: none;
+  text-align: center;
+}
+.plate strong {
+  font: 700 12px/1.25 var(--font-body);
+  color: #e8edf7;
+  letter-spacing: 0.01em;
+}
+.plate span {
+  font: 800 14px/1.2 var(--font-body);
+  color: var(--brass-light);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.seat.me .plate {
+  border-color: var(--hgl-blue);
+  box-shadow:
+    0 10px 18px -10px #000,
+    0 0 0 1px rgb(76 141 255 / 0.35);
+}
+.seat.acting .plate {
+  border-color: var(--brass-light);
+  box-shadow:
+    0 0 0 2px rgb(244 182 63 / 0.35),
+    0 0 26px rgb(244 182 63 / 0.3);
+}
+.bot-tag {
+  font-family: var(--font-body);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  background: #1c2639;
+  border: 1px solid rgb(150 170 210 / 0.25);
+  color: var(--muted);
+}
+.pos.sb {
+  background: var(--hgl-blue);
+}
+.pos.bb {
+  background: var(--hgl-red);
+}
+
+/* ---------- bandeja de ações ---------- */
+.action-bar {
+  background: var(--ink-1);
+  border-top: 1px solid var(--hairline);
+}
+.action-bar::before {
+  background: linear-gradient(90deg, transparent, var(--hgl-amber), transparent);
+}
+.actions button {
+  min-height: 56px;
+  border: 0;
+  border-radius: 12px;
+  font: 800 14px/1 var(--font-body);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.actions button kbd {
+  opacity: 0.55;
+  font-weight: 700;
+}
+.actions button.danger {
+  background: #321218;
+  color: #ff8791;
+  box-shadow: inset 0 0 0 1px rgb(238 75 87 / 0.45);
+}
+.actions button.danger:hover:not(:disabled) {
+  background: #43171f;
+}
+.actions button.call {
+  background: linear-gradient(180deg, #34c777 0%, #1f9556 100%);
+  color: #03170c;
+  box-shadow:
+    0 10px 22px -12px rgb(47 191 113 / 0.8),
+    inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+.actions button.primary {
+  background: linear-gradient(180deg, #ffc65c 0%, #f0a21f 100%);
+  color: #1b1100;
+  border: 0;
+}
+.actions .bank {
+  background: var(--ink-3);
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* painel de aumentar: atalhos em segmentos e controle central */
+.raise-panel .quick {
+  gap: 6px;
+}
+.raise-panel .quick button {
+  border: 0;
+  border-radius: 10px;
+  background: var(--ink-3);
+  color: var(--text);
+  font: 700 12px/1 var(--font-body);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+.raise-panel .quick button:hover {
+  box-shadow: inset 0 0 0 1px var(--hgl-amber);
+  color: var(--brass-light);
+}
+.raise-panel input[type='range'] {
+  accent-color: var(--hgl-amber);
+}
+.amount-input {
+  background: var(--ink-2);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  font: 800 16px var(--font-body);
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-light);
+}
+
+/* dicas do coach discretas */
+.coach,
+.coach-stat {
+  background: transparent;
+  border-color: var(--hairline);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* ---------- painéis laterais e chat ---------- */
+.dock,
+.side-panel {
+  background: var(--ink-1);
+  border-left: 1px solid var(--hairline);
+}
+.room.wide .side-panel {
+  border-left: 1px solid var(--hairline);
+}
+.dock > header h2,
+.side-panel header h2 {
+  font: 800 13px var(--font-body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dock-tabs button[aria-pressed='true'] {
+  border-color: var(--hgl-blue);
+  color: #9cc0ff;
+}
+.chat li {
+  background: var(--ink-2);
+  border: 1px solid var(--hairline);
+}
+.chat li.mine {
+  background: #14284a;
+  border-color: rgb(76 141 255 / 0.4);
+}
+.chat li.sys,
+.chat li.empty {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  text-align: center;
+  padding: 2px 8px;
+}
+
+/* ---------- home ---------- */
+.hero-copy h1 {
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: #fff;
+}
+.hero-copy h1::after {
+  background: var(--hgl-amber);
+}
+.hero-copy .lead,
+.hero-copy p {
+  color: var(--muted);
+}
+.hero-copy .join-card {
+  background: linear-gradient(180deg, #141c2c 0%, #0d1320 100%);
+  border: 1px solid rgb(150 170 210 / 0.18);
+  border-radius: 18px;
+  box-shadow: 0 30px 60px -30px #000;
+}
+.eyebrow {
+  color: var(--hgl-amber);
+  font-weight: 800;
+}
+.profile-chip {
+  background: var(--ink-2);
+  border: 1px solid var(--hairline);
+}
+button.primary.huge {
+  min-height: 68px;
+  border-radius: 14px;
+  font: 800 19px/1.1 var(--font-body);
+  letter-spacing: 0.01em;
+  text-transform: none;
+  background: linear-gradient(180deg, #ffc65c 0%, #f0a21f 100%);
+  box-shadow:
+    0 16px 30px -14px rgb(244 182 63 / 0.8),
+    inset 0 1px 0 rgb(255 255 255 / 0.5);
+}
+button.primary.huge small {
+  font: 600 12px var(--font-body);
+  letter-spacing: 0.02em;
+  color: rgb(27 17 0 / 0.7);
+}
+button.big {
+  background: var(--ink-3);
+  border: 1px solid rgb(150 170 210 / 0.22);
+  border-radius: 14px;
+  font-weight: 700;
+}
+
+/* mesa de vitrine */
+.hero-rail {
+  background: linear-gradient(180deg, #2a3548 0%, #131a27 55%, #0a0e16 100%);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.07),
+    0 40px 70px -30px #000,
+    0 0 140px -30px rgb(30 140 95 / 0.45),
+    inset 0 2px 1px rgb(255 255 255 / 0.14);
+}
+.hero-felt {
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.07),
+    inset 0 0 0 9px rgb(0 0 0 / 0.16),
+    inset 0 20px 80px rgb(0 0 0 / 0.5);
+}
+.hero-plate {
+  border-radius: 12px;
+  background: linear-gradient(180deg, #1c2639 0%, #0e1522 100%);
+  border: 1px solid rgb(150 170 210 / 0.24);
+  font-family: var(--font-body);
+}
+.hero-plate b {
+  font-weight: 700;
+  color: #e8edf7;
+}
+.hero-plate i {
+  color: var(--brass-light);
+  font-weight: 800;
+  font-style: normal;
+}
+.hero-pot {
+  background: rgb(8 12 20 / 0.78);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+/* três razões: cartões compactos */
+.pillars article {
+  background: var(--ink-1);
+  border: 1px solid var(--hairline);
+  border-top: 1px solid var(--hairline);
+  border-radius: 16px;
+  padding: 20px 22px;
+}
+.pillar-n {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgb(244 182 63 / 0.14);
+  color: var(--hgl-amber);
+  font: 800 13px var(--font-body);
+}
+.pillars h3 {
+  font-size: 18px;
+}
+.hero-stage .hero-rail {
+  background: linear-gradient(180deg, #2a3548 0%, #131a27 55%, #0a0e16 100%);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.07),
+    0 40px 70px -30px #000,
+    0 0 140px -30px rgb(30 140 95 / 0.45),
+    inset 0 2px 1px rgb(255 255 255 / 0.14);
+}
