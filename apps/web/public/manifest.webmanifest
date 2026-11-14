@@ -1,6 +1,6 @@
 {
-  "name": "Highlords Poker",
-  "short_name": "Highlords",
+  "name": "HGL Poker",
+  "short_name": "HGL Poker",
   "description": "Texas Hold’em com a galera, direto no navegador. Sem cadastro, fichas virtuais.",
   "start_url": "/",
   "display": "standalone",

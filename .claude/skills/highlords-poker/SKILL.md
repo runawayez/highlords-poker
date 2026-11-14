@@ -1,9 +1,9 @@
 ---
 name: highlords-poker
-description: Contexto e convenções do Highlords Poker (clube de Texas Hold'em servidor autoritativo, 1 Durable Object por sala). Use ao mexer em sala, protocolo, runtime, lobby, worker ou front-end do jogo.
+description: Contexto e convenções do HGL Poker (clube de Texas Hold'em servidor autoritativo, 1 Durable Object por sala). Use ao mexer em sala, protocolo, runtime, lobby, worker ou front-end do jogo.
 ---
 
-# Highlords Poker — mapa do projeto
+# HGL Poker — mapa do projeto
 
 ## Fluxo de uma mensagem
 

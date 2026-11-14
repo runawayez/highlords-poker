@@ -4,7 +4,7 @@ description: Revisa mudanças no motor de poker, na sala (room.ts), no runtime e
 tools: Read, Grep, Glob, Bash
 ---
 
-Você revisa o Highlords Poker. Foque em:
+Você revisa o HGL Poker. Foque em:
 
 1. **Sigilo**: nenhuma carta alheia, baralho ou hash de chave em `view()` ou nas mensagens.
 2. **Justiça**: ordem de ação, blinds, side pots, ficha ímpar, timeouts e sit-out automático.

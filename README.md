@@ -1,4 +1,4 @@
-# Highlords Poker ♠
+# HGL Poker ♠
 
 **Poker com a galera, direto no navegador.** Texas Hold'em sem cadastro: escolha um nome, abra uma mesa e mande o link.
 Fichas 100% virtuais — não há dinheiro real, depósitos ou prêmios.
@@ -57,4 +57,4 @@ Veja [docs/development.md](docs/development.md) e [docs/deployment.md](docs/depl
 | `apps/local-server`     | Mesmo runtime em Node, para dev e testes            |
 | `apps/web`              | React + Vite                                        |
 
-Sugestões e bugs: [issues do projeto](https://github.com/runawayez/highlords-poker/issues). Nunca inclua cartas privadas de uma mão em andamento.
+Sugestões e bugs: [issues do projeto](https://github.com/runawayez/hgl-poker/issues). Nunca inclua cartas privadas de uma mão em andamento.

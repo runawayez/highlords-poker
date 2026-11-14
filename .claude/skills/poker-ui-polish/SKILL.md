@@ -1,6 +1,6 @@
 ---
 name: poker-ui-polish
-description: Diretrizes visuais e de experiência da mesa do Highlords (cassino noturno: feltro, madeira, latão). Use ao criar ou ajustar telas, animações e sons.
+description: Diretrizes visuais e de experiência da mesa do HGL Poker (cassino noturno: feltro, madeira, latão). Use ao criar ou ajustar telas, animações e sons.
 ---
 
 # Direção visual: salão noturno
