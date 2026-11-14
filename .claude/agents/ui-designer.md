@@ -1,6 +1,6 @@
 ---
 name: ui-designer
-description: Projeta e refina a interface do Highlords Poker (mesa, lobby, animações, sons). Use para novas telas ou ajustes visuais.
+description: Projeta e refina a interface do HGL Poker (mesa, lobby, animações, sons). Use para novas telas ou ajustes visuais.
 tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 

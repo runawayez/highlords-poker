@@ -1,4 +1,4 @@
-/** Highlords NLHE policy v1. Pure rules; callers supply a securely shuffled deck. */
+/** HGL NLHE policy v1. Pure rules; callers supply a securely shuffled deck. */
 export type Card = string;
 export type Action = 'FOLD' | 'CHECK' | 'CALL' | 'BET' | 'RAISE' | 'ALL_IN';
 export type Seat = { id: string; seat: number; stack: number };

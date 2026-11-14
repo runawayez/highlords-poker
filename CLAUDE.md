@@ -1,4 +1,4 @@
-# Highlords Poker
+# HGL Poker
 
 Clube de Texas Hold'em no navegador: sem login, fichas virtuais, uma mesa por sala.
 

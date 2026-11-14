@@ -44,7 +44,7 @@ export function LearningPage({
   return (
     <article className={`learning-page learning-${kind}`}>
       <header className="learning-heading">
-        {!embedded && <p className="eyebrow">HIGHLORDS / {t('learn:academy')}</p>}
+        {!embedded && <p className="eyebrow">HGL POKER / {t('learn:academy')}</p>}
         <Title className="learning-title">{t(`learn:${kind}Title`)}</Title>
         <p>{t(`learn:${kind}Intro`)}</p>
         {!embedded && onSection && (
@@ -227,7 +227,7 @@ export function LearningCenter({
     <div className={`learning-center${standalone ? ' learning-hub' : ''}`}>
       {standalone && (
         <header className="learning-hub-heading">
-          <p className="eyebrow">HIGHLORDS / {t('learn:academy')}</p>
+          <p className="eyebrow">HGL POKER / {t('learn:academy')}</p>
           <h1>{t('learn:guideNav')}</h1>
         </header>
       )}
